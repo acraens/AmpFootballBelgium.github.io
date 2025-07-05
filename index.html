@@ -42,7 +42,214 @@
       z-index: 1000;
       flex-direction: column;
     }
-    /* ... all other CSS rules ... */
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+      color: white;
+    }
+    .login-logo {
+      width: 150px;
+      margin-bottom: 15px;
+    }
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    .login-box h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--dark);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .demo-accounts {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .demo-accounts ul {
+      list-style: none;
+      margin-top: 10px;
+    }
+    .demo-accounts li {
+      margin-bottom: 5px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    .header-content {
+      display: flex;
+      align-items: center;
+    }
+    .logo {
+      width: 50px;
+      margin-right: 15px;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      color: var(--dark);
+      font-size: 16px;
+    }
+    .tab-btn.active {
+      border-bottom-color: var(--primary);
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .filter-group select, 
+    .filter-group input {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .chart-container {
+      height: 400px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .btn-small {
+      padding: 5px 10px;
+      font-size: 14px;
+      width: auto;
+    }
+    .btn-warning {
+      background-color: var(--warning);
+    }
+    .btn-danger {
+      background-color: var(--danger);
+    }
+    .crutch-badge {
+      background-color: var(--secondary);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    /* GitHub Sync specific styles */
+    .github-sync-form {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .github-sync-form .form-group {
+      margin-bottom: 15px;
+    }
+    .github-sync-form label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .github-sync-form input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn-secondary {
+      background-color: var(--secondary);
+    }
+    .status-message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .status-message.info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    .status-message.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status-message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
   </style>
 </head>
 <body>
@@ -120,7 +327,42 @@
         </div>
       </div>
 
-      <!-- GitHub Sync Tab -->
+      <div class="tab-content" id="players">
+        <div class="card">
+          <div class="filter-group">
+            <select id="playerPositionFilter">
+              <option value="all">All Positions</option>
+              <option value="Goalkeeper">Goalkeeper</option>
+              <option value="Defender">Defender</option>
+              <option value="Midfielder">Midfielder</option>
+              <option value="Forward">Forward</option>
+            </select>
+            <select id="playerAmputationFilter">
+              <option value="all">All Amputations</option>
+              <option value="left_arm">Left Arm</option>
+              <option value="right_arm">Right Arm</option>
+              <option value="left_leg">Left Leg</option>
+              <option value="right_leg">Right Leg</option>
+            </select>
+            <button id="addPlayerBtn">Add Player</button>
+          </div>
+          <table id="playerTable" class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Amputation</th>
+                <th>Crutches</th>
+                <th>Height (cm)</th>
+                <th>Weight (kg)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="tab-content" id="githubSync">
         <div class="card">
           <h2>GitHub Gist Sync</h2>
@@ -143,15 +385,6 @@
         </div>
       </div>
 
-      <!-- All other tab content sections -->
-      <!-- Player management -->
-      <!-- Training programs -->
-      <!-- Medical records -->
-      <!-- Crutch management -->
-      <!-- Inventory management -->
-      <!-- User management -->
-
-      <!-- All modal dialogs -->
       <div id="playerModal" class="modal">
         <div class="modal-content">
           <span class="close-modal">&times;</span>
@@ -162,18 +395,47 @@
               <label>Name:</label>
               <input type="text" id="playerName" required>
             </div>
-            <!-- All player form fields -->
+            <div class="form-group">
+              <label>Position:</label>
+              <select id="playerPosition" required>
+                <option value="Goalkeeper">Goalkeeper</option>
+                <option value="Defender">Defender</option>
+                <option value="Midfielder">Midfielder</option>
+                <option value="Forward">Forward</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Amputation:</label>
+              <select id="playerAmputation" required>
+                <option value="left_arm">Left Arm</option>
+                <option value="right_arm">Right Arm</option>
+                <option value="left_leg">Left Leg</option>
+                <option value="right_leg">Right Leg</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Height (cm):</label>
+              <input type="number" id="playerHeight" required>
+            </div>
+            <div class="form-group">
+              <label>Weight (kg):</label>
+              <input type="number" id="playerWeight" required>
+            </div>
+            <div class="form-group">
+              <label>Dominant Side:</label>
+              <select id="playerDominantSide" required>
+                <option value="left">Left</option>
+                <option value="right">Right</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Join Date:</label>
+              <input type="date" id="playerJoinDate" required>
+            </div>
             <button type="submit" class="btn-primary">Save Player</button>
           </form>
         </div>
       </div>
-
-      <!-- All other modals -->
-      <!-- Exercise modal -->
-      <!-- Medical record modal -->
-      <!-- Inventory modal -->
-      <!-- User modal -->
-
     </div>
   </div>
 
@@ -183,7 +445,10 @@
       users: [
         { username: 'admin', password: 'admin123', role: 'admin', name: 'System Admin' },
         { username: 'manager', password: 'manager123', role: 'team_manager', name: 'John Smith' },
-        // All other users...
+        { username: 'headcoach', password: 'coach123', role: 'head_coach', name: 'Emma Johnson' },
+        { username: 'physio', password: 'physio123', role: 'physio', name: 'Michael Brown' },
+        { username: 'gk1', password: 'player123', role: 'player', name: 'Carlos Mendez' },
+        { username: 'def1', password: 'player123', role: 'player', name: 'James Wilson' }
       ],
       players: [
         {
@@ -199,7 +464,19 @@
           fitnessLevel: 88,
           recoveryScore: 7
         },
-        // All other players...
+        {
+          id: 'def1',
+          name: 'James Wilson',
+          position: 'Defender',
+          amputation: 'right_leg',
+          crutchType: 'forearm',
+          height: 178,
+          weight: 75,
+          joinDate: '2022-03-10',
+          dominantSide: 'left',
+          fitnessLevel: 85,
+          recoveryScore: 6
+        }
       ],
       exercises: {
         Goalkeeper: [
@@ -219,9 +496,43 @@
             addedBy: 'headcoach'
           }
         ],
-        // All other exercises...
+        Defender: [
+          {
+            id: 'ex-def1',
+            name: 'Positioning Drill',
+            focus: 'Defensive positioning',
+            sets: 4,
+            reps: 8,
+            difficulty: 'beginner',
+            equipment: ['Cones', 'Pinnies'],
+            notes: 'Focus on maintaining defensive shape',
+            performanceMetrics: {
+              'Positioning Accuracy': '90% success rate',
+              'Recovery Speed': '< 3s'
+            },
+            addedBy: 'headcoach'
+          }
+        ],
+        universal: [
+          {
+            id: 'ex-uni1',
+            name: 'Core Strength',
+            focus: 'Core stability',
+            sets: 3,
+            reps: 12,
+            difficulty: 'beginner',
+            equipment: ['Mat'],
+            notes: 'Important for balance and stability',
+            performanceMetrics: {
+              'Hold Time': '30s minimum'
+            },
+            addedBy: 'physio'
+          }
+        ]
       },
-      // All other data collections...
+      medicalRecords: [],
+      crutches: [],
+      inventory: []
     };
 
     const elements = {
@@ -232,13 +543,19 @@
       appContent: document.getElementById('appContent'),
       welcomeHeader: document.getElementById('welcomeHeader'),
       logoutBtn: document.getElementById('logoutBtn'),
+      tabButtons: document.querySelectorAll('.tab-btn'),
+      tabContents: document.querySelectorAll('.tab-content'),
       playerTable: document.querySelector('#playerTable tbody'),
+      playerPositionFilter: document.getElementById('playerPositionFilter'),
+      playerAmputationFilter: document.getElementById('playerAmputationFilter'),
+      addPlayerBtn: document.getElementById('addPlayerBtn'),
+      playerModal: document.getElementById('playerModal'),
+      playerForm: document.getElementById('playerForm'),
       gistId: document.getElementById('gistId'),
       githubToken: document.getElementById('githubToken'),
       loadFromGist: document.getElementById('loadFromGist'),
       saveToGist: document.getElementById('saveToGist'),
-      githubStatus: document.getElementById('githubStatus'),
-      // All other element references...
+      githubStatus: document.getElementById('githubStatus')
     };
 
     let currentUser = null;
@@ -275,7 +592,6 @@
           throw new Error('No files found in Gist');
         }
         
-        // Assuming the first file contains our data
         const fileContent = files[0].content;
         const parsedData = JSON.parse(fileContent);
         
@@ -283,7 +599,7 @@
         Object.assign(dataStore, parsedData);
         
         showGitHubStatus('Data loaded successfully!', 'success');
-        loadInitialData(); // Refresh the UI with new data
+        loadInitialData();
       } catch (error) {
         showGitHubStatus(`Error: ${error.message}`, 'error');
         console.error('Error loading from Gist:', error);
@@ -318,11 +634,10 @@
           }
         };
         
-        const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
-        const method = gistId ? 'PATCH' : 'POST';
+        const url = `https://api.github.com/gists/${gistId}`;
         
         const response = await fetch(url, {
-          method,
+          method: 'PATCH',
           headers: {
             'Authorization': `token ${token}`,
             'Content-Type': 'application/json'
@@ -332,13 +647,6 @@
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (!gistId) {
-          // If we created a new gist, update the Gist ID field
-          elements.gistId.value = result.id;
         }
         
         showGitHubStatus('Data saved successfully!', 'success');
@@ -398,34 +706,6 @@
       `).join('');
     }
 
-    function loadTrainingPrograms() {
-      const position = elements.positionFilter.value;
-      let filteredExercises = [];
-      
-      if (position === 'all') {
-        for (const pos in dataStore.exercises) {
-          if (pos !== 'universal') {
-            filteredExercises = [...filteredExercises, ...dataStore.exercises[pos]];
-          }
-        }
-        filteredExercises = [...filteredExercises, ...dataStore.exercises.universal];
-      } else {
-        filteredExercises = [...dataStore.exercises[position], ...dataStore.exercises.universal];
-      }
-      
-      elements.trainingPrograms.innerHTML = filteredExercises.map(exercise => {
-        return `
-          <div class="exercise">
-            <div class="exercise-detail">
-              <h4>${exercise.name}</h4>
-              <p><strong>Focus:</strong> ${exercise.focus}</p>
-              <p><strong>Sets:</strong> ${exercise.sets} ${exercise.reps ? `x ${exercise.reps} reps` : `for ${exercise.duration}`}</p>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
     function openPlayerModal(playerId = null) {
       currentEditId = playerId;
       const modalTitle = document.getElementById('playerModalTitle');
@@ -450,7 +730,7 @@
         document.getElementById('playerJoinDate').value = new Date().toISOString().split('T')[0];
       }
       
-      elements.playerModal.style.display = 'block';
+      elements.playerModal.style.display = 'flex';
     }
 
     function handlePlayerSubmit(event) {
@@ -497,13 +777,14 @@
         elements.appContent.style.display = 'block';
         elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
         
-        // Show GitHub Sync tab only for admin
-        document.querySelector(`.tab-btn[data-tab="githubSync"]`).style.display = 
-          currentUser.role === 'admin' ? 'block' : 'none';
-        
+        // Show/hide tabs based on role
         elements.tabButtons.forEach(tab => {
           const tabId = tab.dataset.tab;
-          tab.style.display = ['admin', 'team_manager'].includes(currentUser.role) ? 'block' : 'none';
+          if (tabId === 'githubSync') {
+            tab.style.display = currentUser.role === 'admin' ? 'block' : 'none';
+          } else {
+            tab.style.display = ['admin', 'team_manager'].includes(currentUser.role) ? 'block' : 'none';
+          }
         });
         
         loadInitialData();
@@ -514,11 +795,9 @@
 
     function loadInitialData() {
       loadPlayerTable();
-      loadTrainingPrograms();
       
       if (currentUser.role === 'player') {
         document.querySelector(`.tab-btn[data-tab="athleteDashboard"]`).style.display = 'block';
-        loadAthleteDashboard();
       }
     }
 
@@ -530,18 +809,42 @@
         elements.appContent.style.display = 'none';
       });
       
+      elements.addPlayerBtn.addEventListener('click', () => openPlayerModal());
       elements.playerForm.addEventListener('submit', handlePlayerSubmit);
+      
+      // Tab switching
+      elements.tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const tabId = button.dataset.tab;
+          
+          // Update active tab button
+          elements.tabButtons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+          
+          // Update active tab content
+          elements.tabContents.forEach(content => content.classList.remove('active'));
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
       
       // GitHub Sync event listeners
       elements.loadFromGist.addEventListener('click', loadDataFromGist);
       elements.saveToGist.addEventListener('click', saveDataToGist);
       
+      // Close modal when clicking X
       document.querySelectorAll('.close-modal').forEach(button => {
         button.addEventListener('click', () => {
           document.querySelectorAll('.modal').forEach(modal => {
             modal.style.display = 'none';
           });
         });
+      });
+      
+      // Close modal when clicking outside
+      window.addEventListener('click', (event) => {
+        if (event.target.classList.contains('modal')) {
+          event.target.style.display = 'none';
+        }
       });
     }
 
@@ -553,77 +856,5 @@
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
-  <style>
-    .github-sync-form {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    
-    .github-sync-form .form-group {
-      margin-bottom: 15px;
-    }
-    
-    .github-sync-form label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    
-    .github-sync-form input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    
-    .button-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    
-    .btn-primary {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    .btn-secondary {
-      background-color: var(--secondary);
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    .status-message {
-      margin-top: 15px;
-      padding: 10px;
-      border-radius: 4px;
-    }
-    
-    .status-message.info {
-      background-color: #d1ecf1;
-      color: #0c5460;
-    }
-    
-    .status-message.success {
-      background-color: #d4edda;
-      color: #155724;
-    }
-    
-    .status-message.error {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-  </style>
 </body>
 </html>
