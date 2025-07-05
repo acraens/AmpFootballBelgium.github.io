@@ -442,6 +442,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    // Data Store with sample data
     const dataStore = {
       users: [
         { username: 'admin', password: 'admin123', role: 'admin', name: 'System Admin' },
@@ -536,6 +537,7 @@
       inventory: []
     };
 
+    // DOM Elements
     const elements = {
       loginOverlay: document.getElementById('loginOverlay'),
       loginForm: document.getElementById('loginForm'),
@@ -559,6 +561,7 @@
       githubStatus: document.getElementById('githubStatus')
     };
 
+    // App State
     let currentUser = null;
     let currentEditId = null;
     let performanceChartInstance = null;
@@ -689,8 +692,107 @@
       elements.githubStatus.className = 'status-message ' + type;
     }
 
-    // Rest of your existing functions (formatAmputation, generateId, loadPlayerTable, etc.)
-    // ... [Keep all your other existing functions exactly as they were]
+    function formatAmputation(amputation) {
+      if (!amputation) return 'None';
+      return amputation.split('_').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+    }
+
+    function generateId(prefix) {
+      return prefix + Math.random().toString(36).substr(2, 9);
+    }
+
+    function loadPlayerTable() {
+      const positionFilter = elements.playerPositionFilter.value;
+      const amputationFilter = elements.playerAmputationFilter.value;
+      
+      let filteredPlayers = dataStore.players;
+      
+      if (positionFilter !== 'all') {
+        filteredPlayers = filteredPlayers.filter(p => p.position === positionFilter);
+      }
+      
+      if (amputationFilter !== 'all') {
+        filteredPlayers = filteredPlayers.filter(p => p.amputation === amputationFilter);
+      }
+      
+      elements.playerTable.innerHTML = filteredPlayers.map(player => `
+        <tr>
+          <td>${player.name}</td>
+          <td>${player.position}</td>
+          <td>${formatAmputation(player.amputation)}</td>
+          <td>${player.crutchType ? '<span class="crutch-badge">Forearm</span>' : 'None'}</td>
+          <td>${player.height} cm</td>
+          <td>${player.weight} kg</td>
+          <td>
+            <button class="btn-small view-btn" data-id="${player.id}">Details</button>
+            ${['admin', 'team_manager'].includes(currentUser?.role) ? `
+              <button class="btn-small btn-warning edit-btn" data-id="${player.id}">Edit</button>
+              <button class="btn-small btn-danger delete-btn" data-id="${player.id}">Delete</button>
+            ` : ''}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openPlayerModal(playerId = null) {
+      currentEditId = playerId;
+      const modalTitle = document.getElementById('playerModalTitle');
+      const form = elements.playerForm;
+      
+      if (playerId) {
+        modalTitle.textContent = 'Edit Player';
+        const player = dataStore.players.find(p => p.id === playerId);
+        if (player) {
+          document.getElementById('playerId').value = player.id;
+          document.getElementById('playerName').value = player.name;
+          document.getElementById('playerPosition').value = player.position;
+          document.getElementById('playerAmputation').value = player.amputation;
+          document.getElementById('playerHeight').value = player.height;
+          document.getElementById('playerWeight').value = player.weight;
+          document.getElementById('playerDominantSide').value = player.dominantSide;
+          document.getElementById('playerJoinDate').value = player.joinDate;
+        }
+      } else {
+        modalTitle.textContent = 'Add Player';
+        form.reset();
+        document.getElementById('playerJoinDate').value = new Date().toISOString().split('T')[0];
+      }
+      
+      elements.playerModal.style.display = 'flex';
+    }
+
+    function handlePlayerSubmit(event) {
+      event.preventDefault();
+      
+      const playerData = {
+        id: currentEditId || generateId('player'),
+        name: document.getElementById('playerName').value,
+        position: document.getElementById('playerPosition').value,
+        amputation: document.getElementById('playerAmputation').value,
+        crutchType: document.getElementById('playerPosition').value === 'Goalkeeper' ? null : 'forearm',
+        height: parseInt(document.getElementById('playerHeight').value),
+        weight: parseInt(document.getElementById('playerWeight').value),
+        dominantSide: document.getElementById('playerDominantSide').value,
+        joinDate: document.getElementById('playerJoinDate').value,
+        fitnessLevel: 80,
+        recoveryScore: 7
+      };
+      
+      if (currentEditId) {
+        const index = dataStore.players.findIndex(p => p.id === currentEditId);
+        if (index !== -1) {
+          dataStore.players[index] = playerData;
+        }
+      } else {
+        dataStore.players.push(playerData);
+      }
+      
+      elements.playerModal.style.display = 'none';
+      currentEditId = null;
+      loadPlayerTable();
+    }
 
     function handleLogin(event) {
       event.preventDefault();
@@ -720,6 +822,14 @@
         loadInitialData();
       } else {
         alert('Invalid username or password');
+      }
+    }
+
+    function loadInitialData() {
+      loadPlayerTable();
+      
+      if (currentUser.role === 'player') {
+        document.querySelector(`.tab-btn[data-tab="athleteDashboard"]`).style.display = 'block';
       }
     }
 
