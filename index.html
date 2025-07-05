@@ -1,19 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <!-- Previous head content remains exactly the same -->
-  <!-- ... -->
-</head>
-<body>
-  <!-- Previous HTML content remains exactly the same -->
-  <!-- ... -->
+<script>
+    // ... (keep all previous dataStore and elements declarations)
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    // Previous dataStore and elements declarations remain the same
-    // ...
-
-    // GitHub Gist Functions - UPDATED with proper error handling
     async function loadDataFromGist() {
       const gistId = elements.gistId.value.trim();
       const token = elements.githubToken.value.trim();
@@ -31,21 +18,25 @@
           'Accept': 'application/vnd.github.v3+json'
         };
         
-        // Only add Authorization header if token exists
+        // REQUIRED: Add Authorization header if token exists
         if (token) {
-          headers['Authorization'] = `token ${token}`;
+          headers['Authorization'] = `Bearer ${token}`; // Changed to Bearer token
+        } else {
+          // For public gists, we need to handle potential rate limits
+          headers['If-None-Match'] = '"' + Math.random().toString(36) + '"'; // Cache buster
         }
         
         const response = await fetch(url, { headers });
         
         if (!response.ok) {
-          // More detailed error handling
           if (response.status === 401) {
-            throw new Error('Unauthorized - Check your GitHub token');
+            throw new Error('Authentication failed. Please check your GitHub token and ensure it has "gist" scope.');
+          } else if (response.status === 403) {
+            throw new Error('Rate limit exceeded. Please add a GitHub token to authenticate.');
           } else if (response.status === 404) {
-            throw new Error('Gist not found - Check the Gist ID');
+            throw new Error('Gist not found. Check the ID or ensure it exists.');
           } else {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
           }
         }
         
@@ -53,27 +44,40 @@
         const files = Object.values(gistData.files);
         
         if (files.length === 0) {
-          throw new Error('No files found in Gist');
+          throw new Error('Gist contains no files');
         }
         
-        // Find the first JSON file
-        const jsonFile = files.find(file => file.filename.endsWith('.json'));
+        // Find first JSON file
+        const jsonFile = files.find(f => f.filename.endsWith('.json'));
         if (!jsonFile) {
-          throw new Error('No JSON file found in Gist');
+          throw new Error('No JSON data file found in Gist');
         }
         
-        const fileContent = jsonFile.content;
+        // Get raw URL for the content
+        const rawUrl = jsonFile.raw_url;
+        const rawResponse = await fetch(rawUrl);
+        if (!rawResponse.ok) {
+          throw new Error('Failed to fetch raw Gist content');
+        }
+        
+        const fileContent = await rawResponse.text();
         const parsedData = JSON.parse(fileContent);
         
-        // Validate the loaded data structure
-        if (!parsedData.players || !parsedData.users) {
+        // Validate data structure
+        if (!parsedData || typeof parsedData !== 'object') {
           throw new Error('Invalid data format in Gist');
         }
         
-        // Merge the loaded data with our existing dataStore
+        // Merge data carefully
         Object.keys(parsedData).forEach(key => {
           if (dataStore.hasOwnProperty(key)) {
-            dataStore[key] = parsedData[key];
+            if (Array.isArray(dataStore[key])) {
+              dataStore[key] = [...parsedData[key]];
+            } else if (typeof dataStore[key] === 'object') {
+              Object.assign(dataStore[key], parsedData[key]);
+            } else {
+              dataStore[key] = parsedData[key];
+            }
           }
         });
         
@@ -81,7 +85,7 @@
         loadInitialData();
       } catch (error) {
         showGitHubStatus(`Error: ${error.message}`, 'error');
-        console.error('Error loading from Gist:', error);
+        console.error('Gist load error:', error);
       }
     }
 
@@ -89,20 +93,15 @@
       const gistId = elements.gistId.value.trim();
       const token = elements.githubToken.value.trim();
       
-      if (!gistId && !token) {
-        showGitHubStatus('To create a new Gist, you need a GitHub token', 'error');
-        return;
-      }
-      
       if (!token) {
-        showGitHubStatus('A GitHub token is required to save data', 'error');
+        showGitHubStatus('GitHub token required to save data', 'error');
         return;
       }
       
       try {
-        showGitHubStatus('Saving data to Gist...', 'info');
+        showGitHubStatus('Saving data...', 'info');
         
-        const filename = `afprs-data-${new Date().toISOString().split('T')[0]}.json`;
+        const filename = `afprs-backup-${new Date().toISOString().slice(0,10)}.json`;
         const content = JSON.stringify(dataStore, null, 2);
         
         const gistData = {
@@ -115,19 +114,13 @@
           }
         };
         
-        let url, method;
-        if (gistId) {
-          url = `https://api.github.com/gists/${gistId}`;
-          method = 'PATCH';
-        } else {
-          url = 'https://api.github.com/gists';
-          method = 'POST';
-        }
+        const method = gistId ? 'PATCH' : 'POST';
+        const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
         
         const response = await fetch(url, {
           method,
           headers: {
-            'Authorization': `token ${token}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
             'Accept': 'application/vnd.github.v3+json'
           },
@@ -135,31 +128,25 @@
         });
         
         if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error('Invalid GitHub token - Please check your token');
-          } else if (response.status === 404 && gistId) {
-            throw new Error('Gist not found - Check the Gist ID');
-          } else {
-            throw new Error(`HTTP error! status: ${response.status}`);
+          const errorData = await response.json().catch(() => ({}));
+          let message = `GitHub API error: ${response.status}`;
+          if (errorData.message) {
+            message += ` - ${errorData.message}`;
           }
+          throw new Error(message);
         }
         
         const result = await response.json();
-        
         if (!gistId) {
-          // If we created a new gist, update the Gist ID field
           elements.gistId.value = result.id;
         }
         
-        showGitHubStatus('Data saved successfully!', 'success');
+        showGitHubStatus(`Data saved successfully! Gist ID: ${result.id}`, 'success');
       } catch (error) {
-        showGitHubStatus(`Error: ${error.message}`, 'error');
-        console.error('Error saving to Gist:', error);
+        showGitHubStatus(`Save failed: ${error.message}`, 'error');
+        console.error('Gist save error:', error);
       }
     }
 
-    // Rest of the code remains exactly the same
-    // ...
-  </script>
-</body>
-</html>
+    // ... (rest of your existing code)
+</script>
