@@ -120,6 +120,29 @@
         </div>
       </div>
 
+      <!-- GitHub Sync Tab -->
+      <div class="tab-content" id="githubSync">
+        <div class="card">
+          <h2>GitHub Gist Sync</h2>
+          <div class="github-sync-form">
+            <div class="form-group">
+              <label for="gistId">Gist ID:</label>
+              <input type="text" id="gistId" placeholder="Enter GitHub Gist ID">
+            </div>
+            <div class="form-group">
+              <label for="githubToken">GitHub Token (optional):</label>
+              <input type="password" id="githubToken" placeholder="Enter GitHub personal access token">
+              <small>Only needed for private gists</small>
+            </div>
+            <div class="button-group">
+              <button id="loadFromGist" class="btn-primary">Load From Gist</button>
+              <button id="saveToGist" class="btn-secondary">Save To Gist</button>
+            </div>
+            <div id="githubStatus" class="status-message"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- All other tab content sections -->
       <!-- Player management -->
       <!-- Training programs -->
@@ -127,7 +150,6 @@
       <!-- Crutch management -->
       <!-- Inventory management -->
       <!-- User management -->
-      <!-- GitHub sync -->
 
       <!-- All modal dialogs -->
       <div id="playerModal" class="modal">
@@ -211,12 +233,126 @@
       welcomeHeader: document.getElementById('welcomeHeader'),
       logoutBtn: document.getElementById('logoutBtn'),
       playerTable: document.querySelector('#playerTable tbody'),
+      gistId: document.getElementById('gistId'),
+      githubToken: document.getElementById('githubToken'),
+      loadFromGist: document.getElementById('loadFromGist'),
+      saveToGist: document.getElementById('saveToGist'),
+      githubStatus: document.getElementById('githubStatus'),
       // All other element references...
     };
 
     let currentUser = null;
     let currentEditId = null;
     let performanceChartInstance = null;
+
+    // GitHub Gist Functions
+    async function loadDataFromGist() {
+      const gistId = elements.gistId.value.trim();
+      const token = elements.githubToken.value.trim();
+      
+      if (!gistId) {
+        showGitHubStatus('Please enter a Gist ID', 'error');
+        return;
+      }
+      
+      try {
+        showGitHubStatus('Loading data from Gist...', 'info');
+        
+        const url = `https://api.github.com/gists/${gistId}`;
+        const headers = {};
+        if (token) headers['Authorization'] = `token ${token}`;
+        
+        const response = await fetch(url, { headers });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const gistData = await response.json();
+        const files = Object.values(gistData.files);
+        
+        if (files.length === 0) {
+          throw new Error('No files found in Gist');
+        }
+        
+        // Assuming the first file contains our data
+        const fileContent = files[0].content;
+        const parsedData = JSON.parse(fileContent);
+        
+        // Merge the loaded data with our existing dataStore
+        Object.assign(dataStore, parsedData);
+        
+        showGitHubStatus('Data loaded successfully!', 'success');
+        loadInitialData(); // Refresh the UI with new data
+      } catch (error) {
+        showGitHubStatus(`Error: ${error.message}`, 'error');
+        console.error('Error loading from Gist:', error);
+      }
+    }
+
+    async function saveDataToGist() {
+      const gistId = elements.gistId.value.trim();
+      const token = elements.githubToken.value.trim();
+      
+      if (!gistId) {
+        showGitHubStatus('Please enter a Gist ID', 'error');
+        return;
+      }
+      
+      if (!token) {
+        showGitHubStatus('A GitHub token is required to save data', 'error');
+        return;
+      }
+      
+      try {
+        showGitHubStatus('Saving data to Gist...', 'info');
+        
+        const filename = `afprs-data-${new Date().toISOString().split('T')[0]}.json`;
+        const content = JSON.stringify(dataStore, null, 2);
+        
+        const gistData = {
+          files: {
+            [filename]: {
+              content: content
+            }
+          }
+        };
+        
+        const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
+        const method = gistId ? 'PATCH' : 'POST';
+        
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(gistData)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (!gistId) {
+          // If we created a new gist, update the Gist ID field
+          elements.gistId.value = result.id;
+        }
+        
+        showGitHubStatus('Data saved successfully!', 'success');
+      } catch (error) {
+        showGitHubStatus(`Error: ${error.message}`, 'error');
+        console.error('Error saving to Gist:', error);
+      }
+    }
+
+    function showGitHubStatus(message, type) {
+      elements.githubStatus.textContent = message;
+      elements.githubStatus.className = 'status-message';
+      elements.githubStatus.classList.add(type);
+    }
 
     function formatAmputation(amputation) {
       if (!amputation) return 'None';
@@ -361,6 +497,10 @@
         elements.appContent.style.display = 'block';
         elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
         
+        // Show GitHub Sync tab only for admin
+        document.querySelector(`.tab-btn[data-tab="githubSync"]`).style.display = 
+          currentUser.role === 'admin' ? 'block' : 'none';
+        
         elements.tabButtons.forEach(tab => {
           const tabId = tab.dataset.tab;
           tab.style.display = ['admin', 'team_manager'].includes(currentUser.role) ? 'block' : 'none';
@@ -392,6 +532,10 @@
       
       elements.playerForm.addEventListener('submit', handlePlayerSubmit);
       
+      // GitHub Sync event listeners
+      elements.loadFromGist.addEventListener('click', loadDataFromGist);
+      elements.saveToGist.addEventListener('click', saveDataToGist);
+      
       document.querySelectorAll('.close-modal').forEach(button => {
         button.addEventListener('click', () => {
           document.querySelectorAll('.modal').forEach(modal => {
@@ -409,5 +553,77 @@
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
+  <style>
+    .github-sync-form {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .github-sync-form .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .github-sync-form label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    .github-sync-form input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .status-message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    
+    .status-message.info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .status-message.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .status-message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
 </body>
 </html>
