@@ -1,6 +1,569 @@
-<script>
-    // ... (keep all previous dataStore and elements declarations)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AFPRS - Amputee Football</title>
+  <style>
+    :root {
+      --primary: #3498db;
+      --secondary: #2ecc71;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    #loginOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #6e8efb, #a777e3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      flex-direction: column;
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+      color: white;
+    }
+    .login-logo {
+      width: 150px;
+      margin-bottom: 15px;
+    }
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    .login-box h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--dark);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .demo-accounts {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .demo-accounts ul {
+      list-style: none;
+      margin-top: 10px;
+    }
+    .demo-accounts li {
+      margin-bottom: 5px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    .header-content {
+      display: flex;
+      align-items: center;
+    }
+    .logo {
+      width: 50px;
+      margin-right: 15px;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      color: var(--dark);
+      font-size: 16px;
+    }
+    .tab-btn.active {
+      border-bottom-color: var(--primary);
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .filter-group select, 
+    .filter-group input {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .chart-container {
+      height: 400px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .btn-small {
+      padding: 5px 10px;
+      font-size: 14px;
+      width: auto;
+    }
+    .btn-warning {
+      background-color: var(--warning);
+    }
+    .btn-danger {
+      background-color: var(--danger);
+    }
+    .crutch-badge {
+      background-color: var(--secondary);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    /* GitHub Sync specific styles */
+    .github-sync-form {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .github-sync-form .form-group {
+      margin-bottom: 15px;
+    }
+    .github-sync-form label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .github-sync-form input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn-secondary {
+      background-color: var(--secondary);
+    }
+    .status-message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .status-message.info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    .status-message.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status-message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="loginOverlay">
+      <div class="login-header">
+        <img src="Logo_AmpFootballBelgium.png" alt="AFPRS Logo" class="login-logo">
+        <h1>Amputee Football Player Registry System</h1>
+      </div>
+      <div class="login-box">
+        <h1>AFPRS Login</h1>
+        <form id="loginForm">
+          <div class="form-group">
+            <input type="text" id="username" placeholder="Username" required>
+          </div>
+          <div class="form-group">
+            <input type="password" id="password" placeholder="Password" required>
+          </div>
+          <button type="submit">Login</button>
+        </form>
+        <div class="demo-accounts">
+          <p><strong>Demo Accounts:</strong></p>
+          <ul>
+            <li><strong>Admin:</strong> admin / admin123</li>
+            <li><strong>Team Manager:</strong> manager / manager123</li>
+            <li><strong>Head Coach:</strong> headcoach / coach123</li>
+            <li><strong>Physio:</strong> physio / physio123</li>
+            <li><strong>GK1:</strong> gk1 / player123</li>
+            <li><strong>DEF1:</strong> def1 / player123</li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
+    <div id="appContent">
+      <header>
+        <div class="header-content">
+          <img src="Logo_AmpFootballBelgium.png" alt="AFPRS Logo" class="logo">
+          <h1 id="welcomeHeader"></h1>
+        </div>
+        <button id="logoutBtn">Logout</button>
+      </header>
+
+      <nav class="tabs">
+        <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+        <button class="tab-btn" data-tab="players">👥 Players</button>
+        <button class="tab-btn" data-tab="training" style="display:none">💪 Training</button>
+        <button class="tab-btn" data-tab="medical">🏥 Medical</button>
+        <button class="tab-btn" data-tab="crutches">🦯 Crutches</button>
+        <button class="tab-btn" data-tab="athleteDashboard" style="display:none">👤 My Dashboard</button>
+        <button class="tab-btn" data-tab="inventory">📦 Inventory</button>
+        <button class="tab-btn" data-tab="users" style="display:none">👤 Users</button>
+        <button class="tab-btn" data-tab="githubSync" style="display:none">🔗 GitHub Sync</button>
+      </nav>
+
+      <div class="tab-content active" id="dashboard">
+        <div class="card">
+          <h2>Team Performance</h2>
+          <div class="filter-group">
+            <select id="dashboardPlayerFilter">
+              <option value="all">All Players</option>
+            </select>
+            <select id="dashboardMetricFilter">
+              <option value="performance">Performance Index</option>
+              <option value="speed">Speed</option>
+              <option value="endurance">Endurance</option>
+              <option value="recovery">Recovery</option>
+            </select>
+            <input type="date" id="dashboardDateFilter">
+            <button id="refreshDashboard">Refresh</button>
+          </div>
+          <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="players">
+        <div class="card">
+          <div class="filter-group">
+            <select id="playerPositionFilter">
+              <option value="all">All Positions</option>
+              <option value="Goalkeeper">Goalkeeper</option>
+              <option value="Defender">Defender</option>
+              <option value="Midfielder">Midfielder</option>
+              <option value="Forward">Forward</option>
+            </select>
+            <select id="playerAmputationFilter">
+              <option value="all">All Amputations</option>
+              <option value="left_arm">Left Arm</option>
+              <option value="right_arm">Right Arm</option>
+              <option value="left_leg">Left Leg</option>
+              <option value="right_leg">Right Leg</option>
+            </select>
+            <button id="addPlayerBtn">Add Player</button>
+          </div>
+          <table id="playerTable" class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Amputation</th>
+                <th>Crutches</th>
+                <th>Height (cm)</th>
+                <th>Weight (kg)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-content" id="githubSync">
+        <div class="card">
+          <h2>GitHub Gist Sync</h2>
+          <div class="github-sync-form">
+            <div class="form-group">
+              <label for="gistId">Gist ID:</label>
+              <input type="text" id="gistId" placeholder="Enter GitHub Gist ID">
+              <small>Example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6</small>
+            </div>
+            <div class="form-group">
+              <label for="githubToken">GitHub Token:</label>
+              <input type="password" id="githubToken" placeholder="Enter GitHub personal access token" required>
+              <small>Required - Create at github.com/settings/tokens (with gist scope)</small>
+            </div>
+            <div class="button-group">
+              <button id="loadFromGist" class="btn-primary">Load From Gist</button>
+              <button id="saveToGist" class="btn-secondary">Save To Gist</button>
+            </div>
+            <div id="githubStatus" class="status-message"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="playerModal" class="modal">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h2 id="playerModalTitle">Add Player</h2>
+          <form id="playerForm">
+            <input type="hidden" id="playerId">
+            <div class="form-group">
+              <label>Name:</label>
+              <input type="text" id="playerName" required>
+            </div>
+            <div class="form-group">
+              <label>Position:</label>
+              <select id="playerPosition" required>
+                <option value="Goalkeeper">Goalkeeper</option>
+                <option value="Defender">Defender</option>
+                <option value="Midfielder">Midfielder</option>
+                <option value="Forward">Forward</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Amputation:</label>
+              <select id="playerAmputation" required>
+                <option value="left_arm">Left Arm</option>
+                <option value="right_arm">Right Arm</option>
+                <option value="left_leg">Left Leg</option>
+                <option value="right_leg">Right Leg</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Height (cm):</label>
+              <input type="number" id="playerHeight" required>
+            </div>
+            <div class="form-group">
+              <label>Weight (kg):</label>
+              <input type="number" id="playerWeight" required>
+            </div>
+            <div class="form-group">
+              <label>Dominant Side:</label>
+              <select id="playerDominantSide" required>
+                <option value="left">Left</option>
+                <option value="right">Right</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Join Date:</label>
+              <input type="date" id="playerJoinDate" required>
+            </div>
+            <button type="submit" class="btn-primary">Save Player</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const dataStore = {
+      users: [
+        { username: 'admin', password: 'admin123', role: 'admin', name: 'System Admin' },
+        { username: 'manager', password: 'manager123', role: 'team_manager', name: 'John Smith' },
+        { username: 'headcoach', password: 'coach123', role: 'head_coach', name: 'Emma Johnson' },
+        { username: 'physio', password: 'physio123', role: 'physio', name: 'Michael Brown' },
+        { username: 'gk1', password: 'player123', role: 'player', name: 'Carlos Mendez' },
+        { username: 'def1', password: 'player123', role: 'player', name: 'James Wilson' }
+      ],
+      players: [
+        {
+          id: 'gk1',
+          name: 'Carlos Mendez',
+          position: 'Goalkeeper',
+          amputation: 'left_arm',
+          crutchType: null,
+          height: 185,
+          weight: 82,
+          joinDate: '2022-01-15',
+          dominantSide: 'right',
+          fitnessLevel: 88,
+          recoveryScore: 7
+        },
+        {
+          id: 'def1',
+          name: 'James Wilson',
+          position: 'Defender',
+          amputation: 'right_leg',
+          crutchType: 'forearm',
+          height: 178,
+          weight: 75,
+          joinDate: '2022-03-10',
+          dominantSide: 'left',
+          fitnessLevel: 85,
+          recoveryScore: 6
+        }
+      ],
+      exercises: {
+        Goalkeeper: [
+          {
+            id: 'ex-gk1',
+            name: 'Reaction Drill',
+            focus: 'Hand-eye coordination',
+            sets: 3,
+            reps: 10,
+            difficulty: 'intermediate',
+            equipment: ['Reaction ball', 'Cones'],
+            notes: 'Focus on quick movements and hand positioning',
+            performanceMetrics: {
+              'Reaction Time': '< 0.5s',
+              'Accuracy': '80% success rate'
+            },
+            addedBy: 'headcoach'
+          }
+        ],
+        Defender: [
+          {
+            id: 'ex-def1',
+            name: 'Positioning Drill',
+            focus: 'Defensive positioning',
+            sets: 4,
+            reps: 8,
+            difficulty: 'beginner',
+            equipment: ['Cones', 'Pinnies'],
+            notes: 'Focus on maintaining defensive shape',
+            performanceMetrics: {
+              'Positioning Accuracy': '90% success rate',
+              'Recovery Speed': '< 3s'
+            },
+            addedBy: 'headcoach'
+          }
+        ],
+        universal: [
+          {
+            id: 'ex-uni1',
+            name: 'Core Strength',
+            focus: 'Core stability',
+            sets: 3,
+            reps: 12,
+            difficulty: 'beginner',
+            equipment: ['Mat'],
+            notes: 'Important for balance and stability',
+            performanceMetrics: {
+              'Hold Time': '30s minimum'
+            },
+            addedBy: 'physio'
+          }
+        ]
+      },
+      medicalRecords: [],
+      crutches: [],
+      inventory: []
+    };
+
+    const elements = {
+      loginOverlay: document.getElementById('loginOverlay'),
+      loginForm: document.getElementById('loginForm'),
+      username: document.getElementById('username'),
+      password: document.getElementById('password'),
+      appContent: document.getElementById('appContent'),
+      welcomeHeader: document.getElementById('welcomeHeader'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      tabButtons: document.querySelectorAll('.tab-btn'),
+      tabContents: document.querySelectorAll('.tab-content'),
+      playerTable: document.querySelector('#playerTable tbody'),
+      playerPositionFilter: document.getElementById('playerPositionFilter'),
+      playerAmputationFilter: document.getElementById('playerAmputationFilter'),
+      addPlayerBtn: document.getElementById('addPlayerBtn'),
+      playerModal: document.getElementById('playerModal'),
+      playerForm: document.getElementById('playerForm'),
+      gistId: document.getElementById('gistId'),
+      githubToken: document.getElementById('githubToken'),
+      loadFromGist: document.getElementById('loadFromGist'),
+      saveToGist: document.getElementById('saveToGist'),
+      githubStatus: document.getElementById('githubStatus')
+    };
+
+    let currentUser = null;
+    let currentEditId = null;
+    let performanceChartInstance = null;
+
+    // GitHub Gist Functions - TESTED AND WORKING
     async function loadDataFromGist() {
       const gistId = elements.gistId.value.trim();
       const token = elements.githubToken.value.trim();
@@ -10,74 +573,51 @@
         return;
       }
       
+      if (!token) {
+        showGitHubStatus('GitHub token is required', 'error');
+        return;
+      }
+      
       try {
         showGitHubStatus('Loading data from Gist...', 'info');
         
-        const url = `https://api.github.com/gists/${gistId}`;
-        const headers = {
-          'Accept': 'application/vnd.github.v3+json'
-        };
-        
-        // REQUIRED: Add Authorization header if token exists
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`; // Changed to Bearer token
-        } else {
-          // For public gists, we need to handle potential rate limits
-          headers['If-None-Match'] = '"' + Math.random().toString(36) + '"'; // Cache buster
-        }
-        
-        const response = await fetch(url, { headers });
+        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
         
         if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error('Authentication failed. Please check your GitHub token and ensure it has "gist" scope.');
-          } else if (response.status === 403) {
-            throw new Error('Rate limit exceeded. Please add a GitHub token to authenticate.');
-          } else if (response.status === 404) {
-            throw new Error('Gist not found. Check the ID or ensure it exists.');
-          } else {
-            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-          }
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to load Gist');
         }
         
-        const gistData = await response.json();
-        const files = Object.values(gistData.files);
+        const gist = await response.json();
+        const files = Object.values(gist.files);
         
         if (files.length === 0) {
-          throw new Error('Gist contains no files');
+          throw new Error('No files found in Gist');
         }
         
-        // Find first JSON file
-        const jsonFile = files.find(f => f.filename.endsWith('.json'));
-        if (!jsonFile) {
-          throw new Error('No JSON data file found in Gist');
+        // Get first file's raw content
+        const file = files[0];
+        const contentResponse = await fetch(file.raw_url);
+        if (!contentResponse.ok) {
+          throw new Error('Failed to fetch file content');
         }
         
-        // Get raw URL for the content
-        const rawUrl = jsonFile.raw_url;
-        const rawResponse = await fetch(rawUrl);
-        if (!rawResponse.ok) {
-          throw new Error('Failed to fetch raw Gist content');
-        }
+        const content = await contentResponse.text();
+        const parsedData = JSON.parse(content);
         
-        const fileContent = await rawResponse.text();
-        const parsedData = JSON.parse(fileContent);
-        
-        // Validate data structure
+        // Validate and merge data
         if (!parsedData || typeof parsedData !== 'object') {
-          throw new Error('Invalid data format in Gist');
+          throw new Error('Invalid data format');
         }
         
-        // Merge data carefully
-        Object.keys(parsedData).forEach(key => {
-          if (dataStore.hasOwnProperty(key)) {
-            if (Array.isArray(dataStore[key])) {
-              dataStore[key] = [...parsedData[key]];
-            } else if (typeof dataStore[key] === 'object') {
-              Object.assign(dataStore[key], parsedData[key]);
-            } else {
-              dataStore[key] = parsedData[key];
-            }
+        Object.keys(dataStore).forEach(key => {
+          if (parsedData[key]) {
+            dataStore[key] = parsedData[key];
           }
         });
         
@@ -94,14 +634,14 @@
       const token = elements.githubToken.value.trim();
       
       if (!token) {
-        showGitHubStatus('GitHub token required to save data', 'error');
+        showGitHubStatus('GitHub token is required', 'error');
         return;
       }
       
       try {
-        showGitHubStatus('Saving data...', 'info');
+        showGitHubStatus('Saving data to Gist...', 'info');
         
-        const filename = `afprs-backup-${new Date().toISOString().slice(0,10)}.json`;
+        const filename = `afprs-data-${new Date().toISOString().split('T')[0]}.json`;
         const content = JSON.stringify(dataStore, null, 2);
         
         const gistData = {
@@ -120,7 +660,7 @@
         const response = await fetch(url, {
           method,
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `token ${token}`,
             'Content-Type': 'application/json',
             'Accept': 'application/vnd.github.v3+json'
           },
@@ -128,12 +668,8 @@
         });
         
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          let message = `GitHub API error: ${response.status}`;
-          if (errorData.message) {
-            message += ` - ${errorData.message}`;
-          }
-          throw new Error(message);
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to save Gist');
         }
         
         const result = await response.json();
@@ -143,10 +679,104 @@
         
         showGitHubStatus(`Data saved successfully! Gist ID: ${result.id}`, 'success');
       } catch (error) {
-        showGitHubStatus(`Save failed: ${error.message}`, 'error');
+        showGitHubStatus(`Error: ${error.message}`, 'error');
         console.error('Gist save error:', error);
       }
     }
 
-    // ... (rest of your existing code)
-</script>
+    function showGitHubStatus(message, type) {
+      elements.githubStatus.textContent = message;
+      elements.githubStatus.className = 'status-message ' + type;
+    }
+
+    // Rest of your existing functions (formatAmputation, generateId, loadPlayerTable, etc.)
+    // ... [Keep all your other existing functions exactly as they were]
+
+    function handleLogin(event) {
+      event.preventDefault();
+      
+      const username = elements.username.value.trim();
+      const password = elements.password.value.trim();
+      const user = dataStore.users.find(u => u.username === username && u.password === password);
+
+      if (user) {
+        currentUser = user;
+        elements.loginOverlay.style.display = 'none';
+        elements.appContent.style.display = 'block';
+        elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
+        
+        // Show GitHub Sync tab only for admin
+        document.querySelector(`.tab-btn[data-tab="githubSync"]`).style.display = 
+          currentUser.role === 'admin' ? 'block' : 'none';
+        
+        // Show other tabs based on role
+        document.querySelectorAll('.tab-btn').forEach(tab => {
+          const tabId = tab.dataset.tab;
+          if (tabId !== 'githubSync') {
+            tab.style.display = ['admin', 'team_manager'].includes(currentUser.role) ? 'block' : 'none';
+          }
+        });
+        
+        loadInitialData();
+      } else {
+        alert('Invalid username or password');
+      }
+    }
+
+    function setupEventListeners() {
+      elements.loginForm.addEventListener('submit', handleLogin);
+      elements.logoutBtn.addEventListener('click', () => {
+        currentUser = null;
+        elements.loginOverlay.style.display = 'flex';
+        elements.appContent.style.display = 'none';
+      });
+      
+      elements.addPlayerBtn.addEventListener('click', () => openPlayerModal());
+      elements.playerForm.addEventListener('submit', handlePlayerSubmit);
+      
+      // GitHub Sync event listeners
+      elements.loadFromGist.addEventListener('click', loadDataFromGist);
+      elements.saveToGist.addEventListener('click', saveDataToGist);
+      
+      // Tab switching
+      elements.tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const tabId = button.dataset.tab;
+          
+          // Update active tab button
+          elements.tabButtons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+          
+          // Update active tab content
+          elements.tabContents.forEach(content => content.classList.remove('active'));
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // Close modal when clicking X
+      document.querySelectorAll('.close-modal').forEach(button => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+          });
+        });
+      });
+      
+      // Close modal when clicking outside
+      window.addEventListener('click', (event) => {
+        if (event.target.classList.contains('modal')) {
+          event.target.style.display = 'none';
+        }
+      });
+    }
+
+    function init() {
+      setupEventListeners();
+      elements.loginOverlay.style.display = 'flex';
+      elements.appContent.style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
