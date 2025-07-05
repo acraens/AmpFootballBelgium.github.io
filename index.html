@@ -207,10 +207,6 @@
       font-size: 12px;
     }
     /* GitHub Sync specific styles */
-    .github-sync-form {
-      max-width: 600px;
-      margin: 0 auto;
-    }
     .github-sync-form .form-group {
       margin-bottom: 15px;
     }
@@ -778,7 +774,7 @@
         elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
         
         // Show/hide tabs based on role
-        elements.tabButtons.forEach(tab => {
+        document.querySelectorAll('.tab-btn').forEach(tab => {
           const tabId = tab.dataset.tab;
           if (tabId === 'githubSync') {
             tab.style.display = currentUser.role === 'admin' ? 'block' : 'none';
@@ -811,21 +807,6 @@
       
       elements.addPlayerBtn.addEventListener('click', () => openPlayerModal());
       elements.playerForm.addEventListener('submit', handlePlayerSubmit);
-      
-      // Tab switching
-      elements.tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          const tabId = button.dataset.tab;
-          
-          // Update active tab button
-          elements.tabButtons.forEach(btn => btn.classList.remove('active'));
-          button.classList.add('active');
-          
-          // Update active tab content
-          elements.tabContents.forEach(content => content.classList.remove('active'));
-          document.getElementById(tabId).classList.add('active');
-        });
-      });
       
       // GitHub Sync event listeners
       elements.loadFromGist.addEventListener('click', loadDataFromGist);
