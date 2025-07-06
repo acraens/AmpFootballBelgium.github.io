@@ -558,6 +558,7 @@
             <input type="password" id="password" placeholder="Password" required>
           </div>
           <button type="submit">Login</button>
+          <div id="loginError" style="color: red; margin-top: 10px; display: none;"></div>
         </form>
       </div>
     </div>
@@ -1103,6 +1104,7 @@
       loginForm: document.getElementById('loginForm'),
       username: document.getElementById('username'),
       password: document.getElementById('password'),
+      loginError: document.getElementById('loginError'),
       appContent: document.getElementById('appContent'),
       welcomeHeader: document.getElementById('welcomeHeader'),
       logoutBtn: document.getElementById('logoutBtn'),
@@ -1324,6 +1326,15 @@
       const username = elements.username.value.trim();
       const password = elements.password.value.trim();
       
+      // Clear any previous error
+      elements.loginError.style.display = 'none';
+      
+      // Basic validation
+      if (!username || !password) {
+        showLoginError('Please enter both username and password');
+        return;
+      }
+      
       // Find user with matching credentials
       const user = dataStore.users.find(u => u.username === username && u.password === password);
 
@@ -1335,8 +1346,13 @@
         setupRoleBasedUI();
         loadInitialData();
       } else {
-        alert('Invalid username or password');
+        showLoginError('Invalid username or password');
       }
+    }
+
+    function showLoginError(message) {
+      elements.loginError.textContent = message;
+      elements.loginError.style.display = 'block';
     }
 
     // Handle logout
@@ -1346,6 +1362,7 @@
       elements.password.value = '';
       elements.loginOverlay.style.display = 'flex';
       elements.appContent.style.display = 'none';
+      elements.loginError.style.display = 'none';
     }
 
     // Set up UI based on user role
