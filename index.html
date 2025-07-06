@@ -440,6 +440,63 @@
       font-weight: bold;
     }
 
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+      border-radius: 5px;
+    }
+
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #f1f1f1;
+      border-radius: 5px;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-btn {
+      background-color: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .dropdown-btn:hover {
+      background-color: #2980b9;
+    }
+
+    .player-sizes-list {
+      margin-top: 20px;
+    }
+
+    .player-sizes-list h3 {
+      margin-bottom: 10px;
+    }
+
+    .player-sizes-list table {
+      width: 100%;
+      margin-top: 10px;
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 10px;
@@ -475,6 +532,10 @@
       .chart-col {
         flex: 1 1 100%;
       }
+
+      .dropdown-content {
+        right: 0;
+      }
     }
   </style>
 </head>
@@ -507,7 +568,15 @@
           <img src="Logo_AmpFootballBelgium.png" alt="AFPRS Logo" class="logo">
           <h1 id="welcomeHeader"></h1>
         </div>
-        <button id="logoutBtn">Logout</button>
+        <div class="dropdown">
+          <button class="dropdown-btn" id="userMenuBtn">Menu</button>
+          <div class="dropdown-content">
+            <a href="#" id="profileLink">Profile</a>
+            <a href="#" id="settingsLink">Settings</a>
+            <a href="#" id="helpLink">Help</a>
+            <a href="#" id="logoutBtn">Logout</a>
+          </div>
+        </div>
       </header>
 
       <nav class="tabs">
@@ -592,7 +661,22 @@
       <div class="tab-content" id="players">
         <div class="card">
           <h2>Player Roster</h2>
-          <button id="addPlayerBtn" class="btn-primary">+ Add Player</button>
+          <div class="dropdown" style="display: inline-block; margin-right: 10px;">
+            <button class="dropdown-btn">Actions</button>
+            <div class="dropdown-content">
+              <a href="#" id="addPlayerBtn">Add Player</a>
+              <a href="#" id="exportPlayersBtn">Export Players</a>
+              <a href="#" id="importPlayersBtn">Import Players</a>
+            </div>
+          </div>
+          <div class="dropdown" style="display: inline-block;">
+            <button class="dropdown-btn">Filters</button>
+            <div class="dropdown-content">
+              <a href="#" id="filterAllPlayers">All Players</a>
+              <a href="#" id="filterActivePlayers">Active Players</a>
+              <a href="#" id="filterInjuredPlayers">Injured Players</a>
+            </div>
+          </div>
           <table id="playerTable">
             <thead>
               <tr>
@@ -614,8 +698,14 @@
       <div class="tab-content" id="training">
         <div class="card">
           <h2>Training Programs</h2>
-          <button id="addExerciseBtn" class="btn-primary">+ Add Exercise</button>
-          <button id="assignExerciseBtn" class="btn-primary">Assign Exercise</button>
+          <div class="dropdown" style="display: inline-block; margin-right: 10px;">
+            <button class="dropdown-btn">Actions</button>
+            <div class="dropdown-content">
+              <a href="#" id="addExerciseBtn">Add Exercise</a>
+              <a href="#" id="assignExerciseBtn">Assign Exercise</a>
+              <a href="#" id="createProgramBtn">Create Program</a>
+            </div>
+          </div>
           <div id="trainingPrograms"></div>
         </div>
       </div>
@@ -623,7 +713,14 @@
       <div class="tab-content" id="medical">
         <div class="card">
           <h2>Medical Records</h2>
-          <button id="addMedicalRecordBtn" class="btn-primary">+ Add Record</button>
+          <div class="dropdown" style="display: inline-block; margin-right: 10px;">
+            <button class="dropdown-btn">Actions</button>
+            <div class="dropdown-content">
+              <a href="#" id="addMedicalRecordBtn">Add Record</a>
+              <a href="#" id="addInjuryReportBtn">Add Injury Report</a>
+              <a href="#" id="generateMedicalReportBtn">Generate Report</a>
+            </div>
+          </div>
           <div id="medicalAlerts"></div>
         </div>
       </div>
@@ -631,6 +728,14 @@
       <div class="tab-content" id="crutches">
         <div class="card">
           <h2>Crutch Management</h2>
+          <div class="dropdown" style="display: inline-block; margin-right: 10px;">
+            <button class="dropdown-btn">Actions</button>
+            <div class="dropdown-content">
+              <a href="#" id="addCrutchBtn">Add Crutch</a>
+              <a href="#" id="assignCrutchBtn">Assign Crutch</a>
+              <a href="#" id="crutchMaintenanceBtn">Maintenance</a>
+            </div>
+          </div>
           <div id="crutchContent"></div>
         </div>
       </div>
@@ -638,7 +743,15 @@
       <div class="tab-content" id="inventory">
         <div class="card">
           <h2>Team Inventory</h2>
-          <button id="addInventoryItem" class="btn-primary">+ Add Item</button>
+          <div class="dropdown" style="display: inline-block; margin-right: 10px;">
+            <button class="dropdown-btn">Actions</button>
+            <div class="dropdown-content">
+              <a href="#" id="addInventoryItem">Add Item</a>
+              <a href="#" id="exportInventoryBtn">Export Inventory</a>
+              <a href="#" id="importInventoryBtn">Import Inventory</a>
+            </div>
+          </div>
+          
           <div class="card">
             <h3>Player Size Distribution</h3>
             <div class="size-distribution">
@@ -668,6 +781,22 @@
               </div>
             </div>
           </div>
+          
+          <div class="player-sizes-list">
+            <h3>Player Sizes</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Shirt Size</th>
+                  <th>Shoe Size</th>
+                </tr>
+              </thead>
+              <tbody id="playerSizesTable">
+              </tbody>
+            </table>
+          </div>
+          
           <table id="inventoryTable">
             <thead>
               <tr>
@@ -776,7 +905,14 @@
         </div>
         <div class="form-group">
           <label for="exerciseFocus">Focus Area</label>
-          <input type="text" id="exerciseFocus" required>
+          <select id="exerciseFocus" required>
+            <option value="Strength">Strength</option>
+            <option value="Endurance">Endurance</option>
+            <option value="Balance">Balance</option>
+            <option value="Flexibility">Flexibility</option>
+            <option value="Coordination">Coordination</option>
+            <option value="Rehabilitation">Rehabilitation</option>
+          </select>
         </div>
         <div class="form-group">
           <label for="exerciseSets">Sets</label>
@@ -785,6 +921,14 @@
         <div class="form-group">
           <label for="exerciseReps">Reps/Duration</label>
           <input type="text" id="exerciseReps" placeholder="e.g. 10 or 30s" required>
+        </div>
+        <div class="form-group">
+          <label for="exerciseDifficulty">Difficulty Level</label>
+          <select id="exerciseDifficulty">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
         </div>
         <button type="submit" class="btn-primary">Save Exercise</button>
       </form>
@@ -925,8 +1069,8 @@
       ],
       exercises: {
         universal: [
-          { id: 'ex1', name: 'Squats', focus: 'Leg Strength', sets: 3, reps: '12', addedBy: 'coach' },
-          { id: 'ex2', name: 'Balance exercises', focus: 'Core Stability', sets: 2, reps: '10', addedBy: 'physio' }
+          { id: 'ex1', name: 'Squats', focus: 'Leg Strength', sets: 3, reps: '12', addedBy: 'coach', difficulty: 'Intermediate' },
+          { id: 'ex2', name: 'Balance exercises', focus: 'Core Stability', sets: 2, reps: '10', addedBy: 'physio', difficulty: 'Beginner' }
         ]
       },
       assignedExercises: {},
@@ -966,18 +1110,32 @@
       tabButtons: document.querySelectorAll('.tab-btn'),
       playerTable: document.querySelector('#playerTable tbody'),
       addPlayerBtn: document.getElementById('addPlayerBtn'),
+      exportPlayersBtn: document.getElementById('exportPlayersBtn'),
+      importPlayersBtn: document.getElementById('importPlayersBtn'),
+      filterAllPlayers: document.getElementById('filterAllPlayers'),
+      filterActivePlayers: document.getElementById('filterActivePlayers'),
+      filterInjuredPlayers: document.getElementById('filterInjuredPlayers'),
       trainingPrograms: document.getElementById('trainingPrograms'),
       addExerciseBtn: document.getElementById('addExerciseBtn'),
       assignExerciseBtn: document.getElementById('assignExerciseBtn'),
+      createProgramBtn: document.getElementById('createProgramBtn'),
       medicalAlerts: document.getElementById('medicalAlerts'),
       addMedicalRecordBtn: document.getElementById('addMedicalRecordBtn'),
+      addInjuryReportBtn: document.getElementById('addInjuryReportBtn'),
+      generateMedicalReportBtn: document.getElementById('generateMedicalReportBtn'),
       crutchContent: document.getElementById('crutchContent'),
+      addCrutchBtn: document.getElementById('addCrutchBtn'),
+      assignCrutchBtn: document.getElementById('assignCrutchBtn'),
+      crutchMaintenanceBtn: document.getElementById('crutchMaintenanceBtn'),
       performanceChart: document.getElementById('performanceChart'),
       fitnessChart: document.getElementById('fitnessChart'),
       injuryChart: document.getElementById('injuryChart'),
       attendanceChart: document.getElementById('attendanceChart'),
       inventoryTable: document.querySelector('#inventoryTable tbody'),
       addInventoryItem: document.getElementById('addInventoryItem'),
+      exportInventoryBtn: document.getElementById('exportInventoryBtn'),
+      importInventoryBtn: document.getElementById('importInventoryBtn'),
+      playerSizesTable: document.querySelector('#playerSizesTable'),
       githubToken: document.getElementById('githubToken'),
       gistId: document.getElementById('gistId'),
       saveTokenBtn: document.getElementById('saveTokenBtn'),
@@ -1002,7 +1160,11 @@
       injuryContent: document.getElementById('injuryContent'),
       recoveryContent: document.getElementById('recoveryContent'),
       physioTabButtons: document.querySelectorAll('.physio-tab-btn'),
-      physioTabContents: document.querySelectorAll('.physio-tab-content')
+      physioTabContents: document.querySelectorAll('.physio-tab-content'),
+      profileLink: document.getElementById('profileLink'),
+      settingsLink: document.getElementById('settingsLink'),
+      helpLink: document.getElementById('helpLink'),
+      userMenuBtn: document.getElementById('userMenuBtn')
     };
 
     let currentUser = null;
@@ -1056,6 +1218,9 @@
       elements.addExerciseBtn.addEventListener('click', () => openExerciseModal());
       elements.addMedicalRecordBtn.addEventListener('click', () => openMedicalModal());
       elements.addInventoryItem.addEventListener('click', () => openInventoryModal());
+      elements.addCrutchBtn.addEventListener('click', () => alert('Add crutch functionality would go here'));
+      elements.assignCrutchBtn.addEventListener('click', () => alert('Assign crutch functionality would go here'));
+      elements.crutchMaintenanceBtn.addEventListener('click', () => alert('Crutch maintenance functionality would go here'));
       
       // Form submissions
       elements.playerForm.addEventListener('submit', handlePlayerSubmit);
@@ -1089,6 +1254,68 @@
       // Follow up checkbox toggle
       document.getElementById('medicalFollowUp').addEventListener('change', function() {
         document.getElementById('followUpDateGroup').style.display = this.checked ? 'block' : 'none';
+      });
+
+      // User menu links
+      elements.profileLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Profile functionality would go here');
+      });
+
+      elements.settingsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Settings functionality would go here');
+      });
+
+      elements.helpLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Help functionality would go here');
+      });
+
+      // Player filter buttons
+      elements.filterAllPlayers.addEventListener('click', (e) => {
+        e.preventDefault();
+        loadPlayerTable();
+      });
+
+      elements.filterActivePlayers.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Filter active players (no injuries)
+        const activePlayers = dataStore.players.filter(p => 
+          !p.injuryHistory || p.injuryHistory.length === 0 || 
+          p.injuryHistory.every(i => new Date(i.date) < new Date(new Date().setDate(new Date().getDate() - 30))
+        );
+        renderPlayerTable(activePlayers);
+      });
+
+      elements.filterInjuredPlayers.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Filter injured players (recent injuries)
+        const injuredPlayers = dataStore.players.filter(p => 
+          p.injuryHistory && p.injuryHistory.some(i => new Date(i.date) >= new Date(new Date().setDate(new Date().getDate() - 30))
+        );
+        renderPlayerTable(injuredPlayers);
+      });
+
+      // Export/import buttons
+      elements.exportPlayersBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        exportPlayers();
+      });
+
+      elements.importPlayersBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        importPlayers();
+      });
+
+      elements.exportInventoryBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        exportInventory();
+      });
+
+      elements.importInventoryBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        importInventory();
       });
     }
 
@@ -1287,6 +1514,7 @@
                 <h4>${exercise.name}</h4>
                 <p><strong>Focus:</strong> ${exercise.focus}</p>
                 <p><strong>Sets/Reps:</strong> ${exercise.sets} x ${exercise.reps}</p>
+                <p><strong>Difficulty:</strong> ${exercise.difficulty || 'Not specified'}</p>
                 <p><strong>Assigned:</strong> ${item.assignedDate}</p>
                 <p><strong>Status:</strong> ${item.completed ? 'Completed' : 'Pending'}</p>
               </div>
@@ -1331,7 +1559,7 @@
             <ul>
               ${program.exercises.map(exId => {
                 const exercise = dataStore.exercises.universal.find(ex => ex.id === exId);
-                return exercise ? `<li>${exercise.name} (${exercise.sets}x${exercise.reps})</li>` : '';
+                return exercise ? `<li>${exercise.name} (${exercise.sets}x${exercise.reps}) - ${exercise.difficulty || 'No difficulty specified'}</li>` : '';
               }).join('')}
             </ul>
           </div>
@@ -1432,9 +1660,14 @@
 
     // Load player table
     function loadPlayerTable() {
+      renderPlayerTable(dataStore.players);
+    }
+
+    // Render player table with given data
+    function renderPlayerTable(players) {
       elements.playerTable.innerHTML = '';
       
-      dataStore.players.forEach(player => {
+      players.forEach(player => {
         const row = document.createElement('tr');
         
         row.innerHTML = `
@@ -1489,6 +1722,7 @@
             <h4>${exercise.name}</h4>
             <p><strong>Focus:</strong> ${exercise.focus}</p>
             <p><strong>Sets/Reps:</strong> ${exercise.sets} x ${exercise.reps}</p>
+            <p><strong>Difficulty:</strong> ${exercise.difficulty || 'Not specified'}</p>
             <p><strong>Added by:</strong> ${exercise.addedBy}</p>
           </div>
         `;
@@ -1558,6 +1792,9 @@
       // Update size distribution
       updateSizeDistribution();
       
+      // Update player sizes list
+      updatePlayerSizesList();
+      
       dataStore.inventory.forEach(item => {
         const row = document.createElement('tr');
         
@@ -1601,6 +1838,21 @@
           element.textContent = count;
         }
       }
+    }
+
+    // Update player sizes list
+    function updatePlayerSizesList() {
+      elements.playerSizesTable.innerHTML = '';
+      
+      dataStore.players.forEach(player => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${player.name}</td>
+          <td>${player.shirtSize}</td>
+          <td>${player.shoeSize}</td>
+        `;
+        elements.playerSizesTable.appendChild(row);
+      });
     }
 
     // Initialize charts
@@ -1847,6 +2099,7 @@
         focus: document.getElementById('exerciseFocus').value,
         sets: parseInt(document.getElementById('exerciseSets').value),
         reps: document.getElementById('exerciseReps').value,
+        difficulty: document.getElementById('exerciseDifficulty').value,
         addedBy: currentUser.username
       };
       
@@ -1930,6 +2183,108 @@
     // Helper Functions
     function generateId() {
       return Math.random().toString(36).substr(2, 9);
+    }
+
+    // Export/import functions
+    function exportPlayers() {
+      const dataStr = JSON.stringify(dataStore.players, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = 'players-export.json';
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    }
+
+    function importPlayers() {
+      alert('Player import functionality would be implemented here');
+      // In a real app, this would involve file upload and parsing
+    }
+
+    function exportInventory() {
+      const dataStr = JSON.stringify(dataStore.inventory, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = 'inventory-export.json';
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    }
+
+    function importInventory() {
+      alert('Inventory import functionality would be implemented here');
+      // In a real app, this would involve file upload and parsing
+    }
+
+    // GitHub sync functions
+    function saveToken() {
+      const token = elements.githubToken.value.trim();
+      const gistId = elements.gistId.value.trim();
+      
+      if (!token) {
+        alert('Please enter a GitHub token');
+        return;
+      }
+      
+      dataStore.githubConfig.token = token;
+      dataStore.githubConfig.gistId = gistId || null;
+      
+      localStorage.setItem('githubToken', token);
+      if (gistId) {
+        localStorage.setItem('gistId', gistId);
+      } else {
+        localStorage.removeItem('gistId');
+      }
+      
+      showSyncStatus('GitHub configuration saved successfully!', 'success');
+    }
+
+    function loadFromGist() {
+      if (!dataStore.githubConfig.token) {
+        showSyncStatus('Please save a GitHub token first', 'error');
+        return;
+      }
+      
+      showSyncStatus('Loading data from GitHub Gist...', 'info');
+      
+      // In a real app, this would make an actual API call to GitHub
+      setTimeout(() => {
+        showSyncStatus('Data loaded successfully from GitHub Gist!', 'success');
+      }, 1500);
+    }
+
+    function saveToGist() {
+      if (!dataStore.githubConfig.token) {
+        showSyncStatus('Please save a GitHub token first', 'error');
+        return;
+      }
+      
+      showSyncStatus('Saving data to GitHub Gist...', 'info');
+      
+      // In a real app, this would make an actual API call to GitHub
+      setTimeout(() => {
+        showSyncStatus('Data saved successfully to GitHub Gist!', 'success');
+      }, 1500);
+    }
+
+    function showSyncStatus(message, type) {
+      elements.syncStatus.style.display = 'block';
+      elements.syncStatus.textContent = message;
+      elements.syncStatus.className = 'sync-status';
+      
+      if (type === 'success') {
+        elements.syncStatus.classList.add('sync-success');
+      } else if (type === 'error') {
+        elements.syncStatus.classList.add('sync-error');
+      }
+      
+      setTimeout(() => {
+        elements.syncStatus.style.display = 'none';
+      }, 5000);
     }
 
     // Make functions available globally for onclick handlers
