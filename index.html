@@ -2199,8 +2199,35 @@
     }
 
     function importPlayers() {
-      alert('Player import functionality would be implemented here');
-      // In a real app, this would involve file upload and parsing
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = '.json';
+      
+      fileInput.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = event => {
+          try {
+            const importedData = JSON.parse(event.target.result);
+            if (Array.isArray(importedData)) {
+              dataStore.players = importedData;
+              loadPlayerTable();
+              refreshDashboard();
+              loadInventoryManagement();
+              showSyncStatus('Players imported successfully!', 'success');
+            } else {
+              showSyncStatus('Invalid player data format', 'error');
+            }
+          } catch (error) {
+            showSyncStatus('Error parsing JSON file', 'error');
+          }
+        };
+        
+        reader.readAsText(file);
+      };
+      
+      fileInput.click();
     }
 
     function exportInventory() {
@@ -2216,8 +2243,33 @@
     }
 
     function importInventory() {
-      alert('Inventory import functionality would be implemented here');
-      // In a real app, this would involve file upload and parsing
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = '.json';
+      
+      fileInput.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = event => {
+          try {
+            const importedData = JSON.parse(event.target.result);
+            if (Array.isArray(importedData)) {
+              dataStore.inventory = importedData;
+              loadInventoryManagement();
+              showSyncStatus('Inventory imported successfully!', 'success');
+            } else {
+              showSyncStatus('Invalid inventory data format', 'error');
+            }
+          } catch (error) {
+            showSyncStatus('Error parsing JSON file', 'error');
+          }
+        };
+        
+        reader.readAsText(file);
+      };
+      
+      fileInput.click();
     }
 
     // GitHub sync functions
@@ -2226,7 +2278,7 @@
       const gistId = elements.gistId.value.trim();
       
       if (!token) {
-        alert('Please enter a GitHub token');
+        showSyncStatus('Please enter a GitHub token', 'error');
         return;
       }
       
@@ -2243,21 +2295,57 @@
       showSyncStatus('GitHub configuration saved successfully!', 'success');
     }
 
-    function loadFromGist() {
+    async function loadFromGist() {
       if (!dataStore.githubConfig.token) {
         showSyncStatus('Please save a GitHub token first', 'error');
         return;
       }
       
+      const gistId = dataStore.githubConfig.gistId;
+      if (!gistId) {
+        showSyncStatus('Please enter a Gist ID to load from', 'error');
+        return;
+      }
+      
       showSyncStatus('Loading data from GitHub Gist...', 'info');
       
-      // In a real app, this would make an actual API call to GitHub
-      setTimeout(() => {
+      try {
+        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+          headers: {
+            'Authorization': `token ${dataStore.githubConfig.token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`GitHub API error: ${response.status}`);
+        }
+        
+        const gistData = await response.json();
+        const dataFile = Object.values(gistData.files)[0];
+        
+        if (!dataFile) {
+          throw new Error('No data file found in Gist');
+        }
+        
+        const loadedData = JSON.parse(dataFile.content);
+        
+        // Merge loaded data with existing data store
+        Object.keys(loadedData).forEach(key => {
+          if (dataStore.hasOwnProperty(key)) {
+            dataStore[key] = loadedData[key];
+          }
+        });
+        
         showSyncStatus('Data loaded successfully from GitHub Gist!', 'success');
-      }, 1500);
+        loadInitialData(); // Refresh the UI with new data
+      } catch (error) {
+        console.error('Error loading from Gist:', error);
+        showSyncStatus(`Error loading data: ${error.message}`, 'error');
+      }
     }
 
-    function saveToGist() {
+    async function saveToGist() {
       if (!dataStore.githubConfig.token) {
         showSyncStatus('Please save a GitHub token first', 'error');
         return;
@@ -2265,10 +2353,60 @@
       
       showSyncStatus('Saving data to GitHub Gist...', 'info');
       
-      // In a real app, this would make an actual API call to GitHub
-      setTimeout(() => {
+      try {
+        const gistData = {
+          description: 'AFPRS Data Backup',
+          public: false,
+          files: {
+            'afprs-data.json': {
+              content: JSON.stringify(dataStore, null, 2)
+            }
+          }
+        };
+        
+        let response;
+        if (dataStore.githubConfig.gistId) {
+          // Update existing gist
+          response = await fetch(`https://api.github.com/gists/${dataStore.githubConfig.gistId}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `token ${dataStore.githubConfig.token}`,
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(gistData)
+          });
+        } else {
+          // Create new gist
+          response = await fetch('https://api.github.com/gists', {
+            method: 'POST',
+            headers: {
+              'Authorization': `token ${dataStore.githubConfig.token}`,
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(gistData)
+          });
+        }
+        
+        if (!response.ok) {
+          throw new Error(`GitHub API error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        // Save the new gist ID if this was a new gist
+        if (!dataStore.githubConfig.gistId) {
+          dataStore.githubConfig.gistId = result.id;
+          localStorage.setItem('gistId', result.id);
+          elements.gistId.value = result.id;
+        }
+        
         showSyncStatus('Data saved successfully to GitHub Gist!', 'success');
-      }, 1500);
+      } catch (error) {
+        console.error('Error saving to Gist:', error);
+        showSyncStatus(`Error saving data: ${error.message}`, 'error');
+      }
     }
 
     function showSyncStatus(message, type) {
