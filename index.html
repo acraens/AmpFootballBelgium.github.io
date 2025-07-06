@@ -2478,6 +2478,12 @@
 <script>
   window.addEventListener('DOMContentLoaded', () => {
     init();
+
+    // Ensure login form submission is handled correctly
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      handleLogin();
+    });
   });
 </script>
 
