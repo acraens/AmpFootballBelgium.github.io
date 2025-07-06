@@ -526,11 +526,127 @@
         { username: 'gk1', password: 'player123', role: 'player', name: 'Carlos Mendez' },
         { username: 'def1', password: 'player123', role: 'player', name: 'James Wilson' }
       ],
-      players: [],
-      exercises: {},
-      medicalRecords: [],
-      crutches: [],
-      inventory: []
+      players: [
+        {
+          id: 'p1',
+          name: 'Carlos Mendez',
+          position: 'Goalkeeper',
+          amputation: 'left_arm',
+          crutchType: null,
+          height: 185,
+          weight: 82,
+          joinDate: '2022-01-15',
+          dominantSide: 'right',
+          fitnessLevel: 88,
+          recoveryScore: 7
+        },
+        {
+          id: 'p2',
+          name: 'James Wilson',
+          position: 'Defender',
+          amputation: 'right_leg',
+          crutchType: 'forearm',
+          height: 178,
+          weight: 75,
+          joinDate: '2022-03-10',
+          dominantSide: 'left',
+          fitnessLevel: 85,
+          recoveryScore: 6
+        }
+      ],
+      exercises: {
+        Goalkeeper: [
+          {
+            id: 'ex-gk1',
+            name: 'Reaction Drill',
+            focus: 'Hand-eye coordination',
+            sets: 3,
+            reps: 10,
+            difficulty: 'intermediate',
+            equipment: ['Reaction ball', 'Cones'],
+            notes: 'Focus on quick movements and hand positioning',
+            performanceMetrics: {
+              'Reaction Time': '< 0.5s',
+              'Accuracy': '80% success rate'
+            },
+            addedBy: 'headcoach'
+          }
+        ],
+        Defender: [
+          {
+            id: 'ex-def1',
+            name: 'Positioning Drill',
+            focus: 'Defensive positioning',
+            sets: 4,
+            reps: 8,
+            difficulty: 'beginner',
+            equipment: ['Cones', 'Pinnies'],
+            notes: 'Focus on maintaining defensive shape',
+            performanceMetrics: {
+              'Positioning Accuracy': '90% success rate',
+              'Recovery Speed': '< 3s'
+            },
+            addedBy: 'headcoach'
+          }
+        ],
+        universal: [
+          {
+            id: 'ex-uni1',
+            name: 'Core Strength',
+            focus: 'Core stability',
+            sets: 3,
+            reps: 12,
+            difficulty: 'beginner',
+            equipment: ['Mat'],
+            notes: 'Important for balance and stability',
+            performanceMetrics: {
+              'Hold Time': '30s minimum'
+            },
+            addedBy: 'physio'
+          }
+        ]
+      },
+      medicalRecords: [
+        {
+          playerId: 'p1',
+          date: '2023-05-10',
+          type: 'checkup',
+          notes: 'Routine medical check - all clear',
+          practitioner: 'Dr. Smith'
+        },
+        {
+          playerId: 'p2',
+          date: '2023-05-12',
+          type: 'injury',
+          notes: 'Minor ankle sprain - recommended rest for 3 days',
+          practitioner: 'Dr. Johnson'
+        }
+      ],
+      crutches: [
+        {
+          id: 'cr1',
+          type: 'forearm',
+          size: 'medium',
+          assignedTo: 'p2',
+          lastMaintenance: '2023-04-15'
+        }
+      ],
+      inventory: [
+        {
+          id: 'inv1',
+          name: 'Training Cones',
+          category: 'training',
+          quantity: 50,
+          lastRestock: '2023-05-01'
+        },
+        {
+          id: 'inv2',
+          name: 'First Aid Kit',
+          category: 'medical',
+          quantity: 3,
+          lastRestock: '2023-04-20'
+        }
+      ]
     };
 
     // DOM Elements
@@ -716,19 +832,6 @@
         filteredPlayers = filteredPlayers.filter(p => p.amputation === amputationFilter);
       }
       
-      if (filteredPlayers.length === 0) {
-        elements.playerTable.innerHTML = `
-          <tr>
-            <td colspan="7" class="empty-state">
-              <div>No players found</div>
-              ${currentUser?.role === 'admin' ? 
-                '<p>Please load data from GitHub Gist or add players manually</p>' : 
-                '<p>Please contact your administrator</p>'}
-            </td>
-          </tr>`;
-        return;
-      }
-      
       elements.playerTable.innerHTML = filteredPlayers.map(player => `
         <tr>
           <td>${player.name}</td>
@@ -770,17 +873,6 @@
 
     function loadTrainingContent() {
       if (!elements.trainingContent) return;
-      
-      if (!dataStore.exercises || Object.keys(dataStore.exercises).length === 0) {
-        elements.trainingContent.innerHTML = `
-          <div class="empty-state">
-            <div>No training data available</div>
-            ${currentUser?.role === 'admin' ? 
-              '<p>Please load data from GitHub Gist</p>' : 
-              '<p>Please contact your administrator</p>'}
-          </div>`;
-        return;
-      }
       
       let content = '<h3>Training Programs</h3>';
       
@@ -829,17 +921,6 @@
     function loadMedicalContent() {
       if (!elements.medicalContent) return;
       
-      if (dataStore.medicalRecords.length === 0) {
-        elements.medicalContent.innerHTML = `
-          <div class="empty-state">
-            <div>No medical records available</div>
-            ${currentUser?.role === 'admin' ? 
-              '<p>Please load data from GitHub Gist</p>' : 
-              '<p>Please contact your administrator</p>'}
-          </div>`;
-        return;
-      }
-      
       let content = '<div class="filter-group">';
       content += '<select id="medicalPlayerFilter"><option value="all">All Players</option>';
       
@@ -885,17 +966,6 @@
     function loadCrutchesContent() {
       if (!elements.crutchesContent) return;
       
-      if (dataStore.crutches.length === 0) {
-        elements.crutchesContent.innerHTML = `
-          <div class="empty-state">
-            <div>No crutch data available</div>
-            ${currentUser?.role === 'admin' ? 
-              '<p>Please load data from GitHub Gist</p>' : 
-              '<p>Please contact your administrator</p>'}
-          </div>`;
-        return;
-      }
-      
       let content = '<table class="crutches-table"><thead><tr>';
       content += '<th>Type</th><th>Size</th><th>Assigned To</th><th>Last Maintenance</th>';
       content += '</tr></thead><tbody>';
@@ -919,17 +989,6 @@
     function loadInventoryContent() {
       if (!elements.inventoryContent) return;
       
-      if (dataStore.inventory.length === 0) {
-        elements.inventoryContent.innerHTML = `
-          <div class="empty-state">
-            <div>No inventory data available</div>
-            ${currentUser?.role === 'admin' ? 
-              '<p>Please load data from GitHub Gist</p>' : 
-              '<p>Please contact your administrator</p>'}
-          </div>`;
-        return;
-      }
-      
       let content = '<table class="inventory-table"><thead><tr>';
       content += '<th>Item</th><th>Category</th><th>Quantity</th><th>Last Restock</th>';
       content += '</tr></thead><tbody>';
@@ -950,25 +1009,11 @@
     function loadUsersContent() {
       if (!elements.usersContent) return;
       
-      if (dataStore.users.length <= 6) { // Only showing demo users
-        elements.usersContent.innerHTML = `
-          <div class="empty-state">
-            <div>No user data available</div>
-            ${currentUser?.role === 'admin' ? 
-              '<p>Please load data from GitHub Gist</p>' : 
-              '<p>Please contact your administrator</p>'}
-          </div>`;
-        return;
-      }
-      
       let content = '<table class="users-table"><thead><tr>';
       content += '<th>Username</th><th>Name</th><th>Role</th>';
       content += '</tr></thead><tbody>';
       
-      // Skip demo users
-      const realUsers = dataStore.users.filter(u => !['admin', 'manager', 'headcoach', 'physio', 'gk1', 'def1'].includes(u.username));
-      
-      content += realUsers.map(user => `
+      content += dataStore.users.map(user => `
         <tr>
           <td>${user.username}</td>
           <td>${user.name}</td>
@@ -1000,17 +1045,6 @@
       
       if (playerFilter !== 'all') {
         playersToShow = playersToShow.filter(p => p.id === playerFilter);
-      }
-      
-      if (playersToShow.length === 0) {
-        elements.performanceChart.parentElement.innerHTML = `
-          <div class="empty-state">
-            <div>No player data available</div>
-            ${currentUser?.role === 'admin' ? 
-              '<p>Please load data from GitHub Gist or add players</p>' : 
-              '<p>Please contact your administrator</p>'}
-          </div>`;
-        return;
       }
       
       performanceChartInstance = new Chart(ctx, {
