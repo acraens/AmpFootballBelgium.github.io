@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AFPRS - Amputee Football</title>
+  <title>AFPRS - Login</title>
   <style>
     :root {
       --primary: #3498db;
@@ -72,8 +72,7 @@
       margin-bottom: 5px;
       font-weight: bold;
     }
-    .form-group input,
-    .form-group select {
+    .form-group input {
       width: 100%;
       padding: 12px;
       border: 1px solid #ddd;
@@ -136,18 +135,35 @@
       padding: 10px;
       border-radius: 4px;
     }
-    .status-message.error {
+    .error {
       background-color: #f8d7da;
       color: #721c24;
     }
-    .status-message.success {
+    .success {
       background-color: #d4edda;
       color: #155724;
+    }
+    #dashboard {
+      display: none;
+    }
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .dashboard-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Login Section -->
     <div id="loginOverlay">
       <div class="login-header">
         <img src="Logo_AmpFootballBelgium.png" alt="AFPRS Logo" class="login-logo">
@@ -181,6 +197,7 @@
       </div>
     </div>
 
+    <!-- Password Recovery Section -->
     <div id="recoveryOverlay">
       <div class="recovery-box">
         <h2>Password Recovery</h2>
@@ -197,91 +214,129 @@
         <button id="closeRecovery" style="margin-top:15px;background:var(--danger)">Close</button>
       </div>
     </div>
+
+    <!-- Dashboard Section (shown after login) -->
+    <div id="dashboard">
+      <div class="dashboard-header">
+        <h1>Welcome to AFPRS Dashboard</h1>
+        <button id="logoutBtn" style="width: auto; padding: 8px 15px;">Logout</button>
+      </div>
+      <div class="dashboard-card">
+        <h2>Player Management</h2>
+        <p>You have successfully logged in to the Amputee Football Player Registry System.</p>
+      </div>
+    </div>
   </div>
 
   <script>
+    // User database
     const users = [
-      { username: 'admin', password: 'admin123', role: 'admin', name: 'System Admin', email: 'admin@example.com' },
-      { username: 'manager', password: 'manager123', role: 'team_manager', name: 'John Smith', email: 'manager@example.com' },
-      { username: 'headcoach', password: 'coach123', role: 'head_coach', name: 'Emma Johnson', email: 'coach@example.com' },
-      { username: 'physio', password: 'physio123', role: 'physio', name: 'Michael Brown', email: 'physio@example.com' },
-      { username: 'gk1', password: 'player123', role: 'player', name: 'Carlos Mendez', email: 'gk1@example.com' },
-      { username: 'def1', password: 'player123', role: 'player', name: 'James Wilson', email: 'def1@example.com' }
+      { username: 'admin', password: 'admin123', name: 'System Administrator', role: 'admin' },
+      { username: 'manager', password: 'manager123', name: 'Team Manager', role: 'manager' },
+      { username: 'headcoach', password: 'coach123', name: 'Head Coach', role: 'coach' },
+      { username: 'physio', password: 'physio123', name: 'Physiotherapist', role: 'physio' },
+      { username: 'gk1', password: 'player123', name: 'Goalkeeper 1', role: 'player' },
+      { username: 'def1', password: 'player123', name: 'Defender 1', role: 'player' }
     ];
 
-    document.addEventListener('DOMContentLoaded', function() {
-      const loginForm = document.getElementById('loginForm');
-      const usernameInput = document.getElementById('username');
-      const passwordInput = document.getElementById('password');
-      const loginButton = document.getElementById('loginButton');
-      const forgotPassword = document.getElementById('forgotPassword');
-      const recoveryOverlay = document.getElementById('recoveryOverlay');
-      const recoveryUsername = document.getElementById('recoveryUsername');
-      const recoveryEmail = document.getElementById('recoveryEmail');
-      const submitRecovery = document.getElementById('submitRecovery');
-      const recoveryStatus = document.getElementById('recoveryStatus');
-      const closeRecovery = document.getElementById('closeRecovery');
+    // DOM Elements
+    const loginOverlay = document.getElementById('loginOverlay');
+    const loginForm = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginButton = document.getElementById('loginButton');
+    const forgotPassword = document.getElementById('forgotPassword');
+    const recoveryOverlay = document.getElementById('recoveryOverlay');
+    const recoveryUsername = document.getElementById('recoveryUsername');
+    const recoveryEmail = document.getElementById('recoveryEmail');
+    const submitRecovery = document.getElementById('submitRecovery');
+    const recoveryStatus = document.getElementById('recoveryStatus');
+    const closeRecovery = document.getElementById('closeRecovery');
+    const dashboard = document.getElementById('dashboard');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-      loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value.trim();
-
-        loginButton.disabled = true;
-        loginButton.textContent = 'Logging in...';
-
-        setTimeout(() => {
-          const user = users.find(u => u.username === username && u.password === password);
-
-          if (user) {
-            alert(`Login successful! Welcome ${user.name}`);
-            window.location.href = 'dashboard.html';
-          } else {
-            alert('Invalid username or password');
-            loginButton.disabled = false;
-            loginButton.textContent = 'Login';
-          }
-        }, 500);
-      });
-
-      forgotPassword.addEventListener('click', function() {
-        recoveryOverlay.style.display = 'flex';
-      });
-
-      submitRecovery.addEventListener('click', function() {
-        const username = recoveryUsername.value.trim();
-        const email = recoveryEmail.value.trim();
-
-        if (!username || !email) {
-          recoveryStatus.textContent = 'Please enter both username and email';
-          recoveryStatus.className = 'status-message error';
-          return;
-        }
-
-        const user = users.find(u => u.username === username && u.email === email);
-
+    // Login function
+    function handleLogin(event) {
+      event.preventDefault();
+      
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      
+      // Show loading state
+      loginButton.disabled = true;
+      loginButton.textContent = 'Logging in...';
+      
+      // Simulate API call with timeout
+      setTimeout(() => {
+        const user = users.find(u => u.username === username && u.password === password);
+        
         if (user) {
-          recoveryStatus.textContent = 'Password reset link has been sent to your email';
-          recoveryStatus.className = 'status-message success';
+          // Successful login
+          loginOverlay.style.display = 'none';
+          dashboard.style.display = 'block';
+          document.title = `AFPRS - ${user.name}`;
         } else {
-          recoveryStatus.textContent = 'No account found with those details';
-          recoveryStatus.className = 'status-message error';
+          // Failed login
+          alert('Invalid username or password');
+          loginButton.disabled = false;
+          loginButton.textContent = 'Login';
         }
-      });
+      }, 500);
+    }
 
-      closeRecovery.addEventListener('click', function() {
-        recoveryOverlay.style.display = 'none';
-        recoveryStatus.textContent = '';
-        recoveryStatus.className = '';
-        recoveryUsername.value = '';
-        recoveryEmail.value = '';
-      });
-
-      if (window.location.hash === '#admin') {
-        usernameInput.value = 'admin';
-        passwordInput.value = 'admin123';
+    // Password recovery function
+    function handlePasswordRecovery() {
+      const username = recoveryUsername.value.trim();
+      const email = recoveryEmail.value.trim();
+      
+      if (!username || !email) {
+        recoveryStatus.textContent = 'Please enter both username and email';
+        recoveryStatus.className = 'error';
+        return;
       }
+      
+      const user = users.find(u => u.username === username && u.email === email);
+      
+      if (user) {
+        recoveryStatus.textContent = 'Password reset instructions sent to your email';
+        recoveryStatus.className = 'success';
+      } else {
+        recoveryStatus.textContent = 'No matching account found';
+        recoveryStatus.className = 'error';
+      }
+    }
+
+    // Event Listeners
+    loginForm.addEventListener('submit', handleLogin);
+    
+    forgotPassword.addEventListener('click', () => {
+      recoveryOverlay.style.display = 'flex';
     });
+    
+    submitRecovery.addEventListener('click', handlePasswordRecovery);
+    
+    closeRecovery.addEventListener('click', () => {
+      recoveryOverlay.style.display = 'none';
+      recoveryStatus.textContent = '';
+      recoveryUsername.value = '';
+      recoveryEmail.value = '';
+    });
+    
+    logoutBtn.addEventListener('click', () => {
+      dashboard.style.display = 'none';
+      loginOverlay.style.display = 'flex';
+      usernameInput.value = '';
+      passwordInput.value = '';
+      loginButton.disabled = false;
+      loginButton.textContent = 'Login';
+      document.title = 'AFPRS - Login';
+    });
+
+    // Auto-fill demo admin credentials if #admin hash is present
+    if (window.location.hash === '#admin') {
+      usernameInput.value = 'admin';
+      passwordInput.value = 'admin123';
+    }
   </script>
 </body>
 </html>
