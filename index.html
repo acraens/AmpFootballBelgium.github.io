@@ -2476,14 +2476,20 @@
   </script>
 
 <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    init();
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof init === 'function') {
+      init();
 
-    // Ensure login form submission is handled correctly
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      handleLogin();
-    });
+      const loginForm = document.getElementById('loginForm');
+      if (loginForm) {
+        loginForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          handleLogin();
+        });
+      }
+    } else {
+      console.error("Init function is not defined.");
+    }
   });
 </script>
 
