@@ -548,11 +548,21 @@
       </div>
       <div class="login-box">
         <h1>AFPRS Login</h1>
-        <div class="form-group">
-          <button id="githubLoginBtn" class="btn-primary" style="width: 100%;">
-            Login with GitHub
-          </button>
-        </div>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" required>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn-primary" style="width: 100%;">
+              Login
+            </button>
+          </div>
+        </form>
         <div id="loginError" style="color: red; margin-top: 10px; display: none;"></div>
       </div>
     </div>
@@ -1095,7 +1105,9 @@
     // Application Code
     const elements = {
       loginOverlay: document.getElementById('loginOverlay'),
-      githubLoginBtn: document.getElementById('githubLoginBtn'),
+      loginForm: document.getElementById('loginForm'),
+      username: document.getElementById('username'),
+      password: document.getElementById('password'),
       loginError: document.getElementById('loginError'),
       appContent: document.getElementById('appContent'),
       welcomeHeader: document.getElementById('welcomeHeader'),
@@ -1188,10 +1200,10 @@
 
     // Set up all event listeners
     function setupEventListeners() {
-      // GitHub login button
-      elements.githubLoginBtn.addEventListener('click', function(event) {
+      // Login form
+      elements.loginForm.addEventListener('submit', function(event) {
         event.preventDefault();
-        handleGitHubLogin();
+        handleLogin();
       });
       
       // Logout button
@@ -1313,60 +1325,28 @@
       });
     }
 
-    // Handle GitHub login
-    function handleGitHubLogin() {
-      // For a real implementation, you would use GitHub OAuth
-      // This is a simplified version for demonstration
+    // Handle login
+    function handleLogin() {
+      const username = elements.username.value.trim();
+      const password = elements.password.value.trim();
       
-      // Show a prompt to enter GitHub token
-      const token = prompt("Please enter your GitHub personal access token (with gist scope):");
-      
-      if (!token) {
-        showLoginError('Login cancelled');
+      if (!username || !password) {
+        showLoginError('Please enter both username and password');
         return;
       }
       
-      // Verify the token by making a simple API call
-      verifyGitHubToken(token)
-        .then(userData => {
-          // For demo purposes, we'll just use the first admin user
-          currentUser = dataStore.users.find(u => u.role === 'admin');
-          if (!currentUser) {
-            showLoginError('No admin user found in system');
-            return;
-          }
-          
-          elements.loginOverlay.style.display = 'none';
-          elements.appContent.style.display = 'block';
-          elements.welcomeHeader.textContent = `Welcome, ${currentUser.name || currentUser.username}`;
-          
-          // Store the token for GitHub operations
-          dataStore.githubConfig.token = token;
-          localStorage.setItem('githubToken', token);
-          elements.githubToken.value = token;
-          
-          setupRoleBasedUI();
-          loadInitialData();
-        })
-        .catch(error => {
-          console.error('GitHub token verification failed:', error);
-          showLoginError('Invalid GitHub token. Please create a token with gist scope.');
-        });
-    }
-
-    async function verifyGitHubToken(token) {
-      // In a real app, you would verify the token with GitHub's API
-      // This is a simplified version that just checks if the token looks valid
-      if (!token || token.length < 20) {
-        throw new Error('Invalid token format');
-      }
+      const user = dataStore.users.find(u => u.username === username && u.password === password);
       
-      // For demo purposes, we'll just return a mock user
-      return {
-        login: 'github-user',
-        name: 'GitHub User',
-        avatar_url: ''
-      };
+      if (user) {
+        currentUser = user;
+        elements.loginOverlay.style.display = 'none';
+        elements.appContent.style.display = 'block';
+        elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
+        setupRoleBasedUI();
+        loadInitialData();
+      } else {
+        showLoginError('Invalid username or password');
+      }
     }
 
     function showLoginError(message) {
@@ -1380,6 +1360,7 @@
       elements.loginOverlay.style.display = 'flex';
       elements.appContent.style.display = 'none';
       elements.loginError.style.display = 'none';
+      elements.loginForm.reset();
     }
 
     // Set up UI based on user role
