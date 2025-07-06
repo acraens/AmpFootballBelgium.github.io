@@ -206,7 +206,6 @@
       border-radius: 4px;
       font-size: 12px;
     }
-    /* GitHub Sync specific styles */
     .github-sync-form {
       max-width: 600px;
       margin: 0 auto;
@@ -576,36 +575,38 @@
         return;
       }
       
-      if (!token) {
-        showGitHubStatus('GitHub token is required', 'error');
-        return;
-      }
-      
       try {
-        showGitHubStatus('Loading all data from Gist...', 'info');
+        showGitHubStatus('Loading data from Gist...', 'info');
         
-        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-          headers: {
+        // First get the gist metadata
+        const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
+          headers: token ? {
             'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          } : {
             'Accept': 'application/vnd.github.v3+json'
           }
         });
         
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Failed to load Gist');
+        if (!gistResponse.ok) {
+          throw new Error(`Failed to fetch Gist: ${gistResponse.status}`);
         }
         
-        const gist = await response.json();
+        const gist = await gistResponse.json();
         const files = Object.values(gist.files);
         
         if (files.length === 0) {
           throw new Error('No files found in Gist');
         }
         
-        // Get first file's raw content
-        const file = files[0];
-        const contentResponse = await fetch(file.raw_url);
+        // Find the first JSON file
+        const jsonFile = files.find(f => f.filename.endsWith('.json'));
+        if (!jsonFile) {
+          throw new Error('No JSON data file found in Gist');
+        }
+        
+        // Get the raw content
+        const contentResponse = await fetch(jsonFile.raw_url);
         if (!contentResponse.ok) {
           throw new Error('Failed to fetch file content');
         }
@@ -613,21 +614,21 @@
         const content = await contentResponse.text();
         const parsedData = JSON.parse(content);
         
-        // COMPLETE DATA REPLACEMENT - ALL DATA TYPES
+        // Validate data structure
         if (!parsedData || typeof parsedData !== 'object') {
-          throw new Error('Invalid data format');
+          throw new Error('Invalid data format in Gist');
         }
 
-        // Replace entire data store with loaded data
+        // COMPLETE DATA REPLACEMENT
         for (const key in parsedData) {
           if (dataStore.hasOwnProperty(key)) {
             dataStore[key] = JSON.parse(JSON.stringify(parsedData[key]));
           }
         }
 
-        // Refresh all UI components
+        // Refresh UI
         loadInitialData();
-        showGitHubStatus('All data types loaded successfully!', 'success');
+        showGitHubStatus('All data loaded successfully!', 'success');
         
       } catch (error) {
         showGitHubStatus(`Error: ${error.message}`, 'error');
@@ -645,13 +646,13 @@
       }
       
       try {
-        showGitHubStatus('Saving all data to Gist...', 'info');
+        showGitHubStatus('Saving data to Gist...', 'info');
         
-        const filename = `afprs-full-data-${new Date().toISOString().split('T')[0]}.json`;
+        const filename = `afprs-data-${new Date().toISOString().split('T')[0]}.json`;
         const content = JSON.stringify(dataStore, null, 2);
         
         const gistData = {
-          description: 'AFPRS Complete Data Backup',
+          description: 'AFPRS Data Backup',
           public: false,
           files: {
             [filename]: {
@@ -683,14 +684,13 @@
           elements.gistId.value = result.id;
         }
         
-        showGitHubStatus(`All data saved successfully! Gist ID: ${result.id}`, 'success');
+        showGitHubStatus(`Data saved successfully! Gist ID: ${result.id}`, 'success');
       } catch (error) {
         showGitHubStatus(`Error: ${error.message}`, 'error');
         console.error('Gist save error:', error);
       }
     }
 
-    // [Rest of the helper functions remain the same]
     function showGitHubStatus(message, type) {
       elements.githubStatus.textContent = message;
       elements.githubStatus.className = 'status-message ' + type;
@@ -811,11 +811,9 @@
         elements.appContent.style.display = 'block';
         elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
         
-        // Show GitHub Sync tab only for admin
         document.querySelector(`.tab-btn[data-tab="githubSync"]`).style.display = 
           currentUser.role === 'admin' ? 'block' : 'none';
         
-        // Show other tabs based on role
         document.querySelectorAll('.tab-btn').forEach(tab => {
           const tabId = tab.dataset.tab;
           if (tabId !== 'githubSync') {
@@ -848,26 +846,21 @@
       elements.addPlayerBtn.addEventListener('click', () => openPlayerModal());
       elements.playerForm.addEventListener('submit', handlePlayerSubmit);
       
-      // GitHub Sync event listeners
       elements.loadFromGist.addEventListener('click', loadDataFromGist);
       elements.saveToGist.addEventListener('click', saveDataToGist);
       
-      // Tab switching
       elements.tabButtons.forEach(button => {
         button.addEventListener('click', () => {
           const tabId = button.dataset.tab;
           
-          // Update active tab button
           elements.tabButtons.forEach(btn => btn.classList.remove('active'));
           button.classList.add('active');
           
-          // Update active tab content
           elements.tabContents.forEach(content => content.classList.remove('active'));
           document.getElementById(tabId).classList.add('active');
         });
       });
       
-      // Close modal when clicking X
       document.querySelectorAll('.close-modal').forEach(button => {
         button.addEventListener('click', () => {
           document.querySelectorAll('.modal').forEach(modal => {
@@ -876,7 +869,6 @@
         });
       });
       
-      // Close modal when clicking outside
       window.addEventListener('click', (event) => {
         if (event.target.classList.contains('modal')) {
           event.target.style.display = 'none';
