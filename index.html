@@ -526,34 +526,7 @@
         { username: 'gk1', password: 'player123', role: 'player', name: 'Carlos Mendez' },
         { username: 'def1', password: 'player123', role: 'player', name: 'James Wilson' }
       ],
-      players: [
-        {
-          id: 'p1',
-          name: 'Carlos Mendez',
-          position: 'Goalkeeper',
-          amputation: 'left_arm',
-          crutchType: null,
-          height: 185,
-          weight: 82,
-          joinDate: '2022-01-15',
-          dominantSide: 'right',
-          fitnessLevel: 88,
-          recoveryScore: 7
-        },
-        {
-          id: 'p2',
-          name: 'James Wilson',
-          position: 'Defender',
-          amputation: 'right_leg',
-          crutchType: 'forearm',
-          height: 178,
-          weight: 75,
-          joinDate: '2022-03-10',
-          dominantSide: 'left',
-          fitnessLevel: 85,
-          recoveryScore: 6
-        }
-      ],
+      players: [],
       exercises: {
         Goalkeeper: [
           {
@@ -606,47 +579,9 @@
           }
         ]
       },
-      medicalRecords: [
-        {
-          playerId: 'p1',
-          date: '2023-05-10',
-          type: 'checkup',
-          notes: 'Routine medical check - all clear',
-          practitioner: 'Dr. Smith'
-        },
-        {
-          playerId: 'p2',
-          date: '2023-05-12',
-          type: 'injury',
-          notes: 'Minor ankle sprain - recommended rest for 3 days',
-          practitioner: 'Dr. Johnson'
-        }
-      ],
-      crutches: [
-        {
-          id: 'cr1',
-          type: 'forearm',
-          size: 'medium',
-          assignedTo: 'p2',
-          lastMaintenance: '2023-04-15'
-        }
-      ],
-      inventory: [
-        {
-          id: 'inv1',
-          name: 'Training Cones',
-          category: 'training',
-          quantity: 50,
-          lastRestock: '2023-05-01'
-        },
-        {
-          id: 'inv2',
-          name: 'First Aid Kit',
-          category: 'medical',
-          quantity: 3,
-          lastRestock: '2023-04-20'
-        }
-      ]
+      medicalRecords: [],
+      crutches: [],
+      inventory: []
     };
 
     // DOM Elements
@@ -1047,6 +982,16 @@
         playersToShow = playersToShow.filter(p => p.id === playerFilter);
       }
       
+      if (playersToShow.length === 0) {
+        elements.performanceChart.closest('.card').innerHTML += `
+          <div class="empty-state">
+            <p>No player data available</p>
+            <p>Please load data from GitHub Gist or add players</p>
+          </div>
+        `;
+        return;
+      }
+      
       performanceChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -1055,11 +1000,11 @@
             label: metric.charAt(0).toUpperCase() + metric.slice(1),
             data: playersToShow.map(p => {
               switch (metric) {
-                case 'performance': return p.fitnessLevel;
-                case 'speed': return Math.round(p.fitnessLevel * 0.8);
-                case 'endurance': return Math.round(p.fitnessLevel * 0.9);
-                case 'recovery': return p.recoveryScore * 10;
-                default: return p.fitnessLevel;
+                case 'performance': return p.fitnessLevel || 0;
+                case 'speed': return Math.round((p.fitnessLevel || 0) * 0.8);
+                case 'endurance': return Math.round((p.fitnessLevel || 0) * 0.9);
+                case 'recovery': return (p.recoveryScore || 0) * 10;
+                default: return p.fitnessLevel || 0;
               }
             }),
             backgroundColor: 'rgba(54, 162, 235, 0.5)',
@@ -1190,7 +1135,6 @@
           const defaultGistId = localStorage.getItem('defaultGistId');
           if (defaultGistId) {
             elements.gistId.value = defaultGistId;
-            loadDataFromGist();
           }
         }
       } else {
