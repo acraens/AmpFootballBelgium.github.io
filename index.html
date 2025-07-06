@@ -718,7 +718,6 @@
     </div>
   </div>
 
-  <!-- GitHub Gist Sync Script -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     // Data Store - Start with empty data
@@ -815,7 +814,682 @@
     let currentEditId = null;
     let performanceChartInstance = null;
 
-    // GitHub Gist Functions
+    // Initialize the application
+    function init() {
+      setupEventListeners();
+      elements.loginOverlay.style.display = 'flex';
+      elements.appContent.style.display = 'none';
+      
+      // Load GitHub token if available in localStorage
+      if (localStorage.getItem('githubToken')) {
+        elements.githubToken.value = localStorage.getItem('githubToken');
+        dataStore.githubConfig.token = localStorage.getItem('githubToken');
+      }
+      
+      if (localStorage.getItem('gistId')) {
+        elements.gistId.value = localStorage.getItem('gistId');
+        dataStore.githubConfig.gistId = localStorage.getItem('gistId');
+      }
+    }
+
+    // Set up all event listeners
+    function setupEventListeners() {
+      // Login form submission
+      elements.loginForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        handleLogin();
+      });
+      
+      // Logout button
+      elements.logoutBtn.addEventListener('click', handleLogout);
+      
+      // Tab switching
+      elements.tabButtons.forEach(button => {
+        button.addEventListener('click', () => switchTab(button.dataset.tab));
+      });
+      
+      // Add buttons
+      elements.addPlayerBtn.addEventListener('click', () => openPlayerModal());
+      elements.addExerciseBtn.addEventListener('click', () => openExerciseModal());
+      elements.addMedicalRecordBtn.addEventListener('click', () => openMedicalModal());
+      elements.addInventoryItem.addEventListener('click', () => openInventoryModal());
+      
+      // Form submissions
+      elements.playerForm.addEventListener('submit', handlePlayerSubmit);
+      elements.exerciseForm.addEventListener('submit', handleExerciseSubmit);
+      elements.medicalForm.addEventListener('submit', handleMedicalSubmit);
+      elements.inventoryForm.addEventListener('submit', handleInventorySubmit);
+      
+      // GitHub sync buttons
+      elements.saveTokenBtn.addEventListener('click', saveToken);
+      elements.loadFromGistBtn.addEventListener('click', loadFromGist);
+      elements.saveToGistBtn.addEventListener('click', saveToGist);
+      
+      // Close modal buttons
+      document.querySelectorAll('.close-modal').forEach(button => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+          });
+          currentEditId = null;
+        });
+      });
+      
+      // Close modal when clicking outside
+      window.addEventListener('click', (event) => {
+        if (event.target.classList.contains('modal')) {
+          event.target.style.display = 'none';
+          currentEditId = null;
+        }
+      });
+
+      // Follow up checkbox toggle
+      document.getElementById('medicalFollowUp').addEventListener('change', function() {
+        document.getElementById('followUpDateGroup').style.display = this.checked ? 'block' : 'none';
+      });
+    }
+
+    // Handle login
+    function handleLogin() {
+      const username = elements.username.value.trim();
+      const password = elements.password.value.trim();
+      
+      // Find user with matching credentials
+      const user = dataStore.users.find(u => u.username === username && u.password === password);
+
+      if (user) {
+        currentUser = user;
+        elements.loginOverlay.style.display = 'none';
+        elements.appContent.style.display = 'block';
+        elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
+        setupRoleBasedUI();
+        loadInitialData();
+      } else {
+        alert('Invalid username or password');
+      }
+    }
+
+    // Handle logout
+    function handleLogout() {
+      currentUser = null;
+      elements.username.value = '';
+      elements.password.value = '';
+      elements.loginOverlay.style.display = 'flex';
+      elements.appContent.style.display = 'none';
+    }
+
+    // Set up UI based on user role
+    function setupRoleBasedUI() {
+      const permissions = {
+        admin: {
+          dashboard: true,
+          players: true,
+          training: true,
+          medical: true,
+          crutches: true,
+          inventory: true,
+          githubSync: true,
+          canEditPlayers: true
+        },
+        team_manager: {
+          dashboard: true,
+          players: true,
+          training: false,
+          medical: false,
+          crutches: false,
+          inventory: true,
+          githubSync: true,
+          canEditPlayers: true
+        },
+        head_coach: {
+          dashboard: true,
+          players: true,
+          training: true,
+          medical: true,
+          crutches: true,
+          inventory: false,
+          githubSync: false,
+          canEditPlayers: false
+        },
+        medical_staff: {
+          dashboard: true,
+          players: true,
+          training: false,
+          medical: true,
+          crutches: true,
+          inventory: false,
+          githubSync: false,
+          canEditPlayers: false
+        },
+        player: {
+          dashboard: true,
+          players: false,
+          training: true,
+          medical: false,
+          crutches: false,
+          inventory: false,
+          githubSync: false,
+          canEditPlayers: false
+        }
+      };
+
+      const userPermissions = permissions[currentUser.role] || {};
+      
+      // Show/hide tabs based on permissions
+      elements.tabButtons.forEach(tab => {
+        const tabId = tab.dataset.tab;
+        tab.style.display = userPermissions[tabId] ? 'block' : 'none';
+      });
+
+      // Show/hide add player button based on permissions
+      elements.addPlayerBtn.style.display = userPermissions.canEditPlayers ? 'block' : 'none';
+
+      // Show player dashboard or team dashboard based on role
+      if (currentUser.role === 'player') {
+        elements.teamDashboard.style.display = 'none';
+        elements.playerDashboard.style.display = 'block';
+        loadPlayerDashboard();
+      } else {
+        elements.teamDashboard.style.display = 'block';
+        elements.playerDashboard.style.display = 'none';
+      }
+
+      // Show first visible tab
+      const firstVisibleTab = document.querySelector('.tab-btn[style="display: block;"]') || 
+                             document.querySelector('.tab-btn.active');
+      if (firstVisibleTab) switchTab(firstVisibleTab.dataset.tab);
+    }
+
+    // Load all initial data
+    function loadInitialData() {
+      loadPlayerTable();
+      loadTrainingPrograms();
+      loadMedicalAlerts();
+      loadCrutchContent();
+      loadInventoryManagement();
+      initCharts();
+      
+      if (currentUser.role === 'player') {
+        loadPlayerDashboard();
+      }
+    }
+
+    // Load player dashboard
+    function loadPlayerDashboard() {
+      if (!currentUser.playerId) return;
+      
+      const player = dataStore.players.find(p => p.id === currentUser.playerId);
+      if (!player) return;
+      
+      // Personal Information
+      elements.playerPersonalInfo.innerHTML = `
+        <div class="player-info-row">
+          <div class="player-info-label">Name:</div>
+          <div class="player-info-value">${player.name}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Position:</div>
+          <div class="player-info-value">${player.position}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Amputation:</div>
+          <div class="player-info-value">${formatAmputation(player.amputation)}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Height:</div>
+          <div class="player-info-value">${player.height} cm</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Weight:</div>
+          <div class="player-info-value">${player.weight} kg</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Shirt Size:</div>
+          <div class="player-info-value">${player.shirtSize}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Shoe Size:</div>
+          <div class="player-info-value">${player.shoeSize}</div>
+        </div>
+      `;
+      
+      // Training Plan
+      if (player.trainingPlan && player.trainingPlan.length > 0) {
+        let trainingHTML = '';
+        player.trainingPlan.forEach(item => {
+          const exercise = dataStore.exercises.universal.find(ex => ex.id === item.exerciseId);
+          if (exercise) {
+            trainingHTML += `
+              <div class="exercise">
+                <h4>${exercise.name}</h4>
+                <p><strong>Focus:</strong> ${exercise.focus}</p>
+                <p><strong>Sets/Reps:</strong> ${exercise.sets} x ${exercise.reps}</p>
+                <p><strong>Assigned:</strong> ${item.assignedDate}</p>
+                <p><strong>Status:</strong> ${item.completed ? 'Completed' : 'Pending'}</p>
+              </div>
+            `;
+          }
+        });
+        elements.playerTrainingPlan.innerHTML = trainingHTML;
+      } else {
+        elements.playerTrainingPlan.innerHTML = '<p>No training plan assigned yet.</p>';
+      }
+      
+      // Medical Information
+      const medicalRecords = dataStore.medicalRecords.filter(record => record.playerId === player.id);
+      if (medicalRecords.length > 0) {
+        let medicalHTML = '';
+        medicalRecords.forEach(record => {
+          medicalHTML += `
+            <div class="medical-alert">
+              <p><strong>${formatDate(record.date)} - ${record.type}</strong></p>
+              <p>${record.notes}</p>
+              ${record.followUp ? `<p>Follow up required on ${formatDate(record.followUpDate)}</p>` : ''}
+            </div>
+          `;
+        });
+        elements.playerMedicalInfo.innerHTML = medicalHTML;
+      } else {
+        elements.playerMedicalInfo.innerHTML = '<p>No medical records found.</p>';
+      }
+    }
+
+    // Switch between tabs
+    function switchTab(tabId) {
+      elements.tabContents.forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      elements.tabButtons.forEach(button => {
+        button.classList.remove('active');
+      });
+      
+      document.getElementById(tabId).classList.add('active');
+      document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+      
+      if (tabId === 'dashboard') {
+        if (currentUser.role === 'player') {
+          loadPlayerDashboard();
+        } else {
+          refreshDashboard();
+        }
+      }
+      if (tabId === 'players') loadPlayerTable();
+      if (tabId === 'training') loadTrainingPrograms();
+      if (tabId === 'medical') loadMedicalAlerts();
+      if (tabId === 'crutches') loadCrutchContent();
+      if (tabId === 'inventory') loadInventoryManagement();
+    }
+
+    // Load player table
+    function loadPlayerTable() {
+      elements.playerTable.innerHTML = '';
+      
+      dataStore.players.forEach(player => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${player.name}</td>
+          <td>${player.position}</td>
+          <td>${formatAmputation(player.amputation)}</td>
+          <td>${player.height} cm</td>
+          <td>${player.weight} kg</td>
+          <td>${player.shirtSize}</td>
+          <td>${player.shoeSize}</td>
+          <td>
+            ${currentUser.role === 'admin' || currentUser.role === 'team_manager' ? `
+              <button class="btn-small btn-primary" onclick="editPlayer('${player.id}')">Edit</button>
+              <button class="btn-small btn-danger" onclick="deletePlayer('${player.id}')">Delete</button>
+            ` : 'No actions available'}
+          </td>
+        `;
+        
+        elements.playerTable.appendChild(row);
+      });
+    }
+
+    // Format amputation type for display
+    function formatAmputation(amputation) {
+      const map = {
+        'left_arm': 'Left Arm',
+        'right_arm': 'Right Arm',
+        'left_leg': 'Left Leg',
+        'right_leg': 'Right Leg'
+      };
+      return map[amputation] || amputation;
+    }
+
+    // Format date for display
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    }
+
+    // Load training programs
+    function loadTrainingPrograms() {
+      if (dataStore.exercises.universal.length === 0) {
+        elements.trainingPrograms.innerHTML = '<p>No exercises found.</p>';
+        return;
+      }
+      
+      let html = '<h3>Available Exercises</h3>';
+      dataStore.exercises.universal.forEach(exercise => {
+        html += `
+          <div class="exercise">
+            <h4>${exercise.name}</h4>
+            <p><strong>Focus:</strong> ${exercise.focus}</p>
+            <p><strong>Sets/Reps:</strong> ${exercise.sets} x ${exercise.reps}</p>
+            <p><strong>Added by:</strong> ${exercise.addedBy}</p>
+          </div>
+        `;
+      });
+      
+      elements.trainingPrograms.innerHTML = html;
+    }
+
+    // Load medical alerts
+    function loadMedicalAlerts() {
+      if (dataStore.medicalRecords.length === 0) {
+        elements.medicalAlerts.innerHTML = '<p>No medical records found.</p>';
+        return;
+      }
+      
+      let html = '';
+      dataStore.medicalRecords.forEach(record => {
+        const player = dataStore.players.find(p => p.id === record.playerId);
+        html += `
+          <div class="medical-alert">
+            <h4>${player?.name || 'Unknown Player'} - ${record.type}</h4>
+            <p><strong>Date:</strong> ${formatDate(record.date)}</p>
+            <p>${record.notes}</p>
+            ${record.followUp ? `<p><strong>Follow Up:</strong> ${formatDate(record.followUpDate)}</p>` : ''}
+          </div>
+        `;
+      });
+      
+      elements.medicalAlerts.innerHTML = html;
+    }
+
+    // Load crutch content
+    function loadCrutchContent() {
+      elements.crutchContent.innerHTML = '<p>No crutch assessments found.</p>';
+    }
+
+    // Load inventory management
+    function loadInventoryManagement() {
+      elements.inventoryTable.innerHTML = '';
+      
+      if (dataStore.inventory.length === 0) {
+        elements.inventoryTable.innerHTML = '<tr><td colspan="4">No inventory items found.</td></tr>';
+        return;
+      }
+      
+      dataStore.inventory.forEach(item => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${item.item}</td>
+          <td>${item.category}</td>
+          <td>${item.quantity}</td>
+          <td>
+            <button class="btn-small btn-primary" onclick="editInventoryItem('${item.id}')">Edit</button>
+            <button class="btn-small btn-danger" onclick="deleteInventoryItem('${item.id}')">Delete</button>
+          </td>
+        `;
+        
+        elements.inventoryTable.appendChild(row);
+      });
+    }
+
+    // Initialize charts
+    function initCharts() {
+      // Destroy existing chart if it exists
+      if (performanceChartInstance) {
+        performanceChartInstance.destroy();
+      }
+      
+      // Initialize team performance chart
+      const performanceCtx = elements.performanceChart.getContext('2d');
+      performanceChartInstance = new Chart(performanceCtx, {
+        type: 'bar',
+        data: {
+          labels: dataStore.players.map(p => p.name),
+          datasets: [{
+            label: 'Performance Index',
+            data: dataStore.players.map(p => p.fitnessLevel || 0),
+            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+            borderColor: 'rgba(52, 152, 219, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+
+    // Refresh dashboard
+    function refreshDashboard() {
+      if (performanceChartInstance) {
+        performanceChartInstance.destroy();
+      }
+      
+      const performanceCtx = elements.performanceChart.getContext('2d');
+      performanceChartInstance = new Chart(performanceCtx, {
+        type: 'bar',
+        data: {
+          labels: dataStore.players.map(p => p.name),
+          datasets: [{
+            label: 'Performance Index',
+            data: dataStore.players.map(p => p.fitnessLevel || 0),
+            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+            borderColor: 'rgba(52, 152, 219, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+
+    // Open player modal
+    function openPlayerModal(playerId = null) {
+      currentEditId = playerId;
+      const modal = document.getElementById('playerModal');
+      const title = document.getElementById('playerModalTitle');
+      
+      if (playerId) {
+        title.textContent = 'Edit Player';
+        const player = dataStore.players.find(p => p.id === playerId);
+        if (player) {
+          document.getElementById('playerId').value = player.id;
+          document.getElementById('playerName').value = player.name;
+          document.getElementById('playerPosition').value = player.position;
+          document.getElementById('playerAmputation').value = player.amputation;
+          document.getElementById('playerHeight').value = player.height;
+          document.getElementById('playerWeight').value = player.weight;
+          document.getElementById('playerShirtSize').value = player.shirtSize;
+          document.getElementById('playerShoeSize').value = player.shoeSize;
+        }
+      } else {
+        title.textContent = 'Add New Player';
+        document.getElementById('playerForm').reset();
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    // Open exercise modal
+    function openExerciseModal() {
+      document.getElementById('exerciseForm').reset();
+      document.getElementById('exerciseModal').style.display = 'block';
+    }
+
+    // Open medical modal
+    function openMedicalModal() {
+      const playerSelect = document.getElementById('medicalPlayer');
+      playerSelect.innerHTML = '<option value="">Select Player</option>';
+      
+      dataStore.players.forEach(player => {
+        const option = document.createElement('option');
+        option.value = player.id;
+        option.textContent = player.name;
+        playerSelect.appendChild(option);
+      });
+      
+      document.getElementById('medicalDate').valueAsDate = new Date();
+      document.getElementById('medicalForm').reset();
+      document.getElementById('medicalModal').style.display = 'block';
+    }
+
+    // Open inventory modal
+    function openInventoryModal(itemId = null) {
+      currentEditId = itemId;
+      const modal = document.getElementById('inventoryModal');
+      
+      if (itemId) {
+        const item = dataStore.inventory.find(i => i.id === itemId);
+        if (item) {
+          document.getElementById('inventoryId').value = item.id;
+          document.getElementById('inventoryItem').value = item.item;
+          document.getElementById('inventoryCategory').value = item.category;
+          document.getElementById('inventoryQuantity').value = item.quantity;
+        }
+      } else {
+        document.getElementById('inventoryForm').reset();
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    // Handle player form submission
+    function handlePlayerSubmit(event) {
+      event.preventDefault();
+      
+      const playerData = {
+        id: document.getElementById('playerId').value || generateId(),
+        name: document.getElementById('playerName').value,
+        position: document.getElementById('playerPosition').value,
+        amputation: document.getElementById('playerAmputation').value,
+        height: parseInt(document.getElementById('playerHeight').value),
+        weight: parseInt(document.getElementById('playerWeight').value),
+        shirtSize: document.getElementById('playerShirtSize').value,
+        shoeSize: parseFloat(document.getElementById('playerShoeSize').value),
+        fitnessLevel: Math.floor(Math.random() * 20) + 80, // Random between 80-100
+        recoveryScore: Math.floor(Math.random() * 5) + 5 // Random between 5-10
+      };
+      
+      if (currentEditId) {
+        // Update existing player
+        const index = dataStore.players.findIndex(p => p.id === currentEditId);
+        if (index !== -1) {
+          dataStore.players[index] = { ...dataStore.players[index], ...playerData };
+        }
+      } else {
+        // Add new player
+        dataStore.players.push(playerData);
+      }
+      
+      document.getElementById('playerModal').style.display = 'none';
+      currentEditId = null;
+      loadPlayerTable();
+      refreshDashboard();
+    }
+
+    // Handle exercise form submission
+    function handleExerciseSubmit(event) {
+      event.preventDefault();
+      
+      const exerciseData = {
+        id: generateId(),
+        name: document.getElementById('exerciseName').value,
+        focus: document.getElementById('exerciseFocus').value,
+        sets: parseInt(document.getElementById('exerciseSets').value),
+        reps: document.getElementById('exerciseReps').value,
+        addedBy: currentUser.username
+      };
+      
+      dataStore.exercises.universal.push(exerciseData);
+      
+      document.getElementById('exerciseModal').style.display = 'none';
+      loadTrainingPrograms();
+    }
+
+    // Handle medical form submission
+    function handleMedicalSubmit(event) {
+      event.preventDefault();
+      
+      const medicalData = {
+        id: generateId(),
+        playerId: document.getElementById('medicalPlayer').value,
+        date: document.getElementById('medicalDate').value,
+        type: document.getElementById('medicalType').value,
+        notes: document.getElementById('medicalNotes').value,
+        followUp: document.getElementById('medicalFollowUp').checked,
+        followUpDate: document.getElementById('medicalFollowUp').checked ? 
+                      document.getElementById('medicalFollowUpDate').value : null
+      };
+      
+      dataStore.medicalRecords.push(medicalData);
+      
+      document.getElementById('medicalModal').style.display = 'none';
+      loadMedicalAlerts();
+      
+      // If this is the player's own record, update their dashboard
+      if (currentUser.role === 'player' && medicalData.playerId === currentUser.playerId) {
+        loadPlayerDashboard();
+      }
+    }
+
+    // Handle inventory form submission
+    function handleInventorySubmit(event) {
+      event.preventDefault();
+      
+      const inventoryData = {
+        id: document.getElementById('inventoryId').value || generateId(),
+        item: document.getElementById('inventoryItem').value,
+        category: document.getElementById('inventoryCategory').value,
+        quantity: parseInt(document.getElementById('inventoryQuantity').value)
+      };
+      
+      if (currentEditId) {
+        // Update existing item
+        const index = dataStore.inventory.findIndex(i => i.id === currentEditId);
+        if (index !== -1) {
+          dataStore.inventory[index] = inventoryData;
+        }
+      } else {
+        // Add new item
+        dataStore.inventory.push(inventoryData);
+      }
+      
+      document.getElementById('inventoryModal').style.display = 'none';
+      currentEditId = null;
+      loadInventoryManagement();
+    }
+
+    // Generate random ID
+    function generateId() {
+      return Math.random().toString(36).substr(2, 9);
+    }
+
+    // GitHub token functions
     async function saveToken() {
       const token = elements.githubToken.value.trim();
       const gistId = elements.gistId.value.trim();
@@ -949,648 +1623,6 @@
       }, 5000);
     }
 
-    function init() {
-      setupEventListeners();
-      elements.loginOverlay.style.display = 'flex';
-      elements.appContent.style.display = 'none';
-      
-      // Load GitHub token if available in localStorage
-      if (localStorage.getItem('githubToken')) {
-        elements.githubToken.value = localStorage.getItem('githubToken');
-        dataStore.githubConfig.token = localStorage.getItem('githubToken');
-      }
-      
-      if (localStorage.getItem('gistId')) {
-        elements.gistId.value = localStorage.getItem('gistId');
-        dataStore.githubConfig.gistId = localStorage.getItem('gistId');
-      }
-    }
-
-    function setupEventListeners() {
-      elements.loginForm.addEventListener('submit', handleLogin);
-      elements.logoutBtn.addEventListener('click', handleLogout);
-      
-      elements.tabButtons.forEach(button => {
-        button.addEventListener('click', () => switchTab(button.dataset.tab));
-      });
-      
-      elements.addPlayerBtn.addEventListener('click', () => openPlayerModal());
-      elements.addExerciseBtn.addEventListener('click', () => openExerciseModal());
-      elements.addMedicalRecordBtn.addEventListener('click', () => openMedicalModal());
-      elements.addInventoryItem.addEventListener('click', () => openInventoryModal());
-      
-      elements.playerForm.addEventListener('submit', handlePlayerSubmit);
-      elements.exerciseForm.addEventListener('submit', handleExerciseSubmit);
-      elements.medicalForm.addEventListener('submit', handleMedicalSubmit);
-      elements.inventoryForm.addEventListener('submit', handleInventorySubmit);
-      
-      // GitHub sync event listeners
-      elements.saveTokenBtn.addEventListener('click', saveToken);
-      elements.loadFromGistBtn.addEventListener('click', loadFromGist);
-      elements.saveToGistBtn.addEventListener('click', saveToGist);
-      
-      // Close modal buttons
-      document.querySelectorAll('.close-modal').forEach(button => {
-        button.addEventListener('click', () => {
-          document.querySelectorAll('.modal').forEach(modal => {
-            modal.style.display = 'none';
-          });
-          currentEditId = null;
-        });
-      });
-      
-      // Close modal when clicking outside
-      window.addEventListener('click', (event) => {
-        if (event.target.classList.contains('modal')) {
-          event.target.style.display = 'none';
-          currentEditId = null;
-        }
-      });
-
-      // Follow up checkbox toggle
-      document.getElementById('medicalFollowUp').addEventListener('change', function() {
-        document.getElementById('followUpDateGroup').style.display = this.checked ? 'block' : 'none';
-      });
-    }
-
-    function handleLogin(event) {
-      event.preventDefault();
-      
-      const username = elements.username.value.trim();
-      const password = elements.password.value.trim();
-      const user = dataStore.users.find(u => u.username === username && u.password === password);
-
-      if (user) {
-        currentUser = user;
-        elements.loginOverlay.style.display = 'none';
-        elements.appContent.style.display = 'block';
-        elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
-        setupRoleBasedUI();
-        loadInitialData();
-      } else {
-        alert('Invalid username or password');
-      }
-    }
-
-    function handleLogout() {
-      currentUser = null;
-      elements.username.value = '';
-      elements.password.value = '';
-      elements.loginOverlay.style.display = 'flex';
-      elements.appContent.style.display = 'none';
-    }
-
-    function setupRoleBasedUI() {
-      const permissions = {
-        admin: {
-          dashboard: true,
-          players: true,
-          training: true,
-          medical: true,
-          crutches: true,
-          inventory: true,
-          githubSync: true,
-          canEditPlayers: true
-        },
-        team_manager: {
-          dashboard: true,
-          players: true,
-          training: false,
-          medical: false,
-          crutches: false,
-          inventory: true,
-          githubSync: true,
-          canEditPlayers: true
-        },
-        head_coach: {
-          dashboard: true,
-          players: true,
-          training: true,
-          medical: true,
-          crutches: true,
-          inventory: false,
-          githubSync: false,
-          canEditPlayers: false
-        },
-        medical_staff: {
-          dashboard: true,
-          players: true,
-          training: false,
-          medical: true,
-          crutches: true,
-          inventory: false,
-          githubSync: false,
-          canEditPlayers: false
-        },
-        player: {
-          dashboard: true,
-          players: false,
-          training: true,
-          medical: false,
-          crutches: false,
-          inventory: false,
-          githubSync: false,
-          canEditPlayers: false
-        }
-      };
-
-      const userPermissions = permissions[currentUser.role] || {};
-      
-      elements.tabButtons.forEach(tab => {
-        const tabId = tab.dataset.tab;
-        tab.style.display = userPermissions[tabId] ? 'block' : 'none';
-      });
-
-      // Show/hide add player button based on permissions
-      elements.addPlayerBtn.style.display = userPermissions.canEditPlayers ? 'block' : 'none';
-
-      // Show player dashboard or team dashboard based on role
-      if (currentUser.role === 'player') {
-        elements.teamDashboard.style.display = 'none';
-        elements.playerDashboard.style.display = 'block';
-        loadPlayerDashboard();
-      } else {
-        elements.teamDashboard.style.display = 'block';
-        elements.playerDashboard.style.display = 'none';
-      }
-
-      // Show first visible tab
-      const firstVisibleTab = document.querySelector('.tab-btn[style="display: block;"]') || 
-                             document.querySelector('.tab-btn.active');
-      if (firstVisibleTab) switchTab(firstVisibleTab.dataset.tab);
-    }
-
-    function loadInitialData() {
-      loadPlayerTable();
-      loadTrainingPrograms();
-      loadMedicalAlerts();
-      loadCrutchContent();
-      loadInventoryManagement();
-      initCharts();
-      
-      if (currentUser.role === 'player') {
-        loadPlayerDashboard();
-      }
-    }
-
-    function loadPlayerDashboard() {
-      if (!currentUser.playerId) return;
-      
-      const player = dataStore.players.find(p => p.id === currentUser.playerId);
-      if (!player) return;
-      
-      // Personal Information
-      elements.playerPersonalInfo.innerHTML = `
-        <div class="player-info-row">
-          <div class="player-info-label">Name:</div>
-          <div class="player-info-value">${player.name}</div>
-        </div>
-        <div class="player-info-row">
-          <div class="player-info-label">Position:</div>
-          <div class="player-info-value">${player.position}</div>
-        </div>
-        <div class="player-info-row">
-          <div class="player-info-label">Amputation:</div>
-          <div class="player-info-value">${formatAmputation(player.amputation)}</div>
-        </div>
-        <div class="player-info-row">
-          <div class="player-info-label">Height:</div>
-          <div class="player-info-value">${player.height} cm</div>
-        </div>
-        <div class="player-info-row">
-          <div class="player-info-label">Weight:</div>
-          <div class="player-info-value">${player.weight} kg</div>
-        </div>
-        <div class="player-info-row">
-          <div class="player-info-label">Shirt Size:</div>
-          <div class="player-info-value">${player.shirtSize}</div>
-        </div>
-        <div class="player-info-row">
-          <div class="player-info-label">Shoe Size:</div>
-          <div class="player-info-value">${player.shoeSize}</div>
-        </div>
-      `;
-      
-      // Training Plan
-      if (player.trainingPlan && player.trainingPlan.length > 0) {
-        let trainingHTML = '';
-        player.trainingPlan.forEach(item => {
-          const exercise = dataStore.exercises.universal.find(ex => ex.id === item.exerciseId);
-          if (exercise) {
-            trainingHTML += `
-              <div class="exercise">
-                <h4>${exercise.name}</h4>
-                <p><strong>Focus:</strong> ${exercise.focus}</p>
-                <p><strong>Sets/Reps:</strong> ${exercise.sets} x ${exercise.reps}</p>
-                <p><strong>Assigned:</strong> ${item.assignedDate}</p>
-                <p><strong>Status:</strong> ${item.completed ? 'Completed' : 'Pending'}</p>
-              </div>
-            `;
-          }
-        });
-        elements.playerTrainingPlan.innerHTML = trainingHTML;
-      } else {
-        elements.playerTrainingPlan.innerHTML = '<p>No training plan assigned yet.</p>';
-      }
-      
-      // Medical Information
-      const medicalRecords = dataStore.medicalRecords.filter(record => record.playerId === player.id);
-      if (medicalRecords.length > 0) {
-        let medicalHTML = '';
-        medicalRecords.forEach(record => {
-          medicalHTML += `
-            <div class="medical-alert">
-              <p><strong>${formatDate(record.date)} - ${record.type}</strong></p>
-              <p>${record.notes}</p>
-              ${record.followUp ? `<p>Follow up required on ${formatDate(record.followUpDate)}</p>` : ''}
-            </div>
-          `;
-        });
-        elements.playerMedicalInfo.innerHTML = medicalHTML;
-      } else {
-        elements.playerMedicalInfo.innerHTML = '<p>No medical records found.</p>';
-      }
-    }
-
-    function switchTab(tabId) {
-      elements.tabContents.forEach(content => {
-        content.classList.remove('active');
-      });
-      
-      elements.tabButtons.forEach(button => {
-        button.classList.remove('active');
-      });
-      
-      document.getElementById(tabId).classList.add('active');
-      document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
-      
-      if (tabId === 'dashboard') {
-        if (currentUser.role === 'player') {
-          loadPlayerDashboard();
-        } else {
-          refreshDashboard();
-        }
-      }
-      if (tabId === 'players') loadPlayerTable();
-      if (tabId === 'training') loadTrainingPrograms();
-      if (tabId === 'medical') loadMedicalAlerts();
-      if (tabId === 'crutches') loadCrutchContent();
-      if (tabId === 'inventory') loadInventoryManagement();
-    }
-
-    function loadPlayerTable() {
-      elements.playerTable.innerHTML = '';
-      
-      dataStore.players.forEach(player => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-          <td>${player.name}</td>
-          <td>${player.position}</td>
-          <td>${formatAmputation(player.amputation)}</td>
-          <td>${player.height} cm</td>
-          <td>${player.weight} kg</td>
-          <td>${player.shirtSize}</td>
-          <td>${player.shoeSize}</td>
-          <td>
-            ${currentUser.role === 'admin' || currentUser.role === 'team_manager' ? `
-              <button class="btn-small btn-primary" onclick="editPlayer('${player.id}')">Edit</button>
-              <button class="btn-small btn-danger" onclick="deletePlayer('${player.id}')">Delete</button>
-            ` : 'No actions available'}
-          </td>
-        `;
-        
-        elements.playerTable.appendChild(row);
-      });
-    }
-
-    function formatAmputation(amputation) {
-      const map = {
-        'left_arm': 'Left Arm',
-        'right_arm': 'Right Arm',
-        'left_leg': 'Left Leg',
-        'right_leg': 'Right Leg'
-      };
-      return map[amputation] || amputation;
-    }
-
-    function formatDate(dateString) {
-      if (!dateString) return '';
-      const date = new Date(dateString);
-      return date.toLocaleDateString();
-    }
-
-    function loadTrainingPrograms() {
-      if (dataStore.exercises.universal.length === 0) {
-        elements.trainingPrograms.innerHTML = '<p>No exercises found.</p>';
-        return;
-      }
-      
-      let html = '<h3>Available Exercises</h3>';
-      dataStore.exercises.universal.forEach(exercise => {
-        html += `
-          <div class="exercise">
-            <h4>${exercise.name}</h4>
-            <p><strong>Focus:</strong> ${exercise.focus}</p>
-            <p><strong>Sets/Reps:</strong> ${exercise.sets} x ${exercise.reps}</p>
-            <p><strong>Added by:</strong> ${exercise.addedBy}</p>
-          </div>
-        `;
-      });
-      
-      elements.trainingPrograms.innerHTML = html;
-    }
-
-    function loadMedicalAlerts() {
-      if (dataStore.medicalRecords.length === 0) {
-        elements.medicalAlerts.innerHTML = '<p>No medical records found.</p>';
-        return;
-      }
-      
-      let html = '';
-      dataStore.medicalRecords.forEach(record => {
-        const player = dataStore.players.find(p => p.id === record.playerId);
-        html += `
-          <div class="medical-alert">
-            <h4>${player?.name || 'Unknown Player'} - ${record.type}</h4>
-            <p><strong>Date:</strong> ${formatDate(record.date)}</p>
-            <p>${record.notes}</p>
-            ${record.followUp ? `<p><strong>Follow Up:</strong> ${formatDate(record.followUpDate)}</p>` : ''}
-          </div>
-        `;
-      });
-      
-      elements.medicalAlerts.innerHTML = html;
-    }
-
-    function loadCrutchContent() {
-      elements.crutchContent.innerHTML = '<p>No crutch assessments found.</p>';
-    }
-
-    function loadInventoryManagement() {
-      elements.inventoryTable.innerHTML = '';
-      
-      if (dataStore.inventory.length === 0) {
-        elements.inventoryTable.innerHTML = '<tr><td colspan="4">No inventory items found.</td></tr>';
-        return;
-      }
-      
-      dataStore.inventory.forEach(item => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-          <td>${item.item}</td>
-          <td>${item.category}</td>
-          <td>${item.quantity}</td>
-          <td>
-            <button class="btn-small btn-primary" onclick="editInventoryItem('${item.id}')">Edit</button>
-            <button class="btn-small btn-danger" onclick="deleteInventoryItem('${item.id}')">Delete</button>
-          </td>
-        `;
-        
-        elements.inventoryTable.appendChild(row);
-      });
-    }
-
-    function initCharts() {
-      // Destroy existing chart if it exists
-      if (performanceChartInstance) {
-        performanceChartInstance.destroy();
-      }
-      
-      // Initialize team performance chart
-      const performanceCtx = elements.performanceChart.getContext('2d');
-      performanceChartInstance = new Chart(performanceCtx, {
-        type: 'bar',
-        data: {
-          labels: dataStore.players.map(p => p.name),
-          datasets: [{
-            label: 'Performance Index',
-            data: dataStore.players.map(p => p.fitnessLevel || 0),
-            backgroundColor: 'rgba(52, 152, 219, 0.7)',
-            borderColor: 'rgba(52, 152, 219, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100
-            }
-          }
-        }
-      });
-    }
-
-    function refreshDashboard() {
-      if (performanceChartInstance) {
-        performanceChartInstance.destroy();
-      }
-      
-      const performanceCtx = elements.performanceChart.getContext('2d');
-      performanceChartInstance = new Chart(performanceCtx, {
-        type: 'bar',
-        data: {
-          labels: dataStore.players.map(p => p.name),
-          datasets: [{
-            label: 'Performance Index',
-            data: dataStore.players.map(p => p.fitnessLevel || 0),
-            backgroundColor: 'rgba(52, 152, 219, 0.7)',
-            borderColor: 'rgba(52, 152, 219, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100
-            }
-          }
-        }
-      });
-    }
-
-    // Modal Functions
-    function openPlayerModal(playerId = null) {
-      currentEditId = playerId;
-      const modal = document.getElementById('playerModal');
-      const title = document.getElementById('playerModalTitle');
-      
-      if (playerId) {
-        title.textContent = 'Edit Player';
-        const player = dataStore.players.find(p => p.id === playerId);
-        if (player) {
-          document.getElementById('playerId').value = player.id;
-          document.getElementById('playerName').value = player.name;
-          document.getElementById('playerPosition').value = player.position;
-          document.getElementById('playerAmputation').value = player.amputation;
-          document.getElementById('playerHeight').value = player.height;
-          document.getElementById('playerWeight').value = player.weight;
-          document.getElementById('playerShirtSize').value = player.shirtSize;
-          document.getElementById('playerShoeSize').value = player.shoeSize;
-        }
-      } else {
-        title.textContent = 'Add New Player';
-        document.getElementById('playerForm').reset();
-      }
-      
-      modal.style.display = 'block';
-    }
-
-    function openExerciseModal() {
-      document.getElementById('exerciseForm').reset();
-      document.getElementById('exerciseModal').style.display = 'block';
-    }
-
-    function openMedicalModal() {
-      const playerSelect = document.getElementById('medicalPlayer');
-      playerSelect.innerHTML = '<option value="">Select Player</option>';
-      
-      dataStore.players.forEach(player => {
-        const option = document.createElement('option');
-        option.value = player.id;
-        option.textContent = player.name;
-        playerSelect.appendChild(option);
-      });
-      
-      document.getElementById('medicalDate').valueAsDate = new Date();
-      document.getElementById('medicalForm').reset();
-      document.getElementById('medicalModal').style.display = 'block';
-    }
-
-    function openInventoryModal(itemId = null) {
-      currentEditId = itemId;
-      const modal = document.getElementById('inventoryModal');
-      
-      if (itemId) {
-        const item = dataStore.inventory.find(i => i.id === itemId);
-        if (item) {
-          document.getElementById('inventoryId').value = item.id;
-          document.getElementById('inventoryItem').value = item.item;
-          document.getElementById('inventoryCategory').value = item.category;
-          document.getElementById('inventoryQuantity').value = item.quantity;
-        }
-      } else {
-        document.getElementById('inventoryForm').reset();
-      }
-      
-      modal.style.display = 'block';
-    }
-
-    // Form Handlers
-    function handlePlayerSubmit(event) {
-      event.preventDefault();
-      
-      const playerData = {
-        id: document.getElementById('playerId').value || generateId(),
-        name: document.getElementById('playerName').value,
-        position: document.getElementById('playerPosition').value,
-        amputation: document.getElementById('playerAmputation').value,
-        height: parseInt(document.getElementById('playerHeight').value),
-        weight: parseInt(document.getElementById('playerWeight').value),
-        shirtSize: document.getElementById('playerShirtSize').value,
-        shoeSize: parseFloat(document.getElementById('playerShoeSize').value),
-        fitnessLevel: Math.floor(Math.random() * 20) + 80, // Random between 80-100
-        recoveryScore: Math.floor(Math.random() * 5) + 5 // Random between 5-10
-      };
-      
-      if (currentEditId) {
-        // Update existing player
-        const index = dataStore.players.findIndex(p => p.id === currentEditId);
-        if (index !== -1) {
-          dataStore.players[index] = { ...dataStore.players[index], ...playerData };
-        }
-      } else {
-        // Add new player
-        dataStore.players.push(playerData);
-      }
-      
-      document.getElementById('playerModal').style.display = 'none';
-      currentEditId = null;
-      loadPlayerTable();
-      refreshDashboard();
-    }
-
-    function handleExerciseSubmit(event) {
-      event.preventDefault();
-      
-      const exerciseData = {
-        id: generateId(),
-        name: document.getElementById('exerciseName').value,
-        focus: document.getElementById('exerciseFocus').value,
-        sets: parseInt(document.getElementById('exerciseSets').value),
-        reps: document.getElementById('exerciseReps').value,
-        addedBy: currentUser.username
-      };
-      
-      dataStore.exercises.universal.push(exerciseData);
-      
-      document.getElementById('exerciseModal').style.display = 'none';
-      loadTrainingPrograms();
-    }
-
-    function handleMedicalSubmit(event) {
-      event.preventDefault();
-      
-      const medicalData = {
-        id: generateId(),
-        playerId: document.getElementById('medicalPlayer').value,
-        date: document.getElementById('medicalDate').value,
-        type: document.getElementById('medicalType').value,
-        notes: document.getElementById('medicalNotes').value,
-        followUp: document.getElementById('medicalFollowUp').checked,
-        followUpDate: document.getElementById('medicalFollowUp').checked ? 
-                      document.getElementById('medicalFollowUpDate').value : null
-      };
-      
-      dataStore.medicalRecords.push(medicalData);
-      
-      document.getElementById('medicalModal').style.display = 'none';
-      loadMedicalAlerts();
-      
-      // If this is the player's own record, update their dashboard
-      if (currentUser.role === 'player' && medicalData.playerId === currentUser.playerId) {
-        loadPlayerDashboard();
-      }
-    }
-
-    function handleInventorySubmit(event) {
-      event.preventDefault();
-      
-      const inventoryData = {
-        id: document.getElementById('inventoryId').value || generateId(),
-        item: document.getElementById('inventoryItem').value,
-        category: document.getElementById('inventoryCategory').value,
-        quantity: parseInt(document.getElementById('inventoryQuantity').value)
-      };
-      
-      if (currentEditId) {
-        // Update existing item
-        const index = dataStore.inventory.findIndex(i => i.id === currentEditId);
-        if (index !== -1) {
-          dataStore.inventory[index] = inventoryData;
-        }
-      } else {
-        // Add new item
-        dataStore.inventory.push(inventoryData);
-      }
-      
-      document.getElementById('inventoryModal').style.display = 'none';
-      currentEditId = null;
-      loadInventoryManagement();
-    }
-
-    // Helper Functions
-    function generateId() {
-      return Math.random().toString(36).substr(2, 9);
-    }
-
     // Make functions available globally for onclick handlers
     window.editPlayer = function(playerId) {
       if (currentUser.role === 'admin' || currentUser.role === 'team_manager') {
@@ -1619,6 +1651,7 @@
       }
     };
 
+    // Initialize the application when DOM is loaded
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
