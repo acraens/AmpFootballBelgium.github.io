@@ -249,6 +249,18 @@
       background-color: #f8d7da;
       color: #721c24;
     }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
   </style>
 </head>
 <body>
@@ -359,6 +371,41 @@
             </thead>
             <tbody></tbody>
           </table>
+        </div>
+      </div>
+
+      <div class="tab-content" id="training">
+        <div class="card">
+          <h2>Training Programs</h2>
+          <div id="trainingContent"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="medical">
+        <div class="card">
+          <h2>Medical Records</h2>
+          <div id="medicalContent"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="crutches">
+        <div class="card">
+          <h2>Crutch Management</h2>
+          <div id="crutchesContent"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="inventory">
+        <div class="card">
+          <h2>Equipment Inventory</h2>
+          <div id="inventoryContent"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="users">
+        <div class="card">
+          <h2>User Management</h2>
+          <div id="usersContent"></div>
         </div>
       </div>
 
@@ -531,9 +578,47 @@
           }
         ]
       },
-      medicalRecords: [],
-      crutches: [],
-      inventory: []
+      medicalRecords: [
+        {
+          playerId: 'gk1',
+          date: '2023-05-10',
+          type: 'checkup',
+          notes: 'Routine medical check - all clear',
+          practitioner: 'Dr. Smith'
+        },
+        {
+          playerId: 'def1',
+          date: '2023-05-12',
+          type: 'injury',
+          notes: 'Minor ankle sprain - recommended rest for 3 days',
+          practitioner: 'Dr. Johnson'
+        }
+      ],
+      crutches: [
+        {
+          id: 'cr1',
+          type: 'forearm',
+          size: 'medium',
+          assignedTo: 'def1',
+          lastMaintenance: '2023-04-15'
+        }
+      ],
+      inventory: [
+        {
+          id: 'inv1',
+          name: 'Training Cones',
+          category: 'training',
+          quantity: 50,
+          lastRestock: '2023-05-01'
+        },
+        {
+          id: 'inv2',
+          name: 'First Aid Kit',
+          category: 'medical',
+          quantity: 3,
+          lastRestock: '2023-04-20'
+        }
+      ]
     };
 
     // DOM Elements
@@ -557,7 +642,17 @@
       githubToken: document.getElementById('githubToken'),
       loadFromGist: document.getElementById('loadFromGist'),
       saveToGist: document.getElementById('saveToGist'),
-      githubStatus: document.getElementById('githubStatus')
+      githubStatus: document.getElementById('githubStatus'),
+      trainingContent: document.getElementById('trainingContent'),
+      medicalContent: document.getElementById('medicalContent'),
+      crutchesContent: document.getElementById('crutchesContent'),
+      inventoryContent: document.getElementById('inventoryContent'),
+      usersContent: document.getElementById('usersContent'),
+      dashboardPlayerFilter: document.getElementById('dashboardPlayerFilter'),
+      dashboardMetricFilter: document.getElementById('dashboardMetricFilter'),
+      dashboardDateFilter: document.getElementById('dashboardDateFilter'),
+      refreshDashboard: document.getElementById('refreshDashboard'),
+      performanceChart: document.getElementById('performanceChart')
     };
 
     // App State
@@ -565,7 +660,7 @@
     let currentEditId = null;
     let performanceChartInstance = null;
 
-    // GitHub Gist Functions - FULLY WORKING VERSION
+    // GitHub Gist Functions
     async function loadDataFromGist() {
       const gistId = elements.gistId.value.trim();
       const token = elements.githubToken.value.trim();
@@ -578,7 +673,6 @@
       try {
         showGitHubStatus('Loading data from Gist...', 'info');
         
-        // First get the gist metadata
         const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
           headers: token ? {
             'Authorization': `token ${token}`,
@@ -599,13 +693,11 @@
           throw new Error('No files found in Gist');
         }
         
-        // Find the first JSON file
         const jsonFile = files.find(f => f.filename.endsWith('.json'));
         if (!jsonFile) {
           throw new Error('No JSON data file found in Gist');
         }
         
-        // Get the raw content
         const contentResponse = await fetch(jsonFile.raw_url);
         if (!contentResponse.ok) {
           throw new Error('Failed to fetch file content');
@@ -614,18 +706,13 @@
         const content = await contentResponse.text();
         const parsedData = JSON.parse(content);
         
-        // Validate data structure
         if (!parsedData || typeof parsedData !== 'object') {
           throw new Error('Invalid data format in Gist');
         }
 
-        // COMPLETE DATA REPLACEMENT
-        for (const key in parsedData) {
-          if (dataStore.hasOwnProperty(key)) {
-            dataStore[key] = JSON.parse(JSON.stringify(parsedData[key]));
-          }
-        }
-
+        // Update data store
+        Object.assign(dataStore, parsedData);
+        
         // Refresh UI
         loadInitialData();
         showGitHubStatus('All data loaded successfully!', 'success');
@@ -738,6 +825,233 @@
           </td>
         </tr>
       `).join('');
+      
+      // Add event listeners to the buttons
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          openPlayerModal(e.target.dataset.id);
+        });
+      });
+      
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          if (confirm('Are you sure you want to delete this player?')) {
+            const index = dataStore.players.findIndex(p => p.id === e.target.dataset.id);
+            if (index !== -1) {
+              dataStore.players.splice(index, 1);
+              loadPlayerTable();
+            }
+          }
+        });
+      });
+    }
+
+    function loadTrainingContent() {
+      if (!elements.trainingContent) return;
+      
+      let content = '<h3>Training Programs</h3>';
+      
+      // Group exercises by position
+      const positions = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
+      
+      positions.forEach(position => {
+        const exercises = dataStore.exercises[position] || [];
+        const universalExercises = dataStore.exercises.universal || [];
+        
+        if (exercises.length > 0 || universalExercises.length > 0) {
+          content += `<div class="position-group"><h4>${position} Exercises</h4>`;
+          
+          if (exercises.length > 0) {
+            content += exercises.map(ex => `
+              <div class="exercise-card">
+                <h5>${ex.name}</h5>
+                <p><strong>Focus:</strong> ${ex.focus}</p>
+                <p><strong>Sets/Reps:</strong> ${ex.sets}x${ex.reps}</p>
+                <p><strong>Equipment:</strong> ${ex.equipment.join(', ')}</p>
+                <p><strong>Notes:</strong> ${ex.notes}</p>
+              </div>
+            `).join('');
+          }
+          
+          if (universalExercises.length > 0) {
+            content += `<h5>Universal Exercises</h5>` + 
+              universalExercises.map(ex => `
+                <div class="exercise-card">
+                  <h5>${ex.name}</h5>
+                  <p><strong>Focus:</strong> ${ex.focus}</p>
+                  <p><strong>Sets/Reps:</strong> ${ex.sets}x${ex.reps}</p>
+                  <p><strong>Equipment:</strong> ${ex.equipment.join(', ')}</p>
+                  <p><strong>Notes:</strong> ${ex.notes}</p>
+                </div>
+              `).join('');
+          }
+          
+          content += `</div>`;
+        }
+      });
+      
+      elements.trainingContent.innerHTML = content;
+    }
+
+    function loadMedicalContent() {
+      if (!elements.medicalContent) return;
+      
+      let content = '<div class="filter-group">';
+      content += '<select id="medicalPlayerFilter"><option value="all">All Players</option>';
+      
+      dataStore.players.forEach(player => {
+        content += `<option value="${player.id}">${player.name}</option>`;
+      });
+      
+      content += '</select>';
+      content += '<button id="refreshMedical">Refresh</button>';
+      content += '</div>';
+      
+      content += '<table class="medical-table"><thead><tr>';
+      content += '<th>Date</th><th>Player</th><th>Type</th><th>Notes</th><th>Practitioner</th>';
+      content += '</tr></thead><tbody>';
+      
+      const playerFilter = document.getElementById('medicalPlayerFilter')?.value || 'all';
+      let filteredRecords = dataStore.medicalRecords;
+      
+      if (playerFilter !== 'all') {
+        filteredRecords = filteredRecords.filter(r => r.playerId === playerFilter);
+      }
+      
+      content += filteredRecords.map(record => {
+        const player = dataStore.players.find(p => p.id === record.playerId) || {};
+        return `
+          <tr>
+            <td>${record.date}</td>
+            <td>${player.name || 'Unknown'}</td>
+            <td>${record.type}</td>
+            <td>${record.notes}</td>
+            <td>${record.practitioner}</td>
+          </tr>
+        `;
+      }).join('');
+      
+      content += '</tbody></table>';
+      elements.medicalContent.innerHTML = content;
+      
+      // Add event listener to refresh button if it exists
+      document.getElementById('refreshMedical')?.addEventListener('click', loadMedicalContent);
+    }
+
+    function loadCrutchesContent() {
+      if (!elements.crutchesContent) return;
+      
+      let content = '<table class="crutches-table"><thead><tr>';
+      content += '<th>Type</th><th>Size</th><th>Assigned To</th><th>Last Maintenance</th>';
+      content += '</tr></thead><tbody>';
+      
+      content += dataStore.crutches.map(crutch => {
+        const player = dataStore.players.find(p => p.id === crutch.assignedTo) || {};
+        return `
+          <tr>
+            <td>${crutch.type}</td>
+            <td>${crutch.size}</td>
+            <td>${player.name || 'Unassigned'}</td>
+            <td>${crutch.lastMaintenance}</td>
+          </tr>
+        `;
+      }).join('');
+      
+      content += '</tbody></table>';
+      elements.crutchesContent.innerHTML = content;
+    }
+
+    function loadInventoryContent() {
+      if (!elements.inventoryContent) return;
+      
+      let content = '<table class="inventory-table"><thead><tr>';
+      content += '<th>Item</th><th>Category</th><th>Quantity</th><th>Last Restock</th>';
+      content += '</tr></thead><tbody>';
+      
+      content += dataStore.inventory.map(item => `
+        <tr>
+          <td>${item.name}</td>
+          <td>${item.category}</td>
+          <td>${item.quantity}</td>
+          <td>${item.lastRestock}</td>
+        </tr>
+      `).join('');
+      
+      content += '</tbody></table>';
+      elements.inventoryContent.innerHTML = content;
+    }
+
+    function loadUsersContent() {
+      if (!elements.usersContent) return;
+      
+      let content = '<table class="users-table"><thead><tr>';
+      content += '<th>Username</th><th>Name</th><th>Role</th>';
+      content += '</tr></thead><tbody>';
+      
+      content += dataStore.users.map(user => `
+        <tr>
+          <td>${user.username}</td>
+          <td>${user.name}</td>
+          <td>${user.role}</td>
+        </tr>
+      `).join('');
+      
+      content += '</tbody></table>';
+      elements.usersContent.innerHTML = content;
+    }
+
+    function loadDashboardContent() {
+      if (!elements.performanceChart) return;
+      
+      // Update player filter dropdown
+      elements.dashboardPlayerFilter.innerHTML = '<option value="all">All Players</option>' +
+        dataStore.players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      
+      // Create or update chart
+      const ctx = elements.performanceChart.getContext('2d');
+      const metric = elements.dashboardMetricFilter.value;
+      
+      if (performanceChartInstance) {
+        performanceChartInstance.destroy();
+      }
+      
+      const playerFilter = elements.dashboardPlayerFilter.value;
+      let playersToShow = dataStore.players;
+      
+      if (playerFilter !== 'all') {
+        playersToShow = playersToShow.filter(p => p.id === playerFilter);
+      }
+      
+      performanceChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: playersToShow.map(p => p.name),
+          datasets: [{
+            label: metric.charAt(0).toUpperCase() + metric.slice(1),
+            data: playersToShow.map(p => {
+              switch (metric) {
+                case 'performance': return p.fitnessLevel;
+                case 'speed': return Math.round(p.fitnessLevel * 0.8);
+                case 'endurance': return Math.round(p.fitnessLevel * 0.9);
+                case 'recovery': return p.recoveryScore * 10;
+                default: return p.fitnessLevel;
+              }
+            }),
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
     }
 
     function openPlayerModal(playerId = null) {
@@ -796,6 +1110,7 @@
       elements.playerModal.style.display = 'none';
       currentEditId = null;
       loadPlayerTable();
+      loadDashboardContent();
     }
 
     function handleLogin(event) {
@@ -811,13 +1126,16 @@
         elements.appContent.style.display = 'block';
         elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
         
-        document.querySelector(`.tab-btn[data-tab="githubSync"]`).style.display = 
-          currentUser.role === 'admin' ? 'block' : 'none';
-        
+        // Show/hide tabs based on role
         document.querySelectorAll('.tab-btn').forEach(tab => {
           const tabId = tab.dataset.tab;
-          if (tabId !== 'githubSync') {
-            tab.style.display = ['admin', 'team_manager'].includes(currentUser.role) ? 'block' : 'none';
+          
+          if (tabId === 'githubSync') {
+            tab.style.display = currentUser.role === 'admin' ? 'block' : 'none';
+          } else if (tabId === 'athleteDashboard') {
+            tab.style.display = currentUser.role === 'player' ? 'block' : 'none';
+          } else {
+            tab.style.display = ['admin', 'team_manager', 'head_coach', 'physio'].includes(currentUser.role) ? 'block' : 'none';
           }
         });
         
@@ -829,10 +1147,22 @@
 
     function loadInitialData() {
       loadPlayerTable();
+      loadTrainingContent();
+      loadMedicalContent();
+      loadCrutchesContent();
+      loadInventoryContent();
+      loadUsersContent();
+      loadDashboardContent();
       
-      if (currentUser.role === 'player') {
-        document.querySelector(`.tab-btn[data-tab="athleteDashboard"]`).style.display = 'block';
-      }
+      // Set up event listeners for filters
+      elements.playerPositionFilter.addEventListener('change', loadPlayerTable);
+      elements.playerAmputationFilter.addEventListener('change', loadPlayerTable);
+      elements.dashboardPlayerFilter.addEventListener('change', loadDashboardContent);
+      elements.dashboardMetricFilter.addEventListener('change', loadDashboardContent);
+      elements.refreshDashboard.addEventListener('click', loadDashboardContent);
+      
+      // Set default date to today
+      elements.dashboardDateFilter.value = new Date().toISOString().split('T')[0];
     }
 
     function setupEventListeners() {
@@ -858,6 +1188,17 @@
           
           elements.tabContents.forEach(content => content.classList.remove('active'));
           document.getElementById(tabId).classList.add('active');
+          
+          // Refresh content when tab is clicked
+          switch(tabId) {
+            case 'players': loadPlayerTable(); break;
+            case 'training': loadTrainingContent(); break;
+            case 'medical': loadMedicalContent(); break;
+            case 'crutches': loadCrutchesContent(); break;
+            case 'inventory': loadInventoryContent(); break;
+            case 'users': loadUsersContent(); break;
+            case 'dashboard': loadDashboardContent(); break;
+          }
         });
       });
       
