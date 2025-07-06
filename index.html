@@ -1020,6 +1020,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    // Data Store
     const dataStore = {
       users: [
         { username: 'admin', password: 'admin123', role: 'admin', name: 'Admin User' },
@@ -1072,7 +1073,6 @@
           { id: 'ex2', name: 'Balance exercises', focus: 'Core Stability', sets: 2, reps: '10', addedBy: 'physio', difficulty: 'Beginner' }
         ]
       },
-      assignedExercises: {},
       medicalRecords: [
         { id: 'med1', playerId: 'player1', date: '2023-04-15', type: 'checkup', notes: 'Routine checkup - all good', followUp: false },
         { id: 'med2', playerId: 'player2', date: '2023-04-20', type: 'injury', notes: 'Shoulder strain diagnosed', followUp: true, followUpDate: '2023-05-05' }
@@ -1096,6 +1096,7 @@
       }
     };
 
+    // DOM Elements
     const elements = {
       loginOverlay: document.getElementById('loginOverlay'),
       loginForm: document.getElementById('loginForm'),
@@ -1166,6 +1167,7 @@
       userMenuBtn: document.getElementById('userMenuBtn')
     };
 
+    // App State
     let currentUser = null;
     let currentEditId = null;
     let performanceChartInstance = null;
@@ -1173,97 +1175,149 @@
     let injuryChartInstance = null;
     let attendanceChartInstance = null;
 
+    // Initialize the application
     function init() {
       setupEventListeners();
-      elements.loginOverlay.style.display = 'flex';
-      elements.appContent.style.display = 'none';
+      showLoginScreen();
       
+      // Load saved GitHub config if exists
       if (localStorage.getItem('githubToken')) {
-        elements.githubToken.value = localStorage.getItem('githubToken');
         dataStore.githubConfig.token = localStorage.getItem('githubToken');
+        elements.githubToken.value = dataStore.githubConfig.token;
       }
       
       if (localStorage.getItem('gistId')) {
-        elements.gistId.value = localStorage.getItem('gistId');
         dataStore.githubConfig.gistId = localStorage.getItem('gistId');
+        elements.gistId.value = dataStore.githubConfig.gistId;
       }
     }
 
+    function showLoginScreen() {
+      elements.loginOverlay.style.display = 'flex';
+      elements.appContent.style.display = 'none';
+      elements.loginForm.reset();
+      elements.loginError.style.display = 'none';
+    }
+
+    function showAppContent() {
+      elements.loginOverlay.style.display = 'none';
+      elements.appContent.style.display = 'block';
+    }
+
+    // Event Listeners
     function setupEventListeners() {
+      // Login Form
       elements.loginForm.addEventListener('submit', function(event) {
         event.preventDefault();
         handleLogin();
       });
       
-      elements.logoutBtn.addEventListener('click', handleLogout);
+      // Logout Button
+      elements.logoutBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        handleLogout();
+      });
       
+      // Tab Navigation
       elements.tabButtons.forEach(button => {
-        button.addEventListener('click', () => switchTab(button.dataset.tab));
+        button.addEventListener('click', function() {
+          switchTab(this.dataset.tab);
+        });
       });
       
+      // Physio Tab Navigation
       elements.physioTabButtons.forEach(button => {
-        button.addEventListener('click', () => switchPhysioTab(button.dataset.physioTab));
+        button.addEventListener('click', function() {
+          switchPhysioTab(this.dataset.physioTab);
+        });
       });
       
-      elements.addPlayerBtn.addEventListener('click', () => openPlayerModal());
-      elements.addExerciseBtn.addEventListener('click', () => openExerciseModal());
-      elements.addMedicalRecordBtn.addEventListener('click', () => openMedicalModal());
-      elements.addInventoryItem.addEventListener('click', () => openInventoryModal());
-      elements.addCrutchBtn.addEventListener('click', () => alert('Add crutch functionality would go here'));
-      elements.assignCrutchBtn.addEventListener('click', () => alert('Assign crutch functionality would go here'));
-      elements.crutchMaintenanceBtn.addEventListener('click', () => alert('Crutch maintenance functionality would go here'));
+      // Player Management
+      elements.addPlayerBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        openPlayerModal();
+      });
       
+      // Exercise Management
+      elements.addExerciseBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        openExerciseModal();
+      });
+      
+      // Medical Records
+      elements.addMedicalRecordBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        openMedicalModal();
+      });
+      
+      // Inventory Management
+      elements.addInventoryItem.addEventListener('click', function(event) {
+        event.preventDefault();
+        openInventoryModal();
+      });
+      
+      // Crutch Management
+      elements.addCrutchBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        alert('Add crutch functionality would go here');
+      });
+      
+      // Forms
       elements.playerForm.addEventListener('submit', handlePlayerSubmit);
       elements.exerciseForm.addEventListener('submit', handleExerciseSubmit);
       elements.medicalForm.addEventListener('submit', handleMedicalSubmit);
       elements.inventoryForm.addEventListener('submit', handleInventorySubmit);
       
+      // GitHub Sync
       elements.saveTokenBtn.addEventListener('click', saveToken);
       elements.loadFromGistBtn.addEventListener('click', loadFromGist);
       elements.saveToGistBtn.addEventListener('click', saveToGist);
       
+      // Modal Close Buttons
       document.querySelectorAll('.close-modal').forEach(button => {
-        button.addEventListener('click', () => {
-          document.querySelectorAll('.modal').forEach(modal => {
-            modal.style.display = 'none';
-          });
+        button.addEventListener('click', function() {
+          this.closest('.modal').style.display = 'none';
           currentEditId = null;
         });
       });
       
-      window.addEventListener('click', (event) => {
+      // Close modal when clicking outside
+      window.addEventListener('click', function(event) {
         if (event.target.classList.contains('modal')) {
           event.target.style.display = 'none';
           currentEditId = null;
         }
       });
 
+      // Follow-up date toggle
       document.getElementById('medicalFollowUp').addEventListener('change', function() {
         document.getElementById('followUpDateGroup').style.display = this.checked ? 'block' : 'none';
       });
 
-      elements.profileLink.addEventListener('click', (e) => {
-        e.preventDefault();
+      // User Menu Links
+      elements.profileLink.addEventListener('click', function(event) {
+        event.preventDefault();
         alert('Profile functionality would go here');
       });
 
-      elements.settingsLink.addEventListener('click', (e) => {
-        e.preventDefault();
+      elements.settingsLink.addEventListener('click', function(event) {
+        event.preventDefault();
         alert('Settings functionality would go here');
       });
 
-      elements.helpLink.addEventListener('click', (e) => {
-        e.preventDefault();
+      elements.helpLink.addEventListener('click', function(event) {
+        event.preventDefault();
         alert('Help functionality would go here');
       });
 
-      elements.filterAllPlayers.addEventListener('click', (e) => {
-        e.preventDefault();
+      // Player Filters
+      elements.filterAllPlayers.addEventListener('click', function(event) {
+        event.preventDefault();
         loadPlayerTable();
       });
 
-      elements.filterActivePlayers.addEventListener('click', (e) => {
-        e.preventDefault();
+      elements.filterActivePlayers.addEventListener('click', function(event) {
+        event.preventDefault();
         const activePlayers = dataStore.players.filter(p => 
           !p.injuryHistory || p.injuryHistory.length === 0 || 
           p.injuryHistory.every(i => new Date(i.date) < new Date(new Date().setDate(new Date().getDate() - 30))
@@ -1271,35 +1325,37 @@
         renderPlayerTable(activePlayers);
       });
 
-      elements.filterInjuredPlayers.addEventListener('click', (e) => {
-        e.preventDefault();
+      elements.filterInjuredPlayers.addEventListener('click', function(event) {
+        event.preventDefault();
         const injuredPlayers = dataStore.players.filter(p => 
           p.injuryHistory && p.injuryHistory.some(i => new Date(i.date) >= new Date(new Date().setDate(new Date().getDate() - 30))
         );
         renderPlayerTable(injuredPlayers);
       });
 
-      elements.exportPlayersBtn.addEventListener('click', (e) => {
-        e.preventDefault();
+      // Export/Import
+      elements.exportPlayersBtn.addEventListener('click', function(event) {
+        event.preventDefault();
         exportPlayers();
       });
 
-      elements.importPlayersBtn.addEventListener('click', (e) => {
-        e.preventDefault();
+      elements.importPlayersBtn.addEventListener('click', function(event) {
+        event.preventDefault();
         importPlayers();
       });
 
-      elements.exportInventoryBtn.addEventListener('click', (e) => {
-        e.preventDefault();
+      elements.exportInventoryBtn.addEventListener('click', function(event) {
+        event.preventDefault();
         exportInventory();
       });
 
-      elements.importInventoryBtn.addEventListener('click', (e) => {
-        e.preventDefault();
+      elements.importInventoryBtn.addEventListener('click', function(event) {
+        event.preventDefault();
         importInventory();
       });
     }
 
+    // Login Handler
     function handleLogin() {
       const username = elements.username.value.trim();
       const password = elements.password.value.trim();
@@ -1313,9 +1369,8 @@
       
       if (user) {
         currentUser = user;
-        elements.loginOverlay.style.display = 'none';
-        elements.appContent.style.display = 'block';
         elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
+        showAppContent();
         setupRoleBasedUI();
         loadInitialData();
       } else {
@@ -1328,14 +1383,13 @@
       elements.loginError.style.display = 'block';
     }
 
+    // Logout Handler
     function handleLogout() {
       currentUser = null;
-      elements.loginOverlay.style.display = 'flex';
-      elements.appContent.style.display = 'none';
-      elements.loginError.style.display = 'none';
-      elements.loginForm.reset();
+      showLoginScreen();
     }
 
+    // Role-Based UI Setup
     function setupRoleBasedUI() {
       const permissions = {
         admin: {
@@ -1408,13 +1462,16 @@
 
       const userPermissions = permissions[currentUser.role] || {};
       
+      // Show/hide tabs based on permissions
       elements.tabButtons.forEach(tab => {
         const tabId = tab.dataset.tab;
         tab.style.display = userPermissions[tabId] ? 'block' : 'none';
       });
 
+      // Show/hide action buttons based on permissions
       elements.addPlayerBtn.style.display = userPermissions.canEditPlayers ? 'block' : 'none';
 
+      // Set up dashboard view based on role
       elements.teamDashboard.style.display = 'none';
       elements.playerDashboard.style.display = 'none';
       elements.physioDashboard.style.display = 'none';
@@ -1427,11 +1484,15 @@
         elements.physioDashboard.style.display = 'block';
       }
 
+      // Activate the first visible tab
       const firstVisibleTab = document.querySelector('.tab-btn[style="display: block;"]') || 
                              document.querySelector('.tab-btn.active');
-      if (firstVisibleTab) switchTab(firstVisibleTab.dataset.tab);
+      if (firstVisibleTab) {
+        switchTab(firstVisibleTab.dataset.tab);
+      }
     }
 
+    // Load Initial Data
     function loadInitialData() {
       loadPlayerTable();
       loadTrainingPrograms();
@@ -1446,12 +1507,14 @@
       }
     }
 
+    // Player Dashboard
     function loadPlayerDashboard() {
       if (!currentUser.playerId) return;
       
       const player = dataStore.players.find(p => p.id === currentUser.playerId);
       if (!player) return;
       
+      // Personal Info
       elements.playerPersonalInfo.innerHTML = `
         <div class="player-info-row">
           <div class="player-info-label">Name:</div>
@@ -1483,6 +1546,7 @@
         </div>
       `;
       
+      // Training Plan
       if (player.trainingPlan && player.trainingPlan.length > 0) {
         let trainingHTML = '';
         player.trainingPlan.forEach(item => {
@@ -1494,7 +1558,7 @@
                 <p><strong>Focus:</strong> ${exercise.focus}</p>
                 <p><strong>Sets/Reps:</strong> ${exercise.sets} x ${exercise.reps}</p>
                 <p><strong>Difficulty:</strong> ${exercise.difficulty || 'Not specified'}</p>
-                <p><strong>Assigned:</strong> ${item.assignedDate}</p>
+                <p><strong>Assigned:</strong> ${formatDate(item.assignedDate)}</p>
                 <p><strong>Status:</strong> ${item.completed ? 'Completed' : 'Pending'}</p>
               </div>
             `;
@@ -1505,6 +1569,7 @@
         elements.playerTrainingPlan.innerHTML = '<p>No training plan assigned yet.</p>';
       }
       
+      // Medical Info
       const medicalRecords = dataStore.medicalRecords.filter(record => record.playerId === player.id);
       if (medicalRecords.length > 0) {
         let medicalHTML = '';
@@ -1523,7 +1588,9 @@
       }
     }
 
+    // Physio Dashboard
     function loadPhysioContent() {
+      // Rehabilitation Programs
       let rehabHTML = '';
       dataStore.rehabPrograms.forEach(program => {
         const player = dataStore.players.find(p => p.id === program.playerId);
@@ -1543,6 +1610,7 @@
       });
       elements.rehabContent.innerHTML = rehabHTML || '<p>No rehabilitation programs found.</p>';
       
+      // Injury Tracking
       let injuryHTML = '';
       dataStore.players.forEach(player => {
         if (player.injuryHistory && player.injuryHistory.length > 0) {
@@ -1575,6 +1643,7 @@
       });
       elements.injuryContent.innerHTML = injuryHTML || '<p>No injury records found.</p>';
       
+      // Recovery Progress
       let recoveryHTML = '';
       dataStore.players.forEach(player => {
         recoveryHTML += `
@@ -1589,18 +1658,23 @@
       elements.recoveryContent.innerHTML = recoveryHTML || '<p>No recovery data found.</p>';
     }
 
+    // Tab Navigation
     function switchTab(tabId) {
+      // Hide all tab contents
       elements.tabContents.forEach(content => {
         content.classList.remove('active');
       });
       
+      // Deactivate all tab buttons
       elements.tabButtons.forEach(button => {
         button.classList.remove('active');
       });
       
+      // Activate selected tab
       document.getElementById(tabId).classList.add('active');
       document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
       
+      // Load specific content if needed
       if (tabId === 'dashboard') {
         if (currentUser.role === 'player') {
           loadPlayerDashboard();
@@ -1609,14 +1683,20 @@
         } else {
           refreshDashboard();
         }
+      } else if (tabId === 'players') {
+        loadPlayerTable();
+      } else if (tabId === 'training') {
+        loadTrainingPrograms();
+      } else if (tabId === 'medical') {
+        loadMedicalAlerts();
+      } else if (tabId === 'crutches') {
+        loadCrutchContent();
+      } else if (tabId === 'inventory') {
+        loadInventoryManagement();
       }
-      if (tabId === 'players') loadPlayerTable();
-      if (tabId === 'training') loadTrainingPrograms();
-      if (tabId === 'medical') loadMedicalAlerts();
-      if (tabId === 'crutches') loadCrutchContent();
-      if (tabId === 'inventory') loadInventoryManagement();
     }
 
+    // Physio Tab Navigation
     function switchPhysioTab(tabId) {
       elements.physioTabContents.forEach(content => {
         content.classList.remove('active');
@@ -1630,6 +1710,7 @@
       document.querySelector(`.physio-tab-btn[data-physio-tab="${tabId}"]`).classList.add('active');
     }
 
+    // Player Management
     function loadPlayerTable() {
       renderPlayerTable(dataStore.players);
     }
@@ -1676,6 +1757,7 @@
       return date.toLocaleDateString();
     }
 
+    // Training Programs
     function loadTrainingPrograms() {
       if (dataStore.exercises.universal.length === 0) {
         elements.trainingPrograms.innerHTML = '<p>No exercises found.</p>';
@@ -1698,6 +1780,7 @@
       elements.trainingPrograms.innerHTML = html;
     }
 
+    // Medical Records
     function loadMedicalAlerts() {
       if (dataStore.medicalRecords.length === 0) {
         elements.medicalAlerts.innerHTML = '<p>No medical records found.</p>';
@@ -1720,6 +1803,7 @@
       elements.medicalAlerts.innerHTML = html;
     }
 
+    // Crutch Management
     function loadCrutchContent() {
       if (dataStore.crutchData.length === 0) {
         elements.crutchContent.innerHTML = '<p>No crutch assessments found.</p>';
@@ -1745,6 +1829,7 @@
       elements.crutchContent.innerHTML = html;
     }
 
+    // Inventory Management
     function loadInventoryManagement() {
       elements.inventoryTable.innerHTML = '';
       
@@ -1812,12 +1897,15 @@
       });
     }
 
+    // Charts
     function initCharts() {
+      // Destroy existing charts if they exist
       if (performanceChartInstance) performanceChartInstance.destroy();
       if (fitnessChartInstance) fitnessChartInstance.destroy();
       if (injuryChartInstance) injuryChartInstance.destroy();
       if (attendanceChartInstance) attendanceChartInstance.destroy();
       
+      // Performance Chart
       const performanceCtx = elements.performanceChart.getContext('2d');
       performanceChartInstance = new Chart(performanceCtx, {
         type: 'bar',
@@ -1843,6 +1931,7 @@
         }
       });
       
+      // Fitness Chart
       const fitnessCtx = elements.fitnessChart.getContext('2d');
       fitnessChartInstance = new Chart(fitnessCtx, {
         type: 'line',
@@ -1869,6 +1958,7 @@
         }
       });
       
+      // Injury Chart
       const injuryCtx = elements.injuryChart.getContext('2d');
       injuryChartInstance = new Chart(injuryCtx, {
         type: 'pie',
@@ -1891,6 +1981,7 @@
         }
       });
       
+      // Attendance Chart
       const attendanceCtx = elements.attendanceChart.getContext('2d');
       attendanceChartInstance = new Chart(attendanceCtx, {
         type: 'radar',
@@ -1921,14 +2012,10 @@
     }
 
     function refreshDashboard() {
-      if (performanceChartInstance) performanceChartInstance.destroy();
-      if (fitnessChartInstance) fitnessChartInstance.destroy();
-      if (injuryChartInstance) injuryChartInstance.destroy();
-      if (attendanceChartInstance) attendanceChartInstance.destroy();
-      
       initCharts();
     }
 
+    // Modals
     function openPlayerModal(playerId = null) {
       currentEditId = playerId;
       const modal = document.getElementById('playerModal');
@@ -1996,6 +2083,7 @@
       modal.style.display = 'block';
     }
 
+    // Form Handlers
     function handlePlayerSubmit(event) {
       event.preventDefault();
       
@@ -2120,10 +2208,12 @@
       loadInventoryManagement();
     }
 
+    // Utility Functions
     function generateId() {
       return Math.random().toString(36).substr(2, 9);
     }
 
+    // Export/Import
     function exportPlayers() {
       const dataStr = JSON.stringify(dataStore.players, null, 2);
       const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -2210,6 +2300,7 @@
       fileInput.click();
     }
 
+    // GitHub Sync
     function saveToken() {
       const token = elements.githubToken.value.trim();
       const gistId = elements.gistId.value.trim();
@@ -2358,6 +2449,7 @@
       }, 5000);
     }
 
+    // Global Functions (needed for inline event handlers)
     window.editPlayer = function(playerId) {
       if (currentUser.role === 'admin' || currentUser.role === 'team_manager') {
         openPlayerModal(playerId);
@@ -2386,6 +2478,7 @@
       }
     };
 
+    // Initialize the application when the DOM is loaded
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
