@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AFPRS - Login</title>
+  <title>AFPRS - Amputee Football Player Registry System</title>
   <style>
     :root {
       --primary: #3498db;
@@ -23,18 +23,27 @@
       background-color: #f5f7fa;
       color: #333;
       line-height: 1.6;
-      height: 100vh;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    #loginSection {
       display: flex;
       justify-content: center;
       align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #6e8efb, #a777e3);
     }
-    .login-container {
-      width: 100%;
-      max-width: 400px;
+    .login-box {
       background: white;
       padding: 30px;
       border-radius: 8px;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
     }
     .login-header {
       text-align: center;
@@ -84,79 +93,96 @@
     .demo-accounts li {
       margin-bottom: 5px;
     }
-    .dashboard {
+    #dashboardSection {
       display: none;
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
     }
     .dashboard-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #ddd;
     }
     .dashboard-card {
       background: white;
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .welcome-message {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .error-message {
+      color: var(--danger);
+      margin-top: 10px;
+      text-align: center;
+      display: none;
     }
   </style>
 </head>
 <body>
   <!-- Login Section -->
-  <div class="login-container" id="loginSection">
-    <div class="login-header">
-      <img src="Logo_AmpFootballBelgium.png" alt="AFPRS Logo" class="login-logo">
-      <h1>AFPRS Login</h1>
-    </div>
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="username">Username:</label>
-        <input type="text" id="username" placeholder="Username" required>
+  <div id="loginSection">
+    <div class="login-box">
+      <div class="login-header">
+        <img src="Logo_AmpFootballBelgium.png" alt="AFPRS Logo" class="login-logo">
+        <h1>AFPRS Login</h1>
       </div>
-      <div class="form-group">
-        <label for="password">Password:</label>
-        <input type="password" id="password" placeholder="Password" required>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" placeholder="Username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" placeholder="Password" required>
+        </div>
+        <button type="submit" id="loginButton">Login</button>
+        <div id="loginError" class="error-message">Invalid username or password</div>
+      </form>
+      <div class="demo-accounts">
+        <p><strong>Demo Accounts:</strong></p>
+        <ul>
+          <li><strong>Admin:</strong> admin / admin123</li>
+          <li><strong>Team Manager:</strong> manager / manager123</li>
+          <li><strong>Head Coach:</strong> headcoach / coach123</li>
+          <li><strong>Physio:</strong> physio / physio123</li>
+          <li><strong>GK1:</strong> gk1 / player123</li>
+          <li><strong>DEF1:</strong> def1 / player123</li>
+        </ul>
       </div>
-      <button type="submit" id="loginButton">Login</button>
-    </form>
-    <div class="demo-accounts">
-      <p><strong>Demo Accounts:</strong></p>
-      <ul>
-        <li><strong>Admin:</strong> admin / admin123</li>
-        <li><strong>Team Manager:</strong> manager / manager123</li>
-        <li><strong>Head Coach:</strong> headcoach / coach123</li>
-        <li><strong>Physio:</strong> physio / physio123</li>
-        <li><strong>GK1:</strong> gk1 / player123</li>
-        <li><strong>DEF1:</strong> def1 / player123</li>
-      </ul>
     </div>
   </div>
 
   <!-- Dashboard Section -->
-  <div class="dashboard" id="dashboardSection">
+  <div class="container" id="dashboardSection">
     <div class="dashboard-header">
       <h1>AFPRS Dashboard</h1>
       <button id="logoutBtn">Logout</button>
     </div>
+    
     <div class="dashboard-card">
-      <h2>Welcome, <span id="welcomeUser"></span></h2>
-      <p>You have successfully logged in to the Amputee Football Player Registry System.</p>
+      <div class="welcome-message" id="welcomeMessage"></div>
+      <h2>Player Management</h2>
+      <p>You have successfully accessed the AFPRS system.</p>
+      <div id="dashboardContent">
+        <!-- Dashboard content will be loaded here -->
+      </div>
     </div>
   </div>
 
   <script>
     // User database
     const users = [
-      { username: 'admin', password: 'admin123', name: 'System Admin' },
-      { username: 'manager', password: 'manager123', name: 'Team Manager' },
-      { username: 'headcoach', password: 'coach123', name: 'Head Coach' },
-      { username: 'physio', password: 'physio123', name: 'Physiotherapist' },
-      { username: 'gk1', password: 'player123', name: 'Goalkeeper 1' },
-      { username: 'def1', password: 'player123', name: 'Defender 1' }
+      { username: 'admin', password: 'admin123', name: 'System Admin', role: 'admin' },
+      { username: 'manager', password: 'manager123', name: 'Team Manager', role: 'manager' },
+      { username: 'headcoach', password: 'coach123', name: 'Head Coach', role: 'coach' },
+      { username: 'physio', password: 'physio123', name: 'Physiotherapist', role: 'physio' },
+      { username: 'gk1', password: 'player123', name: 'Goalkeeper 1', role: 'player' },
+      { username: 'def1', password: 'player123', name: 'Defender 1', role: 'player' }
     ];
 
     // DOM Elements
@@ -165,9 +191,11 @@
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     const loginButton = document.getElementById('loginButton');
+    const loginError = document.getElementById('loginError');
     const dashboardSection = document.getElementById('dashboardSection');
-    const welcomeUser = document.getElementById('welcomeUser');
+    const welcomeMessage = document.getElementById('welcomeMessage');
     const logoutBtn = document.getElementById('logoutBtn');
+    const dashboardContent = document.getElementById('dashboardContent');
 
     // Login function
     function handleLogin(event) {
@@ -176,39 +204,93 @@
       const username = usernameInput.value.trim();
       const password = passwordInput.value.trim();
       
+      // Show loading state
       loginButton.disabled = true;
       loginButton.textContent = 'Logging in...';
+      loginError.style.display = 'none';
       
+      // Simulate authentication delay
       setTimeout(() => {
         const user = users.find(u => u.username === username && u.password === password);
         
         if (user) {
+          // Successful login
           loginSection.style.display = 'none';
           dashboardSection.style.display = 'block';
-          welcomeUser.textContent = user.name;
+          welcomeMessage.textContent = `Welcome, ${user.name}!`;
+          loadDashboardContent(user.role);
         } else {
-          alert('Invalid username or password');
+          // Failed login
+          loginError.style.display = 'block';
           loginButton.disabled = false;
           loginButton.textContent = 'Login';
         }
       }, 500);
     }
 
+    // Load dashboard content based on user role
+    function loadDashboardContent(role) {
+      let content = '';
+      
+      switch(role) {
+        case 'admin':
+          content = `
+            <h3>Admin Dashboard</h3>
+            <p>You have full access to all system features.</p>
+            <ul>
+              <li>User Management</li>
+              <li>System Configuration</li>
+              <li>Player Records</li>
+              <li>Reporting Tools</li>
+            </ul>
+          `;
+          break;
+        case 'manager':
+          content = `
+            <h3>Team Manager Dashboard</h3>
+            <p>You can manage team operations and player records.</p>
+          `;
+          break;
+        case 'coach':
+          content = `
+            <h3>Coach Dashboard</h3>
+            <p>Access training schedules and player performance data.</p>
+          `;
+          break;
+        case 'physio':
+          content = `
+            <h3>Physio Dashboard</h3>
+            <p>View and update player medical records.</p>
+          `;
+          break;
+        case 'player':
+          content = `
+            <h3>Player Dashboard</h3>
+            <p>View your training schedule and performance data.</p>
+          `;
+          break;
+        default:
+          content = `<p>Welcome to AFPRS</p>`;
+      }
+      
+      dashboardContent.innerHTML = content;
+    }
+
     // Logout function
     function handleLogout() {
       dashboardSection.style.display = 'none';
-      loginSection.style.display = 'block';
+      loginSection.style.display = 'flex';
       usernameInput.value = '';
       passwordInput.value = '';
       loginButton.disabled = false;
       loginButton.textContent = 'Login';
     }
 
-    // Event listeners
+    // Event Listeners
     loginForm.addEventListener('submit', handleLogin);
     logoutBtn.addEventListener('click', handleLogout);
 
-    // Auto-fill admin credentials if #admin hash is present
+    // Auto-fill demo admin credentials if #admin hash is present
     if (window.location.hash === '#admin') {
       usernameInput.value = 'admin';
       passwordInput.value = 'admin123';
