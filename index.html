@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AFPRS - Amputee Football Player Registry System</title>
+  <link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css" rel="stylesheet">
   <style>
     :root {
       --primary: #3498db;
@@ -29,7 +30,7 @@
       margin: 0 auto;
       padding: 20px;
     }
-    #loginSection {
+    #loginOverlay {
       position: fixed;
       top: 0;
       left: 0;
@@ -156,6 +157,10 @@
       padding: 20px;
       margin-bottom: 20px;
     }
+    .chart-container {
+      height: 400px;
+      position: relative;
+    }
     .github-sync-form {
       max-width: 600px;
       margin: 0 auto;
@@ -199,12 +204,25 @@
       background-color: #f8d7da;
       color: #721c24;
     }
+    .upload-section {
+      margin-top: 30px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+    .data-preview {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- Login Section -->
-    <div id="loginSection">
+    <div id="loginOverlay">
       <div class="login-header">
         <img src="Logo_AmpFootballBelgium.png" alt="AFPRS Logo" class="login-logo">
         <h1>Amputee Football Player Registry System</h1>
@@ -238,7 +256,7 @@
       <header>
         <div class="header-content">
           <img src="Logo_AmpFootballBelgium.png" alt="AFPRS Logo" class="logo">
-          <h1 id="welcomeHeader"></h1>
+          <h1 id="welcomeHeader">AFPRS Dashboard</h1>
         </div>
         <button id="logoutBtn">Logout</button>
       </header>
@@ -253,16 +271,50 @@
       <!-- Dashboard Tab -->
       <div class="tab-content active" id="dashboard">
         <div class="card">
-          <h2>Welcome to AFPRS</h2>
-          <p>You have successfully logged in to the Amputee Football Player Registry System.</p>
+          <h2>Team Performance</h2>
+          <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Recent Activities</h2>
+          <div class="chart-container" style="height:300px">
+            <canvas id="activityChart"></canvas>
+          </div>
         </div>
       </div>
 
       <!-- Players Tab -->
       <div class="tab-content" id="players">
         <div class="card">
-          <h2>Player Management</h2>
-          <p>Player roster and management tools will appear here.</p>
+          <h2>Player Roster</h2>
+          <div class="chart-container" style="height:300px">
+            <canvas id="playersChart"></canvas>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Carlos Mendez</td>
+                <td>Goalkeeper</td>
+                <td>Active</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>James Wilson</td>
+                <td>Defender</td>
+                <td>Active</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -270,7 +322,33 @@
       <div class="tab-content" id="training">
         <div class="card">
           <h2>Training Programs</h2>
-          <p>Training schedules and performance tracking will appear here.</p>
+          <div class="chart-container">
+            <canvas id="trainingChart"></canvas>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Duration</th>
+                <th>Intensity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2023-06-20</td>
+                <td>Technical</td>
+                <td>90 min</td>
+                <td>High</td>
+              </tr>
+              <tr>
+                <td>2023-06-18</td>
+                <td>Physical</td>
+                <td>120 min</td>
+                <td>Medium</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -278,31 +356,44 @@
       <div class="tab-content" id="githubSync">
         <div class="card">
           <h2>GitHub Gist Sync</h2>
+          
           <div class="github-sync-form">
             <div class="form-group">
               <label for="gistToken">GitHub Personal Access Token:</label>
               <input type="password" id="gistToken" placeholder="Enter your GitHub token">
               <small>Create a token with "gist" scope at GitHub Settings > Developer Settings</small>
             </div>
+            
             <div class="form-group">
-              <label for="gistId">Gist ID (leave empty to create new):</label>
+              <label for="gistId">Gist ID (for existing gists):</label>
               <input type="text" id="gistId" placeholder="Existing Gist ID">
             </div>
-            <div class="form-group">
-              <label for="backupName">Backup Name:</label>
-              <input type="text" id="backupName" placeholder="My AFPRS Backup">
-            </div>
+            
             <div class="button-group">
               <button id="uploadToGist" class="btn-secondary">Upload to Gist</button>
               <button id="loadFromGist">Load from Gist</button>
             </div>
+            
             <div id="syncStatus" class="status-message"></div>
+          </div>
+          
+          <div class="upload-section">
+            <h3>Data Management</h3>
+            <div class="button-group">
+              <button id="exportData">Export Current Data</button>
+              <button id="importData">Import Data File</button>
+              <input type="file" id="fileInput" accept=".json" style="display:none">
+            </div>
+            <div class="data-preview">
+              <pre id="dataPreview">No data loaded</pre>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
   <script>
     // User database
     const users = [
@@ -311,15 +402,20 @@
       { username: 'headcoach', password: 'coach123', name: 'Head Coach', role: 'coach' }
     ];
 
-    // Sample data storage
+    // Application data store
     let appData = {
       players: [
         { id: 1, name: 'Carlos Mendez', position: 'Goalkeeper', status: 'Active' },
         { id: 2, name: 'James Wilson', position: 'Defender', status: 'Active' }
       ],
       training: [
-        { id: 1, date: '2023-06-20', type: 'Technical', duration: '90 min' }
-      ]
+        { id: 1, date: '2023-06-20', type: 'Technical', duration: '90 min', intensity: 'High' },
+        { id: 2, date: '2023-06-18', type: 'Physical', duration: '120 min', intensity: 'Medium' }
+      ],
+      performance: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        data: [65, 59, 80, 81, 76, 85]
+      }
     };
 
     // DOM Elements
@@ -337,16 +433,114 @@
     const loadFromGist = document.getElementById('loadFromGist');
     const gistToken = document.getElementById('gistToken');
     const gistId = document.getElementById('gistId');
-    const backupName = document.getElementById('backupName');
     const syncStatus = document.getElementById('syncStatus');
+    const exportData = document.getElementById('exportData');
+    const importData = document.getElementById('importData');
+    const fileInput = document.getElementById('fileInput');
+    const dataPreview = document.getElementById('dataPreview');
 
     let currentUser = null;
+    let charts = {};
+
+    // Initialize all charts
+    function initCharts() {
+      // Performance Chart
+      charts.performance = new Chart(
+        document.getElementById('performanceChart').getContext('2d'), 
+        {
+          type: 'line',
+          data: {
+            labels: appData.performance.labels,
+            datasets: [{
+              label: 'Team Performance Index',
+              data: appData.performance.data,
+              fill: false,
+              borderColor: 'rgb(75, 192, 192)',
+              tension: 0.1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        }
+      );
+
+      // Activity Chart
+      charts.activity = new Chart(
+        document.getElementById('activityChart').getContext('2d'), 
+        {
+          type: 'bar',
+          data: {
+            labels: ['Training', 'Matches', 'Medical', 'Other'],
+            datasets: [{
+              label: 'Monthly Activities',
+              data: [12, 4, 8, 3],
+              backgroundColor: [
+                'rgba(54, 162, 235, 0.5)',
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(75, 192, 192, 0.5)',
+                'rgba(153, 102, 255, 0.5)'
+              ]
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        }
+      );
+
+      // Players Chart
+      charts.players = new Chart(
+        document.getElementById('playersChart').getContext('2d'), 
+        {
+          type: 'pie',
+          data: {
+            labels: ['Goalkeepers', 'Defenders', 'Forwards'],
+            datasets: [{
+              data: [2, 5, 3],
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(54, 162, 235, 0.5)',
+                'rgba(255, 206, 86, 0.5)'
+              ]
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        }
+      );
+
+      // Training Chart
+      charts.training = new Chart(
+        document.getElementById('trainingChart').getContext('2d'), 
+        {
+          type: 'radar',
+          data: {
+            labels: ['Technical', 'Physical', 'Tactical', 'Mental', 'Recovery'],
+            datasets: [{
+              label: 'Training Focus',
+              data: [85, 75, 80, 65, 70],
+              fill: true,
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              borderColor: 'rgb(54, 162, 235)'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        }
+      );
+    }
 
     // GitHub Gist API functions
     async function uploadToGitHubGist() {
       const token = gistToken.value.trim();
       const id = gistId.value.trim();
-      const name = backupName.value.trim() || 'AFPRS Backup';
       
       if (!token) {
         showSyncStatus('GitHub token is required', 'error');
@@ -371,7 +565,7 @@
             description: `AFPRS Backup - ${new Date().toISOString()}`,
             public: false,
             files: {
-              [`${name}.json`]: {
+              'afprs-backup.json': {
                 content: JSON.stringify(appData, null, 2)
               }
             }
@@ -385,6 +579,7 @@
             gistId.value = data.id;
           }
           showSyncStatus(`Successfully ${id ? 'updated' : 'created'} Gist: ${data.html_url}`, 'success');
+          updateDataPreview();
         } else {
           throw new Error(data.message || 'Failed to save to Gist');
         }
@@ -414,15 +609,15 @@
         const data = await response.json();
 
         if (response.ok) {
-          // Find the first JSON file in the Gist
-          const file = Object.values(data.files).find(f => f.filename.endsWith('.json'));
+          const file = data.files['afprs-backup.json'] || Object.values(data.files)[0];
           if (file) {
             appData = JSON.parse(file.content);
             showSyncStatus('Successfully loaded data from Gist', 'success');
-            // Refresh UI with loaded data
-            // You would implement this based on your app's needs
+            updateDataPreview();
+            // Reinitialize charts with new data
+            initCharts();
           } else {
-            throw new Error('No JSON data found in Gist');
+            throw new Error('No valid data found in Gist');
           }
         } else {
           throw new Error(data.message || 'Failed to load Gist');
@@ -431,6 +626,38 @@
         showSyncStatus(`Error: ${error.message}`, 'error');
         console.error('Gist error:', error);
       }
+    }
+
+    // Local file handling
+    function exportDataToFile() {
+      const dataStr = JSON.stringify(appData, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = `afprs-backup-${new Date().toISOString().split('T')[0]}.json`;
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    }
+
+    function importDataFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          appData = JSON.parse(e.target.result);
+          updateDataPreview();
+          showSyncStatus('Successfully imported data from file', 'success');
+          initCharts();
+        } catch (error) {
+          showSyncStatus('Error parsing JSON file', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function updateDataPreview() {
+      dataPreview.textContent = JSON.stringify(appData, null, 2);
     }
 
     function showSyncStatus(message, type = 'info') {
@@ -457,6 +684,8 @@
           appContent.style.display = 'block';
           welcomeHeader.textContent = `Welcome, ${user.name}`;
           updateUIForRole(user.role);
+          initCharts();
+          updateDataPreview();
         } else {
           alert('Invalid username or password');
           loginButton.disabled = false;
@@ -517,6 +746,10 @@
       passwordInput.value = '';
       loginButton.disabled = false;
       loginButton.textContent = 'Login';
+      
+      // Destroy charts
+      Object.values(charts).forEach(chart => chart.destroy());
+      charts = {};
     }
 
     // Event Listeners
@@ -529,6 +762,13 @@
 
     uploadToGist.addEventListener('click', uploadToGitHubGist);
     loadFromGist.addEventListener('click', loadFromGitHubGist);
+    exportData.addEventListener('click', exportDataToFile);
+    importData.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        importDataFromFile(e.target.files[0]);
+      }
+    });
 
     // Auto-fill demo admin credentials if #admin hash is present
     if (window.location.hash === '#admin') {
