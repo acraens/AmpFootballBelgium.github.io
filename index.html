@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AFPRS - Amputee Football Player Registry System</title>
-  <link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css" rel="stylesheet">
+  <title>AFPRS - Amputee Football</title>
   <style>
     :root {
       --primary: #3498db;
@@ -14,22 +13,26 @@
       --dark: #2c3e50;
       --light: #ecf0f1;
     }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f5f7fa;
       color: #333;
       line-height: 1.6;
     }
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
     }
+
     #loginOverlay {
       position: fixed;
       top: 0;
@@ -43,185 +46,609 @@
       z-index: 1000;
       flex-direction: column;
     }
+
     .login-header {
       text-align: center;
-      margin-bottom: 30px;
-      color: white;
+      margin-bottom: 20px;
     }
+
     .login-logo {
-      width: 150px;
+      height: 80px;
+      width: auto;
       margin-bottom: 15px;
     }
+
     .login-box {
       background: white;
       padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
       width: 100%;
       max-width: 400px;
-    }
-    .login-box h1 {
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       text-align: center;
+    }
+
+    .login-box h1 {
       margin-bottom: 20px;
       color: var(--dark);
     }
-    .form-group {
-      margin-bottom: 20px;
+
+    .demo-accounts {
+      margin-top: 20px;
+      text-align: left;
+      font-size: 14px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
     }
+
+    .demo-accounts ul {
+      margin-top: 10px;
+      padding-left: 20px;
+    }
+
+    .demo-accounts li {
+      margin-bottom: 5px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
     .form-group label {
       display: block;
       margin-bottom: 5px;
-      font-weight: bold;
+      font-weight: 600;
+      color: var(--dark);
     }
-    .form-group input {
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       border: 1px solid #ddd;
-      border-radius: 4px;
+      border-radius: 5px;
       font-size: 16px;
     }
+
+    select[multiple] {
+      height: auto;
+      min-height: 100px;
+    }
+
     button {
       background-color: var(--primary);
       color: white;
       border: none;
-      padding: 12px;
-      border-radius: 4px;
+      padding: 10px 20px;
+      border-radius: 5px;
       cursor: pointer;
-      width: 100%;
       font-size: 16px;
       transition: background-color 0.3s;
     }
+
     button:hover {
       background-color: #2980b9;
     }
-    .demo-accounts {
-      margin-top: 20px;
-      font-size: 14px;
+
+    .btn-primary {
+      background-color: var(--primary);
     }
-    .demo-accounts ul {
-      list-style: none;
-      margin-top: 10px;
+
+    .btn-primary:hover {
+      background-color: #2980b9;
     }
-    .demo-accounts li {
-      margin-bottom: 5px;
+
+    .btn-danger {
+      background-color: var(--danger);
     }
+
+    .btn-danger:hover {
+      background-color: #c0392b;
+    }
+
+    .btn-warning {
+      background-color: var(--warning);
+      color: #fff;
+    }
+
+    .btn-warning:hover {
+      background-color: #e67e22;
+    }
+
+    #logoutBtn {
+      background-color: var(--danger);
+    }
+
+    #logoutBtn:hover {
+      background-color: #c0392b;
+    }
+
     #appContent {
       display: none;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      overflow: hidden;
     }
+
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #ddd;
+      padding: 15px 20px;
+      background-color: var(--dark);
+      color: white;
     }
+
     .header-content {
       display: flex;
       align-items: center;
+      gap: 15px;
     }
+
     .logo {
-      width: 50px;
-      margin-right: 15px;
+      height: 50px;
+      width: auto;
     }
+
+    header h1 {
+      font-size: 24px;
+      margin: 0;
+    }
+
     .tabs {
       display: flex;
-      margin-bottom: 20px;
       border-bottom: 1px solid #ddd;
       flex-wrap: wrap;
     }
+
     .tab-btn {
-      padding: 10px 20px;
+      padding: 12px 20px;
       background: none;
       border: none;
-      border-bottom: 3px solid transparent;
       cursor: pointer;
-      color: var(--dark);
       font-size: 16px;
-      white-space: nowrap;
+      transition: all 0.3s;
+      border-bottom: 3px solid transparent;
     }
+
     .tab-btn.active {
-      border-bottom-color: var(--primary);
+      border-bottom: 3px solid var(--primary);
+      color: var(--primary);
       font-weight: bold;
     }
+
     .tab-content {
       display: none;
+      padding: 20px;
     }
+
     .tab-content.active {
       display: block;
     }
+
     .card {
       background: white;
       border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       padding: 20px;
       margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .chart-container {
-      height: 400px;
-      position: relative;
+
+    .card h2 {
+      margin-bottom: 20px;
+      color: var(--dark);
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
     }
-    .github-sync-form {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .github-sync-form .form-group {
-      margin-bottom: 15px;
-    }
-    .github-sync-form label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    .github-sync-form input {
+
+    table {
       width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      border-collapse: collapse;
+      margin: 20px 0;
     }
-    .button-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
     }
-    .btn-secondary {
+
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      min-height: 300px;
+      margin: 20px 0;
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .badge-primary {
+      background-color: var(--primary);
+    }
+
+    .badge-secondary {
       background-color: var(--secondary);
     }
-    .status-message {
+
+    .badge-danger {
+      background-color: var(--danger);
+    }
+
+    .badge-warning {
+      background-color: var(--warning);
+    }
+
+    .crutch-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+      background-color: #3498db;
+    }
+
+    .medical-alert {
+      background: #fff3f3;
+      border-left: 4px solid #e74c3c;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .medical-alert h4 {
+      margin-bottom: 5px;
+      color: var(--dark);
+    }
+
+    .exercise {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .exercise h4 {
+      margin-top: 0;
+      color: var(--dark);
+    }
+
+    .exercise p {
+      margin: 5px 0;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      right: 20px;
+      top: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .exercise-actions {
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .last-completed {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .athlete-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 10px 0;
+    }
+
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .exercise-item {
+      background: #f8f9fa;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .exercise-details {
+      flex: 1;
+    }
+
+    .exercise-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .completion-checkbox {
+      width: 20px;
+      height: 20px;
+    }
+
+    .recovery-step {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .recovery-step input[type="checkbox"] {
+      margin-right: 10px;
+    }
+
+    #inventoryTable {
+      margin-bottom: 30px;
+    }
+
+    .size-input {
+      width: 50px;
+      padding: 5px;
+      text-align: center;
+    }
+
+    .inventory-controls {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .player-sizes {
+      margin-top: 30px;
+    }
+
+    .btn-small {
+      padding: 5px 10px;
+      font-size: 14px;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group select,
+    .filter-group input {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .filter-group button {
+      flex: none;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    .exercise-detail {
+      margin-bottom: 15px;
+    }
+
+    .exercise-detail h4 {
+      margin-bottom: 5px;
+    }
+
+    .exercise-metrics {
+      background: #f0f8ff;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .exercise-metrics h5 {
+      margin-bottom: 5px;
+    }
+
+    .performance-indicator {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+
+    .performance-bar {
+      height: 10px;
+      background: #eee;
+      border-radius: 5px;
+      flex-grow: 1;
+      margin: 0 10px;
+      overflow: hidden;
+    }
+
+    .performance-bar-fill {
+      height: 100%;
+      background: var(--primary);
+    }
+
+    .crutch-form {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .badge-severe {
+      background-color: var(--danger);
+    }
+
+    .badge-moderate {
+      background-color: var(--warning);
+      color: #333;
+    }
+
+    .badge-mild {
+      background-color: var(--secondary);
+    }
+
+    .notes {
+      font-style: italic;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .user-management {
+      margin-top: 20px;
+    }
+
+    .github-sync {
+      margin-top: 20px;
+    }
+
+    .sync-status {
       margin-top: 15px;
       padding: 10px;
-      border-radius: 4px;
-    }
-    .status-message.info {
-      background-color: #d1ecf1;
-      color: #0c5460;
-    }
-    .status-message.success {
-      background-color: #d4edda;
-      color: #155724;
-    }
-    .status-message.error {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-    .upload-section {
-      margin-top: 30px;
-      border-top: 1px solid #eee;
-      padding-top: 20px;
-    }
-    .data-preview {
-      background: #f9f9f9;
-      padding: 15px;
       border-radius: 5px;
-      margin-top: 20px;
-      max-height: 200px;
-      overflow-y: auto;
+      background-color: #f8f9fa;
+    }
+
+    .sync-success {
+      border-left: 4px solid var(--secondary);
+    }
+
+    .sync-error {
+      border-left: 4px solid var(--danger);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+      
+      .header-content {
+        flex-direction: column;
+      }
+      
+      .tabs {
+        flex-wrap: wrap;
+      }
+      
+      .tab-btn {
+        flex: 1 0 50%;
+      }
+      
+      .filter-group {
+        flex-direction: column;
+      }
+      
+      .filter-group select,
+      .filter-group input,
+      .filter-group button {
+        width: 100%;
+      }
+      
+      .athlete-stats {
+        grid-template-columns: 1fr;
+      }
+      
+      .exercise-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .exercise-actions {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: flex-end;
+      }
+      
+      .modal-content {
+        width: 95%;
+        margin: 5% auto;
+      }
+      
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      
+      .chart-container {
+        min-height: 250px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Login Section -->
     <div id="loginOverlay">
       <div class="login-header">
         <img src="Logo_AmpFootballBelgium.png" alt="AFPRS Logo" class="login-logo">
@@ -231,14 +658,12 @@
         <h1>AFPRS Login</h1>
         <form id="loginForm">
           <div class="form-group">
-            <label for="username">Username:</label>
             <input type="text" id="username" placeholder="Username" required>
           </div>
           <div class="form-group">
-            <label for="password">Password:</label>
             <input type="password" id="password" placeholder="Password" required>
           </div>
-          <button type="submit" id="loginButton">Login</button>
+          <button type="submit">Login</button>
         </form>
         <div class="demo-accounts">
           <p><strong>Demo Accounts:</strong></p>
@@ -246,17 +671,19 @@
             <li><strong>Admin:</strong> admin / admin123</li>
             <li><strong>Team Manager:</strong> manager / manager123</li>
             <li><strong>Head Coach:</strong> headcoach / coach123</li>
+            <li><strong>Physio:</strong> physio / physio123</li>
+            <li><strong>GK1:</strong> gk1 / player123</li>
+            <li><strong>DEF1:</strong> def1 / player123</li>
           </ul>
         </div>
       </div>
     </div>
 
-    <!-- Main Application Content -->
     <div id="appContent">
       <header>
         <div class="header-content">
           <img src="Logo_AmpFootballBelgium.png" alt="AFPRS Logo" class="logo">
-          <h1 id="welcomeHeader">AFPRS Dashboard</h1>
+          <h1 id="welcomeHeader"></h1>
         </div>
         <button id="logoutBtn">Logout</button>
       </header>
@@ -265,516 +692,2812 @@
         <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
         <button class="tab-btn" data-tab="players">👥 Players</button>
         <button class="tab-btn" data-tab="training">💪 Training</button>
-        <button class="tab-btn" data-tab="githubSync">💾 GitHub Sync</button>
+        <button class="tab-btn" data-tab="medical">🏥 Medical</button>
+        <button class="tab-btn" data-tab="crutches">🦯 Crutches</button>
+        <button class="tab-btn" data-tab="athleteDashboard">👤 My Dashboard</button>
+        <button class="tab-btn" data-tab="inventory">📦 Inventory</button>
+        <button class="tab-btn" data-tab="users">👤 Users</button>
+        <button class="tab-btn" data-tab="githubSync">🔗 GitHub Sync</button>
       </nav>
 
-      <!-- Dashboard Tab -->
       <div class="tab-content active" id="dashboard">
         <div class="card">
           <h2>Team Performance</h2>
+          <div class="filter-group">
+            <select id="dashboardPlayerFilter">
+              <option value="all">All Players</option>
+            </select>
+            <select id="dashboardMetricFilter">
+              <option value="performance">Performance Index</option>
+              <option value="speed">Speed</option>
+              <option value="endurance">Endurance</option>
+              <option value="recovery">Recovery</option>
+            </select>
+            <input type="date" id="dashboardDateFilter">
+            <button id="refreshDashboard">Refresh</button>
+          </div>
           <div class="chart-container">
             <canvas id="performanceChart"></canvas>
           </div>
         </div>
-        <div class="card">
-          <h2>Recent Activities</h2>
-          <div class="chart-container" style="height:300px">
-            <canvas id="activityChart"></canvas>
-          </div>
-        </div>
       </div>
 
-      <!-- Players Tab -->
       <div class="tab-content" id="players">
         <div class="card">
           <h2>Player Roster</h2>
-          <div class="chart-container" style="height:300px">
-            <canvas id="playersChart"></canvas>
+          <div class="filter-group">
+            <select id="playerPositionFilter">
+              <option value="all">All Positions</option>
+              <option value="Goalkeeper">Goalkeepers</option>
+              <option value="Defender">Defenders</option>
+              <option value="Midfielder">Midfielders</option>
+              <option value="Forward">Forwards</option>
+            </select>
+            <select id="playerAmputationFilter">
+              <option value="all">All Amputations</option>
+              <option value="left_arm">Left Arm</option>
+              <option value="right_arm">Right Arm</option>
+              <option value="left_leg">Left Leg</option>
+              <option value="right_leg">Right Leg</option>
+            </select>
+            <button id="refreshPlayers">Refresh</button>
+            <button id="addPlayerBtn" class="btn-primary">+ Add Player</button>
           </div>
-          <table>
+          <table id="playerTable">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Name</th>
                 <th>Position</th>
-                <th>Status</th>
+                <th>Amputation</th>
+                <th>Crutch</th>
+                <th>Height</th>
+                <th>Weight</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>Carlos Mendez</td>
-                <td>Goalkeeper</td>
-                <td>Active</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>James Wilson</td>
-                <td>Defender</td>
-                <td>Active</td>
-              </tr>
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Training Tab -->
       <div class="tab-content" id="training">
         <div class="card">
           <h2>Training Programs</h2>
-          <div class="chart-container">
-            <canvas id="trainingChart"></canvas>
+          <div class="filter-group">
+            <select id="trainingPlayerFilter">
+              <option value="all">All Players</option>
+            </select>
+            <select id="positionFilter">
+              <option value="all">All Positions</option>
+              <option value="Goalkeeper">Goalkeepers</option>
+              <option value="Defender">Defenders</option>
+              <option value="Midfielder">Midfielders</option>
+              <option value="Forward">Forwards</option>
+            </select>
+            <button id="refreshTraining">Refresh</button>
+            <button id="addExerciseBtn" class="btn-primary">+ Add Exercise</button>
+            <button id="assignExerciseBtn" class="btn-primary">Assign Exercise</button>
           </div>
-          <table>
+          <div id="trainingPrograms"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="medical">
+        <div class="card">
+          <h2>Medical Records</h2>
+          <div class="filter-group">
+            <select id="medicalPlayerFilter">
+              <option value="all">All Players</option>
+            </select>
+            <select id="medicalSeverityFilter">
+              <option value="all">All Severities</option>
+              <option value="mild">Mild</option>
+              <option value="moderate">Moderate</option>
+              <option value="severe">Severe</option>
+            </select>
+            <input type="date" id="medicalDateFilter">
+            <button id="refreshMedical">Refresh</button>
+          </div>
+          <button id="addMedicalRecordBtn" class="btn-primary">+ Add Record</button>
+          <div id="medicalAlerts"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="crutches">
+        <div class="card">
+          <h2>Crutch Management</h2>
+          <div class="filter-group">
+            <select id="crutchPlayerFilter">
+              <option value="all">All Players</option>
+            </select>
+            <input type="date" id="crutchDateFilter">
+            <button id="refreshCrutches">Refresh</button>
+          </div>
+          <div id="crutchContent"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="athleteDashboard">
+        <div class="card">
+          <h2>My Performance</h2>
+          <div class="athlete-stats">
+            <div class="stat-card">
+              <div class="stat-label">Fitness Level</div>
+              <div class="stat-value" id="athleteFitness">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Recovery Score</div>
+              <div class="stat-value" id="athleteRecovery">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Speed</div>
+              <div class="stat-value" id="athleteSpeed">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Endurance</div>
+              <div class="stat-value" id="athleteEndurance">0</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="athletePerformanceChart"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <h2>My Training Program</h2>
+          <div id="athleteExercises"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="inventory">
+        <div class="card">
+          <h2>Team Inventory Management</h2>
+          <div class="inventory-controls">
+            <button id="addInventoryItem" class="btn-primary">+ Add Item</button>
+          </div>
+          
+          <table id="inventoryTable">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Duration</th>
-                <th>Intensity</th>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Size</th>
+                <th>Assigned To</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody></tbody>
+          </table>
+          
+          <div class="player-sizes">
+            <h3>Player Sizes</h3>
+            <table id="sizeChart">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Jersey</th>
+                  <th>Hoodie</th>
+                  <th>Pants</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="users">
+        <div class="card">
+          <h2>User Management</h2>
+          <div class="filter-group">
+            <select id="userRoleFilter">
+              <option value="all">All Roles</option>
+              <option value="admin">Admin</option>
+              <option value="team_manager">Team Manager</option>
+              <option value="head_coach">Head Coach</option>
+              <option value="assistant_coach">Assistant Coach</option>
+              <option value="team_doctor">Team Doctor</option>
+              <option value="physiotherapist">Physiotherapist</option>
+              <option value="player">Player</option>
+            </select>
+            <button id="refreshUsers">Refresh</button>
+            <button id="addUserBtn" class="btn-primary">+ Add User</button>
+          </div>
+          <table id="userTable">
+            <thead>
               <tr>
-                <td>2023-06-20</td>
-                <td>Technical</td>
-                <td>90 min</td>
-                <td>High</td>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Position</th>
+                <th>Actions</th>
               </tr>
-              <tr>
-                <td>2023-06-18</td>
-                <td>Physical</td>
-                <td>120 min</td>
-                <td>Medium</td>
-              </tr>
-            </tbody>
+            </thead>
+            <tbody></tbody>
           </table>
         </div>
       </div>
 
-      <!-- GitHub Sync Tab -->
       <div class="tab-content" id="githubSync">
         <div class="card">
-          <h2>GitHub Gist Sync</h2>
-          
-          <div class="github-sync-form">
-            <div class="form-group">
-              <label for="gistToken">GitHub Personal Access Token:</label>
-              <input type="password" id="gistToken" placeholder="Enter your GitHub token">
-              <small>Create a token with "gist" scope at GitHub Settings > Developer Settings</small>
-            </div>
-            
-            <div class="form-group">
-              <label for="gistId">Gist ID (for existing gists):</label>
-              <input type="text" id="gistId" placeholder="Existing Gist ID">
-            </div>
-            
-            <div class="button-group">
-              <button id="uploadToGist" class="btn-secondary">Upload to Gist</button>
-              <button id="loadFromGist">Load from Gist</button>
-            </div>
-            
-            <div id="syncStatus" class="status-message"></div>
+          <h2>GitHub Gist Synchronization</h2>
+          <div class="form-group">
+            <label>GitHub Personal Access Token:</label>
+            <input type="password" id="githubToken" placeholder="Enter your GitHub token">
+            <small>Create a token with "gist" scope at GitHub Settings > Developer Settings</small>
           </div>
-          
-          <div class="upload-section">
-            <h3>Data Management</h3>
-            <div class="button-group">
-              <button id="exportData">Export Current Data</button>
-              <button id="importData">Import Data File</button>
-              <input type="file" id="fileInput" accept=".json" style="display:none">
-            </div>
-            <div class="data-preview">
-              <pre id="dataPreview">No data loaded</pre>
-            </div>
+          <div class="form-group">
+            <label>Gist ID (leave empty to create new):</label>
+            <input type="text" id="gistId" placeholder="Existing Gist ID">
           </div>
+          <div class="form-group">
+            <button id="saveTokenBtn" class="btn-primary">Save Token</button>
+            <button id="loadFromGistBtn" class="btn-primary">Load Data</button>
+            <button id="saveToGistBtn" class="btn-primary">Save Data</button>
+          </div>
+          <div id="syncStatus" class="sync-status" style="display:none"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-  <script>
-    // User database
-    const users = [
-      { username: 'admin', password: 'admin123', name: 'System Admin', role: 'admin' },
-      { username: 'manager', password: 'manager123', name: 'Team Manager', role: 'manager' },
-      { username: 'headcoach', password: 'coach123', name: 'Head Coach', role: 'coach' }
-    ];
+  <!-- Modal Dialogs -->
+  <div id="playerModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 id="playerModalTitle">Add New Player</h2>
+      <form id="playerForm">
+        <input type="hidden" id="playerId">
+        <div class="form-group">
+          <label for="playerName">Full Name</label>
+          <input type="text" id="playerName" required>
+        </div>
+        <div class="form-group">
+          <label for="playerPosition">Position</label>
+          <select id="playerPosition" required>
+            <option value="Goalkeeper">Goalkeeper</option>
+            <option value="Defender">Defender</option>
+            <option value="Midfielder">Midfielder</option>
+            <option value="Forward">Forward</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="playerAmputation">Amputation</label>
+          <select id="playerAmputation" required>
+            <option value="left_arm">Left Arm</option>
+            <option value="right_arm">Right Arm</option>
+            <option value="left_leg">Left Leg</option>
+            <option value="right_leg">Right Leg</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="playerCrutchType">Crutch Type</label>
+          <select id="playerCrutchType">
+            <option value="">None</option>
+            <option value="forearm">Forearm Crutch</option>
+            <option value="axillary">Axillary Crutch</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="playerHeight">Height (cm)</label>
+          <input type="number" id="playerHeight" min="100" max="250" required>
+        </div>
+        <div class="form-group">
+          <label for="playerWeight">Weight (kg)</label>
+          <input type="number" id="playerWeight" min="30" max="150" required>
+        </div>
+        <div class="form-group">
+          <label for="playerDominantSide">Dominant Side</label>
+          <select id="playerDominantSide" required>
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary">Save Player</button>
+      </form>
+    </div>
+  </div>
 
-    // Application data store
-    let appData = {
+  <div id="exerciseModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 id="exerciseModalTitle">Add New Exercise</h2>
+      <form id="exerciseForm">
+        <input type="hidden" id="exerciseId">
+        <div class="form-group">
+          <label for="exerciseName">Exercise Name</label>
+          <input type="text" id="exerciseName" required>
+        </div>
+        <div class="form-group">
+          <label for="exerciseFocus">Focus Area</label>
+          <input type="text" id="exerciseFocus" required>
+        </div>
+        <div class="form-group">
+          <label for="exercisePosition">Position</label>
+          <select id="exercisePosition" required>
+            <option value="universal">Universal</option>
+            <option value="Goalkeeper">Goalkeeper</option>
+            <option value="Defender">Defender</option>
+            <option value="Midfielder">Midfielder</option>
+            <option value="Forward">Forward</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="exerciseSets">Sets</label>
+          <input type="number" id="exerciseSets" min="1" max="10" required>
+        </div>
+        <div class="form-group">
+          <label for="exerciseReps">Reps/Duration</label>
+          <input type="text" id="exerciseReps" placeholder="e.g. 10 or 30s" required>
+        </div>
+        <div class="form-group">
+          <label for="exerciseDifficulty">Difficulty</label>
+          <select id="exerciseDifficulty" required>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="exerciseEquipment">Equipment (comma separated)</label>
+          <input type="text" id="exerciseEquipment">
+        </div>
+        <div class="form-group">
+          <label for="exerciseNotes">Notes</label>
+          <textarea id="exerciseNotes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Save Exercise</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="assignExerciseModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Assign Exercise to Player</h2>
+      <form id="assignExerciseForm">
+        <div class="form-group">
+          <label for="assignPlayer">Player</label>
+          <select id="assignPlayer" required></select>
+        </div>
+        <div class="form-group">
+          <label for="assignExercise">Exercise</label>
+          <select id="assignExercise" required></select>
+        </div>
+        <button type="submit" class="btn-primary">Assign Exercise</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="exerciseCompletionModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Log Exercise Completion</h2>
+      <form id="exerciseCompletionForm">
+        <input type="hidden" id="logExerciseId">
+        <input type="hidden" id="logPlayerId">
+        <div class="form-group">
+          <label for="logDate">Date</label>
+          <input type="date" id="logDate" required>
+        </div>
+        <div class="form-group">
+          <label for="logSets">Sets Completed</label>
+          <input type="number" id="logSets" min="1" required>
+        </div>
+        <div class="form-group">
+          <label for="logReps">Reps/Duration</label>
+          <input type="text" id="logReps" required>
+        </div>
+        <div class="form-group">
+          <label for="logPerformance">Performance (1-10)</label>
+          <input type="number" id="logPerformance" min="1" max="10" required>
+        </div>
+        <div class="form-group">
+          <label for="logNotes">Notes</label>
+          <textarea id="logNotes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Save Log</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="medicalModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 id="medicalModalTitle">Add Medical Record</h2>
+      <form id="medicalRecordForm">
+        <input type="hidden" id="medicalRecordId">
+        <div class="form-group">
+          <label for="medicalPlayer">Player</label>
+          <select id="medicalPlayer" required></select>
+        </div>
+        <div class="form-group">
+          <label for="medicalDate">Date</label>
+          <input type="date" id="medicalDate" required>
+        </div>
+        <div class="form-group">
+          <label for="medicalIssue">Issue</label>
+          <input type="text" id="medicalIssue" required>
+        </div>
+        <div class="form-group">
+          <label for="medicalSeverity">Severity</label>
+          <select id="medicalSeverity" required>
+            <option value="mild">Mild</option>
+            <option value="moderate">Moderate</option>
+            <option value="severe">Severe</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="medicalTreatment">Treatment</label>
+          <textarea id="medicalTreatment" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="medicalAvailability">Availability</label>
+          <select id="medicalAvailability" required>
+            <option value="yes">Full</option>
+            <option value="limited">Limited</option>
+            <option value="no">None</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="medicalFollowUp">Follow-up Date</label>
+          <input type="date" id="medicalFollowUp">
+        </div>
+        <div class="form-group">
+          <label for="medicalNotes">Notes</label>
+          <textarea id="medicalNotes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Save Record</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="crutchModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 id="crutchModalTitle">Crutch Assessment</h2>
+      <form id="crutchForm">
+        <input type="hidden" id="crutchRecordId">
+        <div class="form-group">
+          <label for="crutchPlayer">Player</label>
+          <select id="crutchPlayer" required></select>
+        </div>
+        <div class="form-group">
+          <label for="crutchDate">Date</label>
+          <input type="date" id="crutchDate" required>
+        </div>
+        <div class="form-group">
+          <label for="crutchComfort">Comfort Level (1-10)</label>
+          <input type="number" id="crutchComfort" min="1" max="10" required>
+        </div>
+        <div class="form-group">
+          <label for="crutchNotes">Notes</label>
+          <textarea id="crutchNotes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Save Assessment</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="inventoryModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 id="inventoryModalTitle">Add Inventory Item</h2>
+      <form id="inventoryForm">
+        <input type="hidden" id="inventoryId">
+        <div class="form-group">
+          <label for="inventoryItem">Item Name</label>
+          <input type="text" id="inventoryItem" required>
+        </div>
+        <div class="form-group">
+          <label for="inventoryCategory">Category</label>
+          <select id="inventoryCategory" required>
+            <option value="Equipment">Equipment</option>
+            <option value="Apparel">Apparel</option>
+            <option value="Medical">Medical</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="inventoryQuantity">Quantity</label>
+          <input type="number" id="inventoryQuantity" min="1" required>
+        </div>
+        <div class="form-group">
+          <label for="inventorySize">Size</label>
+          <input type="text" id="inventorySize">
+        </div>
+        <div class="form-group">
+          <label for="inventoryAssigned">Assigned To (comma separated IDs, or "all")</label>
+          <input type="text" id="inventoryAssigned">
+        </div>
+        <div class="form-group">
+          <label for="inventoryNotes">Notes</label>
+          <textarea id="inventoryNotes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Save Item</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="userModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 id="userModalTitle">Add User</h2>
+      <form id="userForm">
+        <input type="hidden" id="userId">
+        <div class="form-group">
+          <label for="userUsername">Username</label>
+          <input type="text" id="userUsername" required>
+        </div>
+        <div class="form-group">
+          <label for="userPassword">Password</label>
+          <input type="password" id="userPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="userName">Full Name</label>
+          <input type="text" id="userName" required>
+        </div>
+        <div class="form-group">
+          <label for="userRole">Role</label>
+          <select id="userRole" required>
+            <option value="admin">Admin</option>
+            <option value="team_manager">Team Manager</option>
+            <option value="head_coach">Head Coach</option>
+            <option value="assistant_coach">Assistant Coach</option>
+            <option value="team_doctor">Team Doctor</option>
+            <option value="physiotherapist">Physiotherapist</option>
+            <option value="player">Player</option>
+          </select>
+        </div>
+        <div class="form-group" id="playerSelectGroup" style="display:none">
+          <label for="userPlayer">Player</label>
+          <select id="userPlayer">
+            <option value="">None</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary">Save User</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Data Store
+    const dataStore = {
+      users: [
+        { username: 'admin', password: 'admin123', role: 'admin', name: 'System Admin' },
+        { username: 'manager', password: 'manager123', role: 'team_manager', name: 'John Smith' },
+        { username: 'headcoach', password: 'coach123', role: 'head_coach', name: 'Alex Ferguson' },
+        { username: 'assistant', password: 'coach456', role: 'assistant_coach', name: 'Carlos Queiroz' },
+        { username: 'doctor', password: 'med123', role: 'team_doctor', name: 'Dr. Sarah Smith' },
+        { username: 'physio', password: 'physio123', role: 'physiotherapist', name: 'Mike Johnson' },
+        { username: 'gk1', password: 'player123', role: 'player', name: 'Carlos Mendez', position: 'Goalkeeper', playerId: 'gk1' },
+        { username: 'gk2', password: 'player123', role: 'player', name: 'Ali Hassan', position: 'Goalkeeper', playerId: 'gk2' },
+        { username: 'def1', password: 'player123', role: 'player', name: 'James Wilson', position: 'Defender', playerId: 'def1' },
+        { username: 'def2', password: 'player123', role: 'player', name: 'Samuel Okafor', position: 'Defender', playerId: 'def2' },
+        { username: 'def3', password: 'player123', role: 'player', name: 'Mario Rossi', position: 'Defender', playerId: 'def3' },
+        { username: 'mid1', password: 'player123', role: 'player', name: 'Thomas Müller', position: 'Midfielder', playerId: 'mid1' },
+        { username: 'mid2', password: 'player123', role: 'player', name: 'Yusuf Demir', position: 'Midfielder', playerId: 'mid2' },
+        { username: 'mid3', password: 'player123', role: 'player', name: 'Lucas Silva', position: 'Midfielder', playerId: 'mid3' },
+        { username: 'mid4', password: 'player123', role: 'player', name: 'André Gomes', position: 'Midfielder', playerId: 'mid4' },
+        { username: 'fwd1', password: 'player123', role: 'player', name: 'Diego Costa', position: 'Forward', playerId: 'fwd1' },
+        { username: 'fwd2', password: 'player123', role: 'player', name: 'Kwame Asante', position: 'Forward', playerId: 'fwd2' },
+        { username: 'fwd3', password: 'player123', role: 'player', name: 'Oliver Schmidt', position: 'Forward', playerId: 'fwd3' }
+      ],
       players: [
-        { id: 1, name: 'Carlos Mendez', position: 'Goalkeeper', status: 'Active' },
-        { id: 2, name: 'James Wilson', position: 'Defender', status: 'Active' }
+        {
+          id: 'gk1',
+          name: 'Carlos Mendez',
+          position: 'Goalkeeper',
+          amputation: 'left_arm',
+          crutchType: null,
+          height: 185,
+          weight: 82,
+          joinDate: '2022-01-15',
+          dominantSide: 'right',
+          fitnessLevel: 88,
+          recoveryScore: 7
+        },
+        {
+          id: 'gk2',
+          name: 'Ali Hassan',
+          position: 'Goalkeeper',
+          amputation: 'right_arm',
+          crutchType: null,
+          height: 178,
+          weight: 76,
+          joinDate: '2021-09-10',
+          dominantSide: 'left',
+          fitnessLevel: 85,
+          recoveryScore: 8
+        },
+        {
+          id: 'def1',
+          name: 'James Wilson',
+          position: 'Defender',
+          amputation: 'right_leg',
+          crutchType: 'forearm',
+          height: 182,
+          weight: 80,
+          joinDate: '2022-03-22',
+          dominantSide: 'right',
+          fitnessLevel: 82,
+          recoveryScore: 6
+        },
+        {
+          id: 'def2',
+          name: 'Samuel Okafor',
+          position: 'Defender',
+          amputation: 'left_leg',
+          crutchType: 'forearm',
+          height: 179,
+          weight: 78,
+          joinDate: '2021-11-05',
+          dominantSide: 'left',
+          fitnessLevel: 84,
+          recoveryScore: 7
+        },
+        {
+          id: 'def3',
+          name: 'Mario Rossi',
+          position: 'Defender',
+          amputation: 'right_leg',
+          crutchType: 'forearm',
+          height: 180,
+          weight: 81,
+          joinDate: '2022-02-18',
+          dominantSide: 'right',
+          fitnessLevel: 79,
+          recoveryScore: 5
+        },
+        {
+          id: 'mid1',
+          name: 'Thomas Müller',
+          position: 'Midfielder',
+          amputation: 'left_leg',
+          crutchType: 'forearm',
+          height: 175,
+          weight: 72,
+          joinDate: '2022-04-05',
+          dominantSide: 'right',
+          fitnessLevel: 87,
+          recoveryScore: 8
+        },
+        {
+          id: 'mid2',
+          name: 'Yusuf Demir',
+          position: 'Midfielder',
+          amputation: 'right_leg',
+          crutchType: 'forearm',
+          height: 177,
+          weight: 74,
+          joinDate: '2021-12-10',
+          dominantSide: 'left',
+          fitnessLevel: 83,
+          recoveryScore: 7
+        },
+        {
+          id: 'mid3',
+          name: 'Lucas Silva',
+          position: 'Midfielder',
+          amputation: 'left_leg',
+          crutchType: 'forearm',
+          height: 173,
+          weight: 70,
+          joinDate: '2022-05-12',
+          dominantSide: 'right',
+          fitnessLevel: 81,
+          recoveryScore: 6
+        },
+        {
+          id: 'mid4',
+          name: 'André Gomes',
+          position: 'Midfielder',
+          amputation: 'right_leg',
+          crutchType: 'forearm',
+          height: 176,
+          weight: 73,
+          joinDate: '2021-08-15',
+          dominantSide: 'left',
+          fitnessLevel: 85,
+          recoveryScore: 7
+        },
+        {
+          id: 'fwd1',
+          name: 'Diego Costa',
+          position: 'Forward',
+          amputation: 'left_leg',
+          crutchType: 'forearm',
+          height: 180,
+          weight: 76,
+          joinDate: '2021-10-22',
+          dominantSide: 'right',
+          fitnessLevel: 89,
+          recoveryScore: 8
+        },
+        {
+          id: 'fwd2',
+          name: 'Kwame Asante',
+          position: 'Forward',
+          amputation: 'right_leg',
+          crutchType: 'forearm',
+          height: 178,
+          weight: 75,
+          joinDate: '2022-01-30',
+          dominantSide: 'left',
+          fitnessLevel: 86,
+          recoveryScore: 7
+        },
+        {
+          id: 'fwd3',
+          name: 'Oliver Schmidt',
+          position: 'Forward',
+          amputation: 'left_leg',
+          crutchType: 'forearm',
+          height: 176,
+          weight: 74,
+          joinDate: '2021-07-18',
+          dominantSide: 'right',
+          fitnessLevel: 84,
+          recoveryScore: 6
+        }
       ],
-      training: [
-        { id: 1, date: '2023-06-20', type: 'Technical', duration: '90 min', intensity: 'High' },
-        { id: 2, date: '2023-06-18', type: 'Physical', duration: '120 min', intensity: 'Medium' }
+      exercises: {
+        Goalkeeper: [
+          {
+            id: 'ex-gk1',
+            name: 'Reaction Drill',
+            focus: 'Hand-eye coordination',
+            sets: 3,
+            reps: 10,
+            difficulty: 'intermediate',
+            equipment: ['Reaction ball', 'Cones'],
+            notes: 'Focus on quick movements and hand positioning',
+            performanceMetrics: {
+              'Reaction Time': '< 0.5s',
+              'Accuracy': '80% success rate'
+            },
+            addedBy: 'headcoach'
+          },
+          {
+            id: 'ex-gk2',
+            name: 'Low Save Roll',
+            focus: 'Ground coverage',
+            sets: 4,
+            reps: 8,
+            difficulty: 'advanced',
+            equipment: ['Football', 'Mats'],
+            notes: 'Practice rolling to both sides',
+            performanceMetrics: {
+              'Coverage': 'Full extension',
+              'Recovery': 'Quick return to stance'
+            },
+            addedBy: 'headcoach'
+          }
+        ],
+        Defender: [
+          {
+            id: 'ex-def1',
+            name: 'Lateral Hop',
+            focus: 'Lateral movement',
+            sets: 3,
+            reps: 12,
+            difficulty: 'beginner',
+            equipment: ['Cones'],
+            notes: 'Maintain balance on crutches',
+            performanceMetrics: {
+              'Distance': '1m per hop',
+              'Control': 'Maintain form'
+            },
+            addedBy: 'headcoach'
+          },
+          {
+            id: 'ex-def2',
+            name: 'Crutch Sprint',
+            focus: 'Speed',
+            sets: 5,
+            duration: '30m',
+            difficulty: 'intermediate',
+            equipment: ['Cones'],
+            notes: 'Focus on crutch technique',
+            performanceMetrics: {
+              'Speed': '< 6s for 30m',
+              'Form': 'Proper crutch placement'
+            },
+            addedBy: 'headcoach'
+          }
+        ],
+        Midfielder: [
+          {
+            id: 'ex-mid1',
+            name: 'Zigzag Dribble',
+            focus: 'Ball control',
+            sets: 4,
+            duration: '2 mins',
+            difficulty: 'intermediate',
+            equipment: ['Football', 'Cones'],
+            notes: 'Use both feet',
+            performanceMetrics: {
+              'Control': 'Keep ball close',
+              'Speed': 'Complete in time'
+            },
+            addedBy: 'headcoach'
+          },
+          {
+            id: 'ex-mid2',
+            name: 'Crutch Shuffle',
+            focus: 'Agility',
+            sets: 3,
+            reps: 10,
+            difficulty: 'advanced',
+            equipment: ['Agility ladder'],
+            notes: 'Maintain balance',
+            performanceMetrics: {
+              'Form': 'Proper technique',
+              'Speed': 'Complete in time'
+            },
+            addedBy: 'headcoach'
+          }
+        ],
+        Forward: [
+          {
+            id: 'ex-fwd1',
+            name: 'Finishing Drill',
+            focus: 'Shooting accuracy',
+            sets: 5,
+            reps: 8,
+            difficulty: 'intermediate',
+            equipment: ['Football', 'Goal'],
+            notes: 'Alternate feet',
+            performanceMetrics: {
+              'Accuracy': '70% on target',
+              'Power': 'Firm strikes'
+            },
+            addedBy: 'headcoach'
+          },
+          {
+            id: 'ex-fwd2',
+            name: '1v1 Crutch Move',
+            focus: 'Dribbling',
+            sets: 3,
+            duration: '5 mins',
+            difficulty: 'advanced',
+            equipment: ['Football', 'Cones'],
+            notes: 'Practice feints',
+            performanceMetrics: {
+              'Success Rate': '50% past defender',
+              'Control': 'Maintain possession'
+            },
+            addedBy: 'headcoach'
+          }
+        ],
+        universal: [
+          {
+            id: 'ex-uni1',
+            name: 'Core Stability',
+            focus: 'Core strength',
+            sets: 3,
+            reps: 15,
+            difficulty: 'beginner',
+            equipment: ['Mat'],
+            notes: 'Important for balance',
+            performanceMetrics: {
+              'Form': 'Maintain posture',
+              'Duration': 'Hold positions'
+            },
+            addedBy: 'headcoach'
+          },
+          {
+            id: 'ex-uni2',
+            name: 'Upper Body Strength',
+            focus: 'Arm/shoulder strength',
+            sets: 4,
+            reps: 10,
+            difficulty: 'intermediate',
+            equipment: ['Dumbbells', 'Resistance bands'],
+            notes: 'Crucial for crutch users',
+            performanceMetrics: {
+              'Weight': 'Progressive increase',
+              'Form': 'Proper technique'
+            },
+            addedBy: 'headcoach'
+          }
+        ]
+      },
+      assignedExercises: {
+        gk1: ["ex-gk1", "ex-gk2", "ex-uni2"],
+        def1: ["ex-def1", "ex-def2", "ex-uni1"],
+        mid1: ["ex-mid1", "ex-mid2", "ex-uni2"],
+        fwd1: ["ex-fwd1", "ex-fwd2", "ex-uni1"]
+      },
+      medicalRecords: [
+        {
+          id: 'med1',
+          playerId: 'def1',
+          date: '2023-05-15',
+          issue: 'Residual limb irritation',
+          severity: 'moderate',
+          treatment: 'Antiseptic cream, reduced training load',
+          available: 'limited',
+          followUpDate: '2023-05-22',
+          notes: 'Monitor for infection'
+        },
+        {
+          id: 'med2',
+          playerId: 'mid2',
+          date: '2023-06-02',
+          issue: 'Shoulder strain',
+          severity: 'mild',
+          treatment: 'Ice, rest, physio exercises',
+          available: 'yes',
+          followUpDate: '2023-06-09',
+          notes: 'Improving with treatment'
+        },
+        {
+          id: 'med3',
+          playerId: 'fwd1',
+          date: '2023-06-10',
+          issue: 'Crutch grip blister',
+          severity: 'mild',
+          treatment: 'Dressing, grip adjustment',
+          available: 'yes',
+          notes: 'Resolved quickly'
+        }
       ],
-      performance: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        data: [65, 59, 80, 81, 76, 85]
+      crutchData: [
+        {
+          id: 'crutch1',
+          playerId: 'def1',
+          date: '2023-06-01',
+          comfortLevel: 7,
+          notes: 'Slight discomfort in right grip'
+        },
+        {
+          id: 'crutch2',
+          playerId: 'def1',
+          date: '2023-06-08',
+          comfortLevel: 8,
+          notes: 'Improved with new grips'
+        },
+        {
+          id: 'crutch3',
+          playerId: 'mid1',
+          date: '2023-06-05',
+          comfortLevel: 6,
+          notes: 'Needs adjustment'
+        },
+        {
+          id: 'crutch4',
+          playerId: 'fwd2',
+          date: '2023-06-10',
+          comfortLevel: 9,
+          notes: 'Comfortable with current setup'
+        }
+      ],
+      exerciseLogs: [
+        {
+          id: 'log1',
+          exerciseId: 'ex-def1',
+          playerId: 'def1',
+          date: '2023-06-12',
+          sets: 3,
+          reps: 12,
+          performance: 8,
+          notes: 'Good form, maintained balance'
+        },
+        {
+          id: 'log2',
+          exerciseId: 'ex-def2',
+          playerId: 'def1',
+          date: '2023-06-12',
+          sets: 5,
+          duration: '30m',
+          performance: 7,
+          notes: 'Needs work on turn speed'
+        },
+        {
+          id: 'log3',
+          exerciseId: 'ex-uni1',
+          playerId: 'mid1',
+          date: '2023-06-11',
+          sets: 3,
+          reps: 15,
+          performance: 9,
+          notes: 'Excellent core engagement'
+        }
+      ],
+      inventory: [
+        {
+          id: 'inv1',
+          item: 'Forearm Crutches',
+          category: 'Equipment',
+          quantity: 15,
+          size: 'Adjustable',
+          assignedTo: ['def1', 'def2', 'def3', 'mid1', 'mid2', 'mid3', 'mid4', 'fwd1', 'fwd2', 'fwd3'],
+          notes: 'Carbon fiber, weight limit 100kg'
+        },
+        {
+          id: 'inv2',
+          item: 'Training Cones',
+          category: 'Equipment',
+          quantity: 50,
+          assignedTo: ['all'],
+          notes: 'Multi-color set'
+        },
+        {
+          id: 'inv3',
+          item: 'Compression Sleeves',
+          category: 'Medical',
+          quantity: 20,
+          size: 'Various',
+          assignedTo: ['all'],
+          notes: 'For residual limbs'
+        },
+        {
+          id: 'inv4',
+          item: 'Team Hoodies',
+          category: 'Apparel',
+          quantity: 25,
+          size: 'Various',
+          assignedTo: ['all'],
+          notes: 'Winter training gear'
+        },
+        {
+          id: 'inv5',
+          item: 'Training Pants',
+          category: 'Apparel',
+          quantity: 25,
+          size: 'Various',
+          assignedTo: ['all'],
+          notes: 'Cold weather training'
+        }
+      ],
+      playerSizes: [
+        {
+          playerId: 'def1',
+          jersey: 'L',
+          hoodie: 'XL',
+          pants: 'M'
+        },
+        {
+          playerId: 'mid1',
+          jersey: 'M',
+          hoodie: 'L',
+          pants: 'S'
+        }
+      ],
+      recoveryProtocols: {
+        armAmputees: [
+          {
+            id: 'rec-arm1',
+            name: 'Daily Arm Care',
+            steps: [
+              'Stretch residual limb for 5 minutes',
+              'Massage scar tissue',
+              'Apply moisturizer',
+              'Check skin integrity'
+            ],
+            duration: '15 minutes'
+          }
+        ],
+        legAmputees: [
+          {
+            id: 'rec-leg1',
+            name: 'Daily Leg Care',
+            steps: [
+              'Clean residual limb',
+              'Check for pressure points',
+              'Apply prosthetic liner',
+              'Gradual weight bearing'
+            ],
+            duration: '20 minutes'
+          }
+        ]
+      },
+      performanceData: [
+        {
+          id: 'perf1',
+          playerId: 'def1',
+          date: '2023-06-01',
+          speed: 4.2,
+          endurance: 75,
+          strength: 80,
+          recovery: 70
+        },
+        {
+          id: 'perf2',
+          playerId: 'mid1',
+          date: '2023-06-01',
+          speed: 4.5,
+          endurance: 82,
+          strength: 75,
+          recovery: 78
+        },
+        {
+          id: 'perf3',
+          playerId: 'fwd1',
+          date: '2023-06-01',
+          speed: 4.8,
+          endurance: 85,
+          strength: 78,
+          recovery: 80
+        }
+      ],
+      githubConfig: {
+        token: null,
+        gistId: null
       }
     };
 
-    // DOM Elements
-    const loginSection = document.getElementById('loginSection');
-    const loginForm = document.getElementById('loginForm');
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
-    const loginButton = document.getElementById('loginButton');
-    const appContent = document.getElementById('appContent');
-    const welcomeHeader = document.getElementById('welcomeHeader');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-    const uploadToGist = document.getElementById('uploadToGist');
-    const loadFromGist = document.getElementById('loadFromGist');
-    const gistToken = document.getElementById('gistToken');
-    const gistId = document.getElementById('gistId');
-    const syncStatus = document.getElementById('syncStatus');
-    const exportData = document.getElementById('exportData');
-    const importData = document.getElementById('importData');
-    const fileInput = document.getElementById('fileInput');
-    const dataPreview = document.getElementById('dataPreview');
+    // Application Code
+    const elements = {
+      loginOverlay: document.getElementById('loginOverlay'),
+      loginForm: document.getElementById('loginForm'),
+      username: document.getElementById('username'),
+      password: document.getElementById('password'),
+      appContent: document.getElementById('appContent'),
+      welcomeHeader: document.getElementById('welcomeHeader'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      tabContents: document.querySelectorAll('.tab-content'),
+      tabButtons: document.querySelectorAll('.tab-btn'),
+      playerTable: document.querySelector('#playerTable tbody'),
+      playerPositionFilter: document.getElementById('playerPositionFilter'),
+      playerAmputationFilter: document.getElementById('playerAmputationFilter'),
+      refreshPlayers: document.getElementById('refreshPlayers'),
+      addPlayerBtn: document.getElementById('addPlayerBtn'),
+      positionFilter: document.getElementById('positionFilter'),
+      trainingPlayerFilter: document.getElementById('trainingPlayerFilter'),
+      trainingPrograms: document.getElementById('trainingPrograms'),
+      refreshTraining: document.getElementById('refreshTraining'),
+      addExerciseBtn: document.getElementById('addExerciseBtn'),
+      assignExerciseBtn: document.getElementById('assignExerciseBtn'),
+      medicalAlerts: document.getElementById('medicalAlerts'),
+      medicalPlayerFilter: document.getElementById('medicalPlayerFilter'),
+      medicalSeverityFilter: document.getElementById('medicalSeverityFilter'),
+      medicalDateFilter: document.getElementById('medicalDateFilter'),
+      refreshMedical: document.getElementById('refreshMedical'),
+      addMedicalRecordBtn: document.getElementById('addMedicalRecordBtn'),
+      crutchContent: document.getElementById('crutchContent'),
+      crutchPlayerFilter: document.getElementById('crutchPlayerFilter'),
+      crutchDateFilter: document.getElementById('crutchDateFilter'),
+      refreshCrutches: document.getElementById('refreshCrutches'),
+      dashboardPlayerFilter: document.getElementById('dashboardPlayerFilter'),
+      dashboardMetricFilter: document.getElementById('dashboardMetricFilter'),
+      dashboardDateFilter: document.getElementById('dashboardDateFilter'),
+      refreshDashboard: document.getElementById('refreshDashboard'),
+      performanceChart: document.getElementById('performanceChart'),
+      athleteFitness: document.getElementById('athleteFitness'),
+      athleteRecovery: document.getElementById('athleteRecovery'),
+      athleteSpeed: document.getElementById('athleteSpeed'),
+      athleteEndurance: document.getElementById('athleteEndurance'),
+      athletePerformanceChart: document.getElementById('athletePerformanceChart'),
+      athleteExercises: document.getElementById('athleteExercises'),
+      playerModal: document.getElementById('playerModal'),
+      exerciseModal: document.getElementById('exerciseModal'),
+      assignExerciseModal: document.getElementById('assignExerciseModal'),
+      exerciseCompletionModal: document.getElementById('exerciseCompletionModal'),
+      medicalModal: document.getElementById('medicalModal'),
+      crutchModal: document.getElementById('crutchModal'),
+      inventoryModal: document.getElementById('inventoryModal'),
+      userModal: document.getElementById('userModal'),
+      closeModalButtons: document.querySelectorAll('.close-modal'),
+      playerForm: document.getElementById('playerForm'),
+      exerciseForm: document.getElementById('exerciseForm'),
+      assignExerciseForm: document.getElementById('assignExerciseForm'),
+      exerciseCompletionForm: document.getElementById('exerciseCompletionForm'),
+      medicalRecordForm: document.getElementById('medicalRecordForm'),
+      crutchForm: document.getElementById('crutchForm'),
+      inventoryForm: document.getElementById('inventoryForm'),
+      userForm: document.getElementById('userForm'),
+      inventoryTable: document.querySelector('#inventoryTable tbody'),
+      sizeChart: document.querySelector('#sizeChart tbody'),
+      addInventoryItem: document.getElementById('addInventoryItem'),
+      userTable: document.querySelector('#userTable tbody'),
+      userRoleFilter: document.getElementById('userRoleFilter'),
+      refreshUsers: document.getElementById('refreshUsers'),
+      addUserBtn: document.getElementById('addUserBtn'),
+      githubToken: document.getElementById('githubToken'),
+      gistId: document.getElementById('gistId'),
+      saveTokenBtn: document.getElementById('saveTokenBtn'),
+      loadFromGistBtn: document.getElementById('loadFromGistBtn'),
+      saveToGistBtn: document.getElementById('saveToGistBtn'),
+      syncStatus: document.getElementById('syncStatus')
+    };
 
     let currentUser = null;
-    let charts = {};
+    let currentEditId = null;
+    let performanceChartInstance = null;
+    let athleteChartInstance = null;
 
-    // Initialize all charts
-    function initCharts() {
-      // Performance Chart
-      charts.performance = new Chart(
-        document.getElementById('performanceChart').getContext('2d'), 
-        {
-          type: 'line',
-          data: {
-            labels: appData.performance.labels,
-            datasets: [{
-              label: 'Team Performance Index',
-              data: appData.performance.data,
-              fill: false,
-              borderColor: 'rgb(75, 192, 192)',
-              tension: 0.1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false
-          }
-        }
-      );
-
-      // Activity Chart
-      charts.activity = new Chart(
-        document.getElementById('activityChart').getContext('2d'), 
-        {
-          type: 'bar',
-          data: {
-            labels: ['Training', 'Matches', 'Medical', 'Other'],
-            datasets: [{
-              label: 'Monthly Activities',
-              data: [12, 4, 8, 3],
-              backgroundColor: [
-                'rgba(54, 162, 235, 0.5)',
-                'rgba(255, 99, 132, 0.5)',
-                'rgba(75, 192, 192, 0.5)',
-                'rgba(153, 102, 255, 0.5)'
-              ]
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false
-          }
-        }
-      );
-
-      // Players Chart
-      charts.players = new Chart(
-        document.getElementById('playersChart').getContext('2d'), 
-        {
-          type: 'pie',
-          data: {
-            labels: ['Goalkeepers', 'Defenders', 'Forwards'],
-            datasets: [{
-              data: [2, 5, 3],
-              backgroundColor: [
-                'rgba(255, 99, 132, 0.5)',
-                'rgba(54, 162, 235, 0.5)',
-                'rgba(255, 206, 86, 0.5)'
-              ]
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false
-          }
-        }
-      );
-
-      // Training Chart
-      charts.training = new Chart(
-        document.getElementById('trainingChart').getContext('2d'), 
-        {
-          type: 'radar',
-          data: {
-            labels: ['Technical', 'Physical', 'Tactical', 'Mental', 'Recovery'],
-            datasets: [{
-              label: 'Training Focus',
-              data: [85, 75, 80, 65, 70],
-              fill: true,
-              backgroundColor: 'rgba(54, 162, 235, 0.2)',
-              borderColor: 'rgb(54, 162, 235)'
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false
-          }
-        }
-      );
-    }
-
-    // GitHub Gist API functions
-    async function uploadToGitHubGist() {
-      const token = gistToken.value.trim();
-      const id = gistId.value.trim();
+    // GitHub Gist Functions
+    async function saveToken() {
+      const token = elements.githubToken.value.trim();
+      const gistId = elements.gistId.value.trim();
       
       if (!token) {
-        showSyncStatus('GitHub token is required', 'error');
+        showSyncStatus('Please enter a GitHub token', false);
         return;
       }
+      
+      dataStore.githubConfig.token = token;
+      dataStore.githubConfig.gistId = gistId || null;
+      
+      // Save to localStorage
+      localStorage.setItem('githubToken', token);
+      if (gistId) localStorage.setItem('gistId', gistId);
+      
+      showSyncStatus('GitHub token saved successfully', true);
+    }
 
+    async function loadFromGist() {
+      if (!dataStore.githubConfig.token) {
+        showSyncStatus('Please save your GitHub token first', false);
+        return;
+      }
+      
+      const gistId = elements.gistId.value.trim() || dataStore.githubConfig.gistId;
+      if (!gistId) {
+        showSyncStatus('Please provide a Gist ID', false);
+        return;
+      }
+      
       try {
-        const url = id 
-          ? `https://api.github.com/gists/${id}`
-          : 'https://api.github.com/gists';
+        showSyncStatus('Loading data from GitHub Gist...', true);
         
-        const method = id ? 'PATCH' : 'POST';
-        
-        const response = await fetch(url, {
-          method,
+        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
           headers: {
-            'Authorization': `token ${token}`,
-            'Content-Type': 'application/json',
+            'Authorization': `token ${dataStore.githubConfig.token}`,
             'Accept': 'application/vnd.github.v3+json'
-          },
-          body: JSON.stringify({
-            description: `AFPRS Backup - ${new Date().toISOString()}`,
-            public: false,
-            files: {
-              'afprs-backup.json': {
-                content: JSON.stringify(appData, null, 2)
-              }
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`GitHub API error: ${response.status}`);
+        }
+        
+        const gist = await response.json();
+        const content = gist.files['afprs-data.json']?.content;
+        
+        if (!content) {
+          throw new Error('No valid data found in Gist');
+        }
+        
+        const loadedData = JSON.parse(content);
+        Object.assign(dataStore, loadedData);
+        
+        showSyncStatus('Data loaded successfully from Gist', true);
+        loadInitialData();
+      } catch (error) {
+        showSyncStatus(`Error loading data: ${error.message}`, false);
+        console.error('Gist load error:', error);
+      }
+    }
+
+    async function saveToGist() {
+      if (!dataStore.githubConfig.token) {
+        showSyncStatus('Please save your GitHub token first', false);
+        return;
+      }
+      
+      try {
+        showSyncStatus('Saving data to GitHub Gist...', true);
+        
+        const gistData = {
+          description: 'AFPRS Data Backup',
+          public: false,
+          files: {
+            'afprs-data.json': {
+              content: JSON.stringify(dataStore, null, 2)
             }
-          })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          if (!id) {
-            gistId.value = data.id;
           }
-          showSyncStatus(`Successfully ${id ? 'updated' : 'created'} Gist: ${data.html_url}`, 'success');
-          updateDataPreview();
+        };
+        
+        let response;
+        if (dataStore.githubConfig.gistId) {
+          // Update existing gist
+          response = await fetch(`https://api.github.com/gists/${dataStore.githubConfig.gistId}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `token ${dataStore.githubConfig.token}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify(gistData)
+          });
         } else {
-          throw new Error(data.message || 'Failed to save to Gist');
+          // Create new gist
+          response = await fetch('https://api.github.com/gists', {
+            method: 'POST',
+            headers: {
+              'Authorization': `token ${dataStore.githubConfig.token}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify(gistData)
+          });
         }
+        
+        if (!response.ok) {
+          throw new Error(`GitHub API error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        dataStore.githubConfig.gistId = result.id;
+        elements.gistId.value = result.id;
+        localStorage.setItem('gistId', result.id);
+        
+        showSyncStatus('Data saved successfully to Gist', true);
       } catch (error) {
-        showSyncStatus(`Error: ${error.message}`, 'error');
-        console.error('Gist error:', error);
+        showSyncStatus(`Error saving data: ${error.message}`, false);
+        console.error('Gist save error:', error);
       }
     }
 
-    async function loadFromGitHubGist() {
-      const token = gistToken.value.trim();
-      const id = gistId.value.trim();
+    function showSyncStatus(message, isSuccess) {
+      elements.syncStatus.textContent = message;
+      elements.syncStatus.className = isSuccess ? 'sync-status sync-success' : 'sync-status sync-error';
+      elements.syncStatus.style.display = 'block';
       
-      if (!token || !id) {
-        showSyncStatus('Both token and Gist ID are required', 'error');
-        return;
-      }
+      setTimeout(() => {
+        elements.syncStatus.style.display = 'none';
+      }, 5000);
+    }
 
-      try {
-        const response = await fetch(`https://api.github.com/gists/${id}`, {
-          headers: {
-            'Authorization': `token ${token}`,
-            'Accept': 'application/vnd.github.v3+json'
-          }
+    function init() {
+      setupEventListeners();
+      populatePlayerFilters();
+      elements.loginOverlay.style.display = 'flex';
+      elements.appContent.style.display = 'none';
+      
+      // Load GitHub token if available in localStorage
+      if (localStorage.getItem('githubToken')) {
+        elements.githubToken.value = localStorage.getItem('githubToken');
+        dataStore.githubConfig.token = localStorage.getItem('githubToken');
+      }
+      
+      if (localStorage.getItem('gistId')) {
+        elements.gistId.value = localStorage.getItem('gistId');
+        dataStore.githubConfig.gistId = localStorage.getItem('gistId');
+      }
+    }
+
+    function setupEventListeners() {
+      elements.loginForm.addEventListener('submit', handleLogin);
+      elements.logoutBtn.addEventListener('click', handleLogout);
+      
+      elements.tabButtons.forEach(button => {
+        button.addEventListener('click', () => switchTab(button.dataset.tab));
+      });
+      
+      elements.refreshDashboard.addEventListener('click', refreshDashboard);
+      elements.refreshPlayers.addEventListener('click', loadPlayerTable);
+      elements.refreshTraining.addEventListener('click', loadTrainingPrograms);
+      elements.refreshMedical.addEventListener('click', loadMedicalAlerts);
+      elements.refreshCrutches.addEventListener('click', loadCrutchContent);
+      elements.refreshUsers.addEventListener('click', loadUserManagement);
+      
+      elements.playerPositionFilter.addEventListener('change', loadPlayerTable);
+      elements.playerAmputationFilter.addEventListener('change', loadPlayerTable);
+      elements.positionFilter.addEventListener('change', loadTrainingPrograms);
+      elements.userRoleFilter.addEventListener('change', loadUserManagement);
+      
+      elements.addPlayerBtn.addEventListener('click', () => openPlayerModal());
+      elements.addExerciseBtn.addEventListener('click', () => openExerciseModal());
+      elements.assignExerciseBtn.addEventListener('click', () => openAssignExerciseModal());
+      elements.addMedicalRecordBtn.addEventListener('click', () => openMedicalModal());
+      elements.addUserBtn.addEventListener('click', () => openUserModal());
+      elements.addInventoryItem.addEventListener('click', () => openInventoryModal());
+      
+      elements.playerForm.addEventListener('submit', handlePlayerSubmit);
+      elements.exerciseForm.addEventListener('submit', handleExerciseSubmit);
+      elements.assignExerciseForm.addEventListener('submit', handleExerciseAssignment);
+      elements.exerciseCompletionForm.addEventListener('submit', handleExerciseCompletion);
+      elements.medicalRecordForm.addEventListener('submit', handleMedicalRecordSubmit);
+      elements.crutchForm.addEventListener('submit', handleCrutchSubmit);
+      elements.inventoryForm.addEventListener('submit', handleInventorySubmit);
+      elements.userForm.addEventListener('submit', handleUserSubmit);
+      
+      document.getElementById('userRole').addEventListener('change', function() {
+        document.getElementById('playerSelectGroup').style.display = 
+          this.value === 'player' ? 'block' : 'none';
+      });
+      
+      elements.closeModalButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+          });
+          currentEditId = null;
         });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          const file = data.files['afprs-backup.json'] || Object.values(data.files)[0];
-          if (file) {
-            appData = JSON.parse(file.content);
-            showSyncStatus('Successfully loaded data from Gist', 'success');
-            updateDataPreview();
-            // Reinitialize charts with new data
-            initCharts();
-          } else {
-            throw new Error('No valid data found in Gist');
-          }
-        } else {
-          throw new Error(data.message || 'Failed to load Gist');
-        }
-      } catch (error) {
-        showSyncStatus(`Error: ${error.message}`, 'error');
-        console.error('Gist error:', error);
-      }
-    }
-
-    // Local file handling
-    function exportDataToFile() {
-      const dataStr = JSON.stringify(appData, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      });
       
-      const exportFileDefaultName = `afprs-backup-${new Date().toISOString().split('T')[0]}.json`;
-      
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
-    }
-
-    function importDataFromFile(file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          appData = JSON.parse(e.target.result);
-          updateDataPreview();
-          showSyncStatus('Successfully imported data from file', 'success');
-          initCharts();
-        } catch (error) {
-          showSyncStatus('Error parsing JSON file', 'error');
+      window.addEventListener('click', (event) => {
+        if (event.target.classList.contains('modal')) {
+          event.target.style.display = 'none';
+          currentEditId = null;
         }
-      };
-      reader.readAsText(file);
+      });
+      
+      // GitHub sync event listeners
+      elements.saveTokenBtn.addEventListener('click', saveToken);
+      elements.loadFromGistBtn.addEventListener('click', loadFromGist);
+      elements.saveToGistBtn.addEventListener('click', saveToGist);
     }
 
-    function updateDataPreview() {
-      dataPreview.textContent = JSON.stringify(appData, null, 2);
-    }
-
-    function showSyncStatus(message, type = 'info') {
-      syncStatus.textContent = message;
-      syncStatus.className = 'status-message ' + type;
-    }
-
-    // Login function
     function handleLogin(event) {
       event.preventDefault();
       
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value.trim();
-      
-      loginButton.disabled = true;
-      loginButton.textContent = 'Logging in...';
-      
-      setTimeout(() => {
-        const user = users.find(u => u.username === username && u.password === password);
-        
-        if (user) {
-          currentUser = user;
-          loginSection.style.display = 'none';
-          appContent.style.display = 'block';
-          welcomeHeader.textContent = `Welcome, ${user.name}`;
-          updateUIForRole(user.role);
-          initCharts();
-          updateDataPreview();
-        } else {
-          alert('Invalid username or password');
-          loginButton.disabled = false;
-          loginButton.textContent = 'Login';
-        }
-      }, 500);
-    }
+      const username = elements.username.value.trim();
+      const password = elements.password.value.trim();
+      const user = dataStore.users.find(u => u.username === username && u.password === password);
 
-    // Update UI based on user role
-    function updateUIForRole(role) {
-      // Hide all tabs first
-      document.querySelectorAll('.tab-btn').forEach(tab => {
-        tab.style.display = 'none';
-      });
-      
-      // Show relevant tabs based on role
-      switch(role) {
-        case 'admin':
-          document.querySelectorAll('.tab-btn').forEach(tab => {
-            tab.style.display = 'inline-block';
-          });
-          break;
-        case 'manager':
-          ['dashboard', 'players', 'training'].forEach(tab => {
-            document.querySelector(`[data-tab="${tab}"]`).style.display = 'inline-block';
-          });
-          break;
-        case 'coach':
-          ['dashboard', 'training'].forEach(tab => {
-            document.querySelector(`[data-tab="${tab}"]`).style.display = 'inline-block';
-          });
-          break;
+      if (user) {
+        currentUser = user;
+        elements.loginOverlay.style.display = 'none';
+        elements.appContent.style.display = 'block';
+        elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
+        setupRoleBasedUI();
+        loadInitialData();
+      } else {
+        alert('Invalid username or password');
       }
-      
-      // Activate dashboard tab by default
-      document.querySelector('[data-tab="dashboard"]').click();
     }
 
-    // Tab switching function
-    function switchTab(event) {
-      const tabId = event.target.dataset.tab;
-      
-      // Update active tab button
-      tabButtons.forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-      
-      // Update active tab content
-      tabContents.forEach(content => content.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-    }
-
-    // Logout function
     function handleLogout() {
       currentUser = null;
-      loginSection.style.display = 'flex';
-      appContent.style.display = 'none';
-      usernameInput.value = '';
-      passwordInput.value = '';
-      loginButton.disabled = false;
-      loginButton.textContent = 'Login';
+      elements.username.value = '';
+      elements.password.value = '';
+      elements.loginOverlay.style.display = 'flex';
+      elements.appContent.style.display = 'none';
+    }
+
+    function setupRoleBasedUI() {
+      const permissions = {
+        admin: {
+          dashboard: true,
+          players: true,
+          training: true,
+          medical: true,
+          crutches: true,
+          athleteDashboard: false,
+          inventory: true,
+          users: true,
+          githubSync: true
+        },
+        team_manager: {
+          dashboard: true,
+          players: true,
+          training: false,
+          medical: false,
+          crutches: false,
+          athleteDashboard: false,
+          inventory: true,
+          users: false,
+          githubSync: true
+        },
+        head_coach: {
+          dashboard: true,
+          players: true,
+          training: true,
+          medical: true,
+          crutches: true,
+          athleteDashboard: false,
+          inventory: false,
+          users: false,
+          githubSync: false
+        },
+        assistant_coach: {
+          dashboard: false,
+          players: true,
+          training: true,
+          medical: true,
+          crutches: true,
+          athleteDashboard: false,
+          inventory: false,
+          users: false,
+          githubSync: false
+        },
+        team_doctor: {
+          dashboard: true,
+          players: true,
+          training: false,
+          medical: true,
+          crutches: true,
+          athleteDashboard: false,
+          inventory: false,
+          users: false,
+          githubSync: false
+        },
+        physiotherapist: {
+          dashboard: false,
+          players: false,
+          training: false,
+          medical: true,
+          crutches: true,
+          athleteDashboard: false,
+          inventory: false,
+          users: false,
+          githubSync: false
+        },
+        player: {
+          dashboard: false,
+          players: false,
+          training: false,
+          medical: false,
+          crutches: true,
+          athleteDashboard: true,
+          inventory: false,
+          users: false,
+          githubSync: false
+        }
+      };
+
+      const userPermissions = permissions[currentUser.role] || {};
       
-      // Destroy charts
-      Object.values(charts).forEach(chart => chart.destroy());
-      charts = {};
+      elements.tabButtons.forEach(tab => {
+        const tabId = tab.dataset.tab;
+        tab.style.display = userPermissions[tabId] ? 'block' : 'none';
+      });
+
+      elements.addPlayerBtn.style.display = 
+        ['admin', 'team_manager'].includes(currentUser.role) ? 'inline-block' : 'none';
+      elements.addExerciseBtn.style.display = 
+        ['admin', 'head_coach', 'assistant_coach'].includes(currentUser.role) ? 'inline-block' : 'none';
+      elements.assignExerciseBtn.style.display = 
+        ['admin', 'head_coach', 'assistant_coach'].includes(currentUser.role) ? 'inline-block' : 'none';
+      elements.addMedicalRecordBtn.style.display = 
+        ['admin', 'team_doctor', 'physiotherapist'].includes(currentUser.role) ? 'inline-block' : 'none';
+
+      const firstVisibleTab = document.querySelector('.tab-btn[style="display: block;"]') || 
+                             document.querySelector('.tab-btn.active');
+      if (firstVisibleTab) switchTab(firstVisibleTab.dataset.tab);
     }
 
-    // Event Listeners
-    loginForm.addEventListener('submit', handleLogin);
-    logoutBtn.addEventListener('click', handleLogout);
-    
-    tabButtons.forEach(btn => {
-      btn.addEventListener('click', switchTab);
-    });
-
-    uploadToGist.addEventListener('click', uploadToGitHubGist);
-    loadFromGist.addEventListener('click', loadFromGitHubGist);
-    exportData.addEventListener('click', exportDataToFile);
-    importData.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length) {
-        importDataFromFile(e.target.files[0]);
+    function loadInitialData() {
+      loadPlayerTable();
+      loadTrainingPrograms();
+      loadMedicalAlerts();
+      loadCrutchContent();
+      initCharts();
+      
+      if (currentUser.role === 'player') {
+        loadAthleteDashboard();
       }
-    });
-
-    // Auto-fill demo admin credentials if #admin hash is present
-    if (window.location.hash === '#admin') {
-      usernameInput.value = 'admin';
-      passwordInput.value = 'admin123';
+      
+      if (['admin', 'team_manager'].includes(currentUser.role)) {
+        loadInventoryManagement();
+      }
+      
+      if (currentUser.role === 'admin') {
+        loadUserManagement();
+      }
+      
+      if (['admin', 'team_manager'].includes(currentUser.role)) {
+        loadGitHubSync();
+      }
     }
+
+    function loadGitHubSync() {
+      if (dataStore.githubConfig.token) {
+        elements.githubToken.value = dataStore.githubConfig.token;
+      }
+      
+      if (dataStore.githubConfig.gistId) {
+        elements.gistId.value = dataStore.githubConfig.gistId;
+      }
+    }
+
+    function switchTab(tabId) {
+      elements.tabContents.forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      elements.tabButtons.forEach(button => {
+        button.classList.remove('active');
+      });
+      
+      document.getElementById(tabId).classList.add('active');
+      document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+      
+      if (tabId === 'dashboard') refreshDashboard();
+      if (tabId === 'players') loadPlayerTable();
+      if (tabId === 'training') loadTrainingPrograms();
+      if (tabId === 'medical') loadMedicalAlerts();
+      if (tabId === 'crutches') loadCrutchContent();
+      if (tabId === 'athleteDashboard') loadAthleteDashboard();
+      if (tabId === 'inventory') loadInventoryManagement();
+      if (tabId === 'users') loadUserManagement();
+      if (tabId === 'githubSync') loadGitHubSync();
+    }
+
+    function populatePlayerFilters() {
+      const playerSelects = [
+        elements.dashboardPlayerFilter,
+        elements.trainingPlayerFilter,
+        elements.medicalPlayerFilter,
+        elements.crutchPlayerFilter,
+        document.getElementById('medicalPlayer'),
+        document.getElementById('assignPlayer'),
+        document.getElementById('crutchPlayer'),
+        document.getElementById('userPlayer')
+      ];
+      
+      playerSelects.forEach(select => {
+        if (!select) return;
+        
+        select.innerHTML = '<option value="">Select Player</option>';
+        dataStore.players.forEach(player => {
+          const option = document.createElement('option');
+          option.value = player.id;
+          option.textContent = player.name;
+          select.appendChild(option);
+        });
+      });
+    }
+
+    function populateExerciseSelect() {
+      const exerciseSelect = document.getElementById('assignExercise');
+      if (!exerciseSelect) return;
+      
+      exerciseSelect.innerHTML = '<option value="">Select Exercise</option>';
+      
+      // Add universal exercises
+      dataStore.exercises.universal.forEach(exercise => {
+        const option = document.createElement('option');
+        option.value = exercise.id;
+        option.textContent = `[Universal] ${exercise.name}`;
+        exerciseSelect.appendChild(option);
+      });
+      
+      // Add position-specific exercises
+      Object.keys(dataStore.exercises).forEach(position => {
+        if (position !== 'universal') {
+          dataStore.exercises[position].forEach(exercise => {
+            const option = document.createElement('option');
+            option.value = exercise.id;
+            option.textContent = `[${position}] ${exercise.name}`;
+            exerciseSelect.appendChild(option);
+          });
+        }
+      });
+    }
+
+    function loadPlayerTable() {
+      const positionFilter = elements.playerPositionFilter.value;
+      const amputationFilter = elements.playerAmputationFilter.value;
+      
+      elements.playerTable.innerHTML = '';
+      
+      const filteredPlayers = dataStore.players.filter(player => {
+        const positionMatch = positionFilter === 'all' || player.position === positionFilter;
+        const amputationMatch = amputationFilter === 'all' || player.amputation === amputationFilter;
+        return positionMatch && amputationMatch;
+      });
+      
+      filteredPlayers.forEach(player => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${player.name}</td>
+          <td>${player.position}</td>
+          <td>${formatAmputation(player.amputation)}</td>
+          <td>${player.crutchType ? player.crutchType : 'None'}</td>
+          <td>${player.height} cm</td>
+          <td>${player.weight} kg</td>
+          <td>
+            <button class="btn-small btn-primary" onclick="editPlayer('${player.id}')">Edit</button>
+            ${['admin', 'team_manager'].includes(currentUser.role) ? 
+              `<button class="btn-small btn-danger" onclick="deletePlayer('${player.id}')">Delete</button>` : ''}
+          </td>
+        `;
+        
+        elements.playerTable.appendChild(row);
+      });
+    }
+
+    function formatAmputation(amputation) {
+      const map = {
+        'left_arm': 'Left Arm',
+        'right_arm': 'Right Arm',
+        'left_leg': 'Left Leg',
+        'right_leg': 'Right Leg'
+      };
+      return map[amputation] || amputation;
+    }
+
+    function loadTrainingPrograms() {
+      const positionFilter = elements.positionFilter.value;
+      const playerFilter = elements.trainingPlayerFilter.value;
+      
+      elements.trainingPrograms.innerHTML = '';
+      
+      if (playerFilter) {
+        // Show exercises for a specific player
+        const player = dataStore.players.find(p => p.id === playerFilter);
+        if (!player) return;
+        
+        const assignedExercises = dataStore.assignedExercises[player.id] || [];
+        const exercises = [];
+        
+        assignedExercises.forEach(exId => {
+          // Check universal exercises
+          const universalEx = dataStore.exercises.universal.find(ex => ex.id === exId);
+          if (universalEx) {
+            exercises.push({...universalEx, position: 'universal'});
+            return;
+          }
+          
+          // Check position-specific exercises
+          const positionEx = dataStore.exercises[player.position]?.find(ex => ex.id === exId);
+          if (positionEx) {
+            exercises.push({...positionEx, position: player.position});
+          }
+        });
+        
+        if (exercises.length === 0) {
+          elements.trainingPrograms.innerHTML = '<p>No exercises assigned to this player.</p>';
+          return;
+        }
+        
+        exercises.forEach(exercise => {
+          const exerciseEl = document.createElement('div');
+          exerciseEl.className = 'exercise';
+          
+          exerciseEl.innerHTML = `
+            <h4>${exercise.name}</h4>
+            <p><strong>Focus:</strong> ${exercise.focus}</p>
+            <p><strong>Sets:</strong> ${exercise.sets}</p>
+            <p><strong>Reps/Duration:</strong> ${exercise.reps || exercise.duration}</p>
+            <p><strong>Difficulty:</strong> ${exercise.difficulty}</p>
+            ${exercise.equipment ? `<p><strong>Equipment:</strong> ${exercise.equipment.join(', ')}</p>` : ''}
+            ${exercise.notes ? `<p class="notes">${exercise.notes}</p>` : ''}
+            <div class="exercise-actions">
+              <button class="btn-small btn-primary" onclick="openExerciseCompletionModal('${exercise.id}', '${player.id}')">Log Completion</button>
+              ${['admin', 'head_coach', 'assistant_coach'].includes(currentUser.role) ? 
+                `<button class="btn-small btn-danger" onclick="unassignExercise('${exercise.id}', '${player.id}')">Unassign</button>` : ''}
+            </div>
+          `;
+          
+          elements.trainingPrograms.appendChild(exerciseEl);
+        });
+      } else {
+        // Show all exercises filtered by position
+        let exercises = [];
+        
+        if (positionFilter === 'all') {
+          // Add all exercises
+          Object.keys(dataStore.exercises).forEach(position => {
+            exercises = exercises.concat(dataStore.exercises[position].map(ex => ({...ex, position})));
+          });
+        } else {
+          // Add universal and position-specific exercises
+          exercises = exercises.concat(dataStore.exercises.universal.map(ex => ({...ex, position: 'universal'})));
+          if (dataStore.exercises[positionFilter]) {
+            exercises = exercises.concat(dataStore.exercises[positionFilter].map(ex => ({...ex, position: positionFilter})));
+          }
+        }
+        
+        if (exercises.length === 0) {
+          elements.trainingPrograms.innerHTML = '<p>No exercises found.</p>';
+          return;
+        }
+        
+        exercises.forEach(exercise => {
+          const exerciseEl = document.createElement('div');
+          exerciseEl.className = 'exercise';
+          
+          exerciseEl.innerHTML = `
+            <h4>${exercise.name} <span class="badge">${exercise.position}</span></h4>
+            <p><strong>Focus:</strong> ${exercise.focus}</p>
+            <p><strong>Sets:</strong> ${exercise.sets}</p>
+            <p><strong>Reps/Duration:</strong> ${exercise.reps || exercise.duration}</p>
+            <p><strong>Difficulty:</strong> ${exercise.difficulty}</p>
+            ${exercise.equipment ? `<p><strong>Equipment:</strong> ${exercise.equipment.join(', ')}</p>` : ''}
+            ${exercise.notes ? `<p class="notes">${exercise.notes}</p>` : ''}
+            <div class="exercise-actions">
+              ${['admin', 'head_coach', 'assistant_coach'].includes(currentUser.role) ? 
+                `<button class="btn-small btn-primary" onclick="editExercise('${exercise.id}', '${exercise.position}')">Edit</button>
+                <button class="btn-small btn-danger" onclick="deleteExercise('${exercise.id}', '${exercise.position}')">Delete</button>` : ''}
+            </div>
+          `;
+          
+          elements.trainingPrograms.appendChild(exerciseEl);
+        });
+      }
+    }
+
+    function loadMedicalAlerts() {
+      const playerFilter = elements.medicalPlayerFilter.value;
+      const severityFilter = elements.medicalSeverityFilter.value;
+      const dateFilter = elements.medicalDateFilter.value;
+      
+      elements.medicalAlerts.innerHTML = '';
+      
+      const filteredRecords = dataStore.medicalRecords.filter(record => {
+        const playerMatch = playerFilter === 'all' || record.playerId === playerFilter;
+        const severityMatch = severityFilter === 'all' || record.severity === severityFilter;
+        const dateMatch = !dateFilter || record.date === dateFilter;
+        return playerMatch && severityMatch && dateMatch;
+      });
+      
+      if (filteredRecords.length === 0) {
+        elements.medicalAlerts.innerHTML = '<p>No medical records found.</p>';
+        return;
+      }
+      
+      filteredRecords.forEach(record => {
+        const player = dataStore.players.find(p => p.id === record.playerId);
+        if (!player) return;
+        
+        const alertEl = document.createElement('div');
+        alertEl.className = 'medical-alert';
+        
+        let severityBadge = '';
+        if (record.severity === 'mild') {
+          severityBadge = '<span class="badge badge-mild">Mild</span>';
+        } else if (record.severity === 'moderate') {
+          severityBadge = '<span class="badge badge-moderate">Moderate</span>';
+        } else {
+          severityBadge = '<span class="badge badge-severe">Severe</span>';
+        }
+        
+        alertEl.innerHTML = `
+          <h4>${player.name} - ${record.issue} ${severityBadge}</h4>
+          <p><strong>Date:</strong> ${record.date}</p>
+          <p><strong>Treatment:</strong> ${record.treatment}</p>
+          <p><strong>Availability:</strong> ${record.available === 'yes' ? 'Full' : 
+            record.available === 'limited' ? 'Limited' : 'None'}</p>
+          ${record.followUpDate ? `<p><strong>Follow-up:</strong> ${record.followUpDate}</p>` : ''}
+          ${record.notes ? `<p class="notes">${record.notes}</p>` : ''}
+          <div class="exercise-actions">
+            ${['admin', 'team_doctor', 'physiotherapist'].includes(currentUser.role) ? 
+              `<button class="btn-small btn-primary" onclick="editMedicalRecord('${record.id}')">Edit</button>
+              <button class="btn-small btn-danger" onclick="deleteMedicalRecord('${record.id}')">Delete</button>` : ''}
+          </div>
+        `;
+        
+        elements.medicalAlerts.appendChild(alertEl);
+      });
+    }
+
+    function loadCrutchContent() {
+      const playerFilter = elements.crutchPlayerFilter.value;
+      const dateFilter = elements.crutchDateFilter.value;
+      
+      elements.crutchContent.innerHTML = '';
+      
+      const filteredRecords = dataStore.crutchData.filter(record => {
+        const playerMatch = playerFilter === 'all' || record.playerId === playerFilter;
+        const dateMatch = !dateFilter || record.date === dateFilter;
+        return playerMatch && dateMatch;
+      });
+      
+      if (filteredRecords.length === 0) {
+        elements.crutchContent.innerHTML = '<p>No crutch assessments found.</p>';
+        return;
+      }
+      
+      // Group by player
+      const playersWithRecords = [...new Set(filteredRecords.map(r => r.playerId))];
+      
+      playersWithRecords.forEach(playerId => {
+        const player = dataStore.players.find(p => p.id === playerId);
+        if (!player) return;
+        
+        const playerRecords = filteredRecords.filter(r => r.playerId === playerId);
+        
+        const crutchEl = document.createElement('div');
+        crutchEl.className = 'crutch-form';
+        
+        crutchEl.innerHTML = `
+          <h3>${player.name}</h3>
+          <p><strong>Crutch Type:</strong> ${player.crutchType || 'None'}</p>
+        `;
+        
+        // Add records
+        playerRecords.forEach(record => {
+          crutchEl.innerHTML += `
+            <div class="exercise-detail">
+              <h4>Assessment on ${record.date}</h4>
+              <p><strong>Comfort Level:</strong> ${record.comfortLevel}/10</p>
+              ${record.notes ? `<p class="notes">${record.notes}</p>` : ''}
+              <div class="exercise-actions">
+                <button class="btn-small btn-primary" onclick="editCrutchRecord('${record.id}')">Edit</button>
+                <button class="btn-small btn-danger" onclick="deleteCrutchRecord('${record.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        });
+        
+        // Add button to add new assessment
+        if (['admin', 'team_doctor', 'physiotherapist', 'player'].includes(currentUser.role)) {
+          crutchEl.innerHTML += `
+            <div class="exercise-actions">
+              <button class="btn-small btn-primary" onclick="openCrutchModal('${playerId}')">Add Assessment</button>
+            </div>
+          `;
+        }
+        
+        elements.crutchContent.appendChild(crutchEl);
+      });
+    }
+
+    function loadAthleteDashboard() {
+      if (!currentUser.playerId) {
+        elements.athleteDashboard.innerHTML = '<p>No player data associated with your account.</p>';
+        return;
+      }
+      
+      const player = dataStore.players.find(p => p.id === currentUser.playerId);
+      if (!player) return;
+      
+      // Update stats
+      elements.athleteFitness.textContent = player.fitnessLevel || 0;
+      elements.athleteRecovery.textContent = player.recoveryScore || 0;
+      
+      // Find performance data
+      const performance = dataStore.performanceData.find(p => p.playerId === currentUser.playerId);
+      if (performance) {
+        elements.athleteSpeed.textContent = performance.speed || 0;
+        elements.athleteEndurance.textContent = performance.endurance || 0;
+      }
+      
+      // Load assigned exercises
+      elements.athleteExercises.innerHTML = '';
+      const assignedExercises = dataStore.assignedExercises[currentUser.playerId] || [];
+      
+      if (assignedExercises.length === 0) {
+        elements.athleteExercises.innerHTML = '<p>No exercises assigned to you.</p>';
+        return;
+      }
+      
+      assignedExercises.forEach(exId => {
+        // Check universal exercises
+        let exercise = dataStore.exercises.universal.find(ex => ex.id === exId);
+        let position = 'universal';
+        
+        if (!exercise) {
+          // Check position-specific exercises
+          exercise = dataStore.exercises[player.position]?.find(ex => ex.id === exId);
+          position = player.position;
+        }
+        
+        if (!exercise) return;
+        
+        const exerciseEl = document.createElement('div');
+        exerciseEl.className = 'exercise';
+        
+        exerciseEl.innerHTML = `
+          <h4>${exercise.name}</h4>
+          <p><strong>Focus:</strong> ${exercise.focus}</p>
+          <p><strong>Sets:</strong> ${exercise.sets}</p>
+          <p><strong>Reps/Duration:</strong> ${exercise.reps || exercise.duration}</p>
+          <p><strong>Difficulty:</strong> ${exercise.difficulty}</p>
+          ${exercise.equipment ? `<p><strong>Equipment:</strong> ${exercise.equipment.join(', ')}</p>` : ''}
+          ${exercise.notes ? `<p class="notes">${exercise.notes}</p>` : ''}
+          <div class="exercise-actions">
+            <button class="btn-small btn-primary" onclick="openExerciseCompletionModal('${exercise.id}', '${currentUser.playerId}')">Log Completion</button>
+          </div>
+        `;
+        
+        elements.athleteExercises.appendChild(exerciseEl);
+      });
+      
+      // Update athlete chart
+      updateAthleteChart();
+    }
+
+    function loadInventoryManagement() {
+      elements.inventoryTable.innerHTML = '';
+      elements.sizeChart.innerHTML = '';
+      
+      // Inventory items
+      dataStore.inventory.forEach(item => {
+        const row = document.createElement('tr');
+        
+        const assignedText = item.assignedTo.includes('all') ? 'All players' : 
+          item.assignedTo.map(id => {
+            const player = dataStore.players.find(p => p.id === id);
+            return player ? player.name : id;
+          }).join(', ');
+        
+        row.innerHTML = `
+          <td>${item.item}</td>
+          <td>${item.category}</td>
+          <td>${item.quantity}</td>
+          <td>${item.size || 'N/A'}</td>
+          <td>${assignedText}</td>
+          <td>
+            <button class="btn-small btn-primary" onclick="editInventoryItem('${item.id}')">Edit</button>
+            <button class="btn-small btn-danger" onclick="deleteInventoryItem('${item.id}')">Delete</button>
+          </td>
+        `;
+        
+        elements.inventoryTable.appendChild(row);
+      });
+      
+      // Player sizes
+      dataStore.playerSizes.forEach(size => {
+        const player = dataStore.players.find(p => p.id === size.playerId);
+        if (!player) return;
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${player.name}</td>
+          <td>${size.jersey}</td>
+          <td>${size.hoodie}</td>
+          <td>${size.pants}</td>
+        `;
+        
+        elements.sizeChart.appendChild(row);
+      });
+    }
+
+    function loadUserManagement() {
+      const roleFilter = elements.userRoleFilter.value;
+      
+      elements.userTable.innerHTML = '';
+      
+      const filteredUsers = dataStore.users.filter(user => {
+        return roleFilter === 'all' || user.role === roleFilter;
+      });
+      
+      filteredUsers.forEach(user => {
+        const row = document.createElement('tr');
+        
+        const roleMap = {
+          'admin': 'Admin',
+          'team_manager': 'Team Manager',
+          'head_coach': 'Head Coach',
+          'assistant_coach': 'Assistant Coach',
+          'team_doctor': 'Team Doctor',
+          'physiotherapist': 'Physiotherapist',
+          'player': 'Player'
+        };
+        
+        const player = user.playerId ? dataStore.players.find(p => p.id === user.playerId) : null;
+        
+        row.innerHTML = `
+          <td>${user.username}</td>
+          <td>${user.name}</td>
+          <td>${roleMap[user.role] || user.role}</td>
+          <td>${player ? player.position : ''}</td>
+          <td>
+            <button class="btn-small btn-primary" onclick="editUser('${user.username}')">Edit</button>
+            ${user.role !== 'admin' ? `<button class="btn-small btn-danger" onclick="deleteUser('${user.username}')">Delete</button>` : ''}
+          </td>
+        `;
+        
+        elements.userTable.appendChild(row);
+      });
+    }
+
+    function initCharts() {
+      // Destroy existing charts if they exist
+      if (performanceChartInstance) {
+        performanceChartInstance.destroy();
+      }
+      if (athleteChartInstance) {
+        athleteChartInstance.destroy();
+      }
+      
+      // Initialize team performance chart
+      const performanceCtx = elements.performanceChart.getContext('2d');
+      performanceChartInstance = new Chart(performanceCtx, {
+        type: 'bar',
+        data: {
+          labels: dataStore.players.map(p => p.name),
+          datasets: [{
+            label: 'Performance Index',
+            data: dataStore.players.map(p => p.fitnessLevel || 0),
+            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+            borderColor: 'rgba(52, 152, 219, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+      
+      // Initialize athlete performance chart if on athlete dashboard
+      if (currentUser.role === 'player' && currentUser.playerId) {
+        updateAthleteChart();
+      }
+    }
+
+    function updateAthleteChart() {
+      if (!currentUser.playerId) return;
+      
+      const athleteCtx = elements.athletePerformanceChart.getContext('2d');
+      
+      // Get performance data for the player
+      const performance = dataStore.performanceData.find(p => p.playerId === currentUser.playerId);
+      const player = dataStore.players.find(p => p.id === currentUser.playerId);
+      
+      if (!performance || !player) return;
+      
+      if (athleteChartInstance) {
+        athleteChartInstance.destroy();
+      }
+      
+      athleteChartInstance = new Chart(athleteCtx, {
+        type: 'radar',
+        data: {
+          labels: ['Speed', 'Endurance', 'Strength', 'Recovery', 'Fitness'],
+          datasets: [{
+            label: 'Performance Metrics',
+            data: [
+              performance.speed || 0,
+              performance.endurance || 0,
+              performance.strength || 0,
+              performance.recovery || 0,
+              player.fitnessLevel || 0
+            ],
+            backgroundColor: 'rgba(46, 204, 113, 0.2)',
+            borderColor: 'rgba(46, 204, 113, 1)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgba(46, 204, 113, 1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: {
+                display: true
+              },
+              suggestedMin: 0,
+              suggestedMax: 100
+            }
+          }
+        }
+      });
+    }
+
+    function refreshDashboard() {
+      const playerFilter = elements.dashboardPlayerFilter.value;
+      const metricFilter = elements.dashboardMetricFilter.value;
+      const dateFilter = elements.dashboardDateFilter.value;
+      
+      // Filter performance data
+      let filteredData = dataStore.performanceData;
+      if (playerFilter !== 'all') {
+        filteredData = filteredData.filter(d => d.playerId === playerFilter);
+      }
+      if (dateFilter) {
+        filteredData = filteredData.filter(d => d.date === dateFilter);
+      }
+      
+      // Update chart based on selected metric
+      if (performanceChartInstance) {
+        performanceChartInstance.destroy();
+      }
+      
+      const performanceCtx = elements.performanceChart.getContext('2d');
+      let metricLabel = 'Performance Index';
+      let metricData = [];
+      
+      if (metricFilter === 'performance') {
+        metricLabel = 'Performance Index';
+        metricData = dataStore.players.map(p => p.fitnessLevel || 0);
+      } else if (metricFilter === 'speed') {
+        metricLabel = 'Speed (m/s)';
+        metricData = dataStore.players.map(p => {
+          const perf = dataStore.performanceData.find(d => d.playerId === p.id);
+          return perf ? perf.speed : 0;
+        });
+      } else if (metricFilter === 'endurance') {
+        metricLabel = 'Endurance (%)';
+        metricData = dataStore.players.map(p => {
+          const perf = dataStore.performanceData.find(d => d.playerId === p.id);
+          return perf ? perf.endurance : 0;
+        });
+      } else if (metricFilter === 'recovery') {
+        metricLabel = 'Recovery Score';
+        metricData = dataStore.players.map(p => p.recoveryScore || 0);
+      }
+      
+      performanceChartInstance = new Chart(performanceCtx, {
+        type: 'bar',
+        data: {
+          labels: dataStore.players.map(p => p.name),
+          datasets: [{
+            label: metricLabel,
+            data: metricData,
+            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+            borderColor: 'rgba(52, 152, 219, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: metricFilter === 'speed' ? 10 : 100
+            }
+          }
+        }
+      });
+    }
+
+    // Modal Functions
+    function openPlayerModal(playerId = null) {
+      currentEditId = playerId;
+      const modal = document.getElementById('playerModal');
+      const title = document.getElementById('playerModalTitle');
+      
+      if (playerId) {
+        title.textContent = 'Edit Player';
+        const player = dataStore.players.find(p => p.id === playerId);
+        if (player) {
+          document.getElementById('playerId').value = player.id;
+          document.getElementById('playerName').value = player.name;
+          document.getElementById('playerPosition').value = player.position;
+          document.getElementById('playerAmputation').value = player.amputation;
+          document.getElementById('playerCrutchType').value = player.crutchType || '';
+          document.getElementById('playerHeight').value = player.height;
+          document.getElementById('playerWeight').value = player.weight;
+          document.getElementById('playerDominantSide').value = player.dominantSide;
+        }
+      } else {
+        title.textContent = 'Add New Player';
+        document.getElementById('playerForm').reset();
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    function openExerciseModal(exerciseId = null, position = null) {
+      currentEditId = exerciseId;
+      const modal = document.getElementById('exerciseModal');
+      const title = document.getElementById('exerciseModalTitle');
+      
+      if (exerciseId && position) {
+        title.textContent = 'Edit Exercise';
+        let exercise = null;
+        
+        if (position === 'universal') {
+          exercise = dataStore.exercises.universal.find(ex => ex.id === exerciseId);
+        } else {
+          exercise = dataStore.exercises[position]?.find(ex => ex.id === exerciseId);
+        }
+        
+        if (exercise) {
+          document.getElementById('exerciseId').value = exercise.id;
+          document.getElementById('exerciseName').value = exercise.name;
+          document.getElementById('exerciseFocus').value = exercise.focus;
+          document.getElementById('exercisePosition').value = position;
+          document.getElementById('exerciseSets').value = exercise.sets;
+          document.getElementById('exerciseReps').value = exercise.reps || exercise.duration;
+          document.getElementById('exerciseDifficulty').value = exercise.difficulty;
+          document.getElementById('exerciseEquipment').value = exercise.equipment ? exercise.equipment.join(', ') : '';
+          document.getElementById('exerciseNotes').value = exercise.notes || '';
+        }
+      } else {
+        title.textContent = 'Add New Exercise';
+        document.getElementById('exerciseForm').reset();
+        document.getElementById('exercisePosition').value = 'universal';
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    function openAssignExerciseModal() {
+      populatePlayerFilters();
+      populateExerciseSelect();
+      document.getElementById('assignExerciseForm').reset();
+      document.getElementById('assignExerciseModal').style.display = 'block';
+    }
+
+    function openExerciseCompletionModal(exerciseId, playerId) {
+      document.getElementById('logExerciseId').value = exerciseId;
+      document.getElementById('logPlayerId').value = playerId;
+      document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
+      
+      // Find exercise to pre-fill sets and reps
+      let exercise = null;
+      
+      // Check universal exercises
+      exercise = dataStore.exercises.universal.find(ex => ex.id === exerciseId);
+      
+      if (!exercise) {
+        // Check position-specific exercises
+        const player = dataStore.players.find(p => p.id === playerId);
+        if (player) {
+          exercise = dataStore.exercises[player.position]?.find(ex => ex.id === exerciseId);
+        }
+      }
+      
+      if (exercise) {
+        document.getElementById('logSets').value = exercise.sets;
+        document.getElementById('logReps').value = exercise.reps || exercise.duration;
+      }
+      
+      document.getElementById('exerciseCompletionModal').style.display = 'block';
+    }
+
+    function openMedicalModal(recordId = null) {
+      currentEditId = recordId;
+      const modal = document.getElementById('medicalModal');
+      const title = document.getElementById('medicalModalTitle');
+      
+      populatePlayerFilters();
+      
+      if (recordId) {
+        title.textContent = 'Edit Medical Record';
+        const record = dataStore.medicalRecords.find(r => r.id === recordId);
+        if (record) {
+          document.getElementById('medicalRecordId').value = record.id;
+          document.getElementById('medicalPlayer').value = record.playerId;
+          document.getElementById('medicalDate').value = record.date;
+          document.getElementById('medicalIssue').value = record.issue;
+          document.getElementById('medicalSeverity').value = record.severity;
+          document.getElementById('medicalTreatment').value = record.treatment;
+          document.getElementById('medicalAvailability').value = record.available;
+          document.getElementById('medicalFollowUp').value = record.followUpDate || '';
+          document.getElementById('medicalNotes').value = record.notes || '';
+        }
+      } else {
+        title.textContent = 'Add Medical Record';
+        document.getElementById('medicalRecordForm').reset();
+        document.getElementById('medicalDate').value = new Date().toISOString().split('T')[0];
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    function openCrutchModal(playerId = null, recordId = null) {
+      currentEditId = recordId;
+      const modal = document.getElementById('crutchModal');
+      const title = document.getElementById('crutchModalTitle');
+      
+      populatePlayerFilters();
+      
+      if (recordId) {
+        title.textContent = 'Edit Crutch Assessment';
+        const record = dataStore.crutchData.find(r => r.id === recordId);
+        if (record) {
+          document.getElementById('crutchRecordId').value = record.id;
+          document.getElementById('crutchPlayer').value = record.playerId;
+          document.getElementById('crutchDate').value = record.date;
+          document.getElementById('crutchComfort').value = record.comfortLevel;
+          document.getElementById('crutchNotes').value = record.notes || '';
+        }
+      } else {
+        title.textContent = 'Add Crutch Assessment';
+        document.getElementById('crutchForm').reset();
+        document.getElementById('crutchDate').value = new Date().toISOString().split('T')[0];
+        if (playerId) {
+          document.getElementById('crutchPlayer').value = playerId;
+        }
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    function openInventoryModal(itemId = null) {
+      currentEditId = itemId;
+      const modal = document.getElementById('inventoryModal');
+      const title = document.getElementById('inventoryModalTitle');
+      
+      if (itemId) {
+        title.textContent = 'Edit Inventory Item';
+        const item = dataStore.inventory.find(i => i.id === itemId);
+        if (item) {
+          document.getElementById('inventoryId').value = item.id;
+          document.getElementById('inventoryItem').value = item.item;
+          document.getElementById('inventoryCategory').value = item.category;
+          document.getElementById('inventoryQuantity').value = item.quantity;
+          document.getElementById('inventorySize').value = item.size || '';
+          document.getElementById('inventoryAssigned').value = item.assignedTo.join(', ');
+          document.getElementById('inventoryNotes').value = item.notes || '';
+        }
+      } else {
+        title.textContent = 'Add Inventory Item';
+        document.getElementById('inventoryForm').reset();
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    function openUserModal(username = null) {
+      currentEditId = username;
+      const modal = document.getElementById('userModal');
+      const title = document.getElementById('userModalTitle');
+      
+      populatePlayerFilters();
+      
+      if (username) {
+        title.textContent = 'Edit User';
+        const user = dataStore.users.find(u => u.username === username);
+        if (user) {
+          document.getElementById('userId').value = user.username;
+          document.getElementById('userUsername').value = user.username;
+          document.getElementById('userPassword').value = user.password;
+          document.getElementById('userName').value = user.name;
+          document.getElementById('userRole').value = user.role;
+          document.getElementById('userPlayer').value = user.playerId || '';
+        }
+      } else {
+        title.textContent = 'Add User';
+        document.getElementById('userForm').reset();
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    // Form Handlers
+    function handlePlayerSubmit(event) {
+      event.preventDefault();
+      
+      const playerData = {
+        id: document.getElementById('playerId').value || generateId(),
+        name: document.getElementById('playerName').value,
+        position: document.getElementById('playerPosition').value,
+        amputation: document.getElementById('playerAmputation').value,
+        crutchType: document.getElementById('playerCrutchType').value || null,
+        height: parseInt(document.getElementById('playerHeight').value),
+        weight: parseInt(document.getElementById('playerWeight').value),
+        dominantSide: document.getElementById('playerDominantSide').value,
+        joinDate: new Date().toISOString().split('T')[0],
+        fitnessLevel: Math.floor(Math.random() * 20) + 80, // Random between 80-100
+        recoveryScore: Math.floor(Math.random() * 5) + 5 // Random between 5-10
+      };
+      
+      if (currentEditId) {
+        // Update existing player
+        const index = dataStore.players.findIndex(p => p.id === currentEditId);
+        if (index !== -1) {
+          dataStore.players[index] = { ...dataStore.players[index], ...playerData };
+        }
+      } else {
+        // Add new player
+        dataStore.players.push(playerData);
+      }
+      
+      document.getElementById('playerModal').style.display = 'none';
+      currentEditId = null;
+      loadPlayerTable();
+      populatePlayerFilters();
+      refreshDashboard();
+    }
+
+    function handleExerciseSubmit(event) {
+      event.preventDefault();
+      
+      const exerciseData = {
+        id: document.getElementById('exerciseId').value || generateId(),
+        name: document.getElementById('exerciseName').value,
+        focus: document.getElementById('exerciseFocus').value,
+        sets: parseInt(document.getElementById('exerciseSets').value),
+        reps: document.getElementById('exerciseReps').value,
+        difficulty: document.getElementById('exerciseDifficulty').value,
+        equipment: document.getElementById('exerciseEquipment').value ? 
+          document.getElementById('exerciseEquipment').value.split(',').map(item => item.trim()) : [],
+        notes: document.getElementById('exerciseNotes').value,
+        addedBy: currentUser.username
+      };
+      
+      const position = document.getElementById('exercisePosition').value;
+      
+      if (currentEditId) {
+        // Update existing exercise
+        if (position === 'universal') {
+          const index = dataStore.exercises.universal.findIndex(ex => ex.id === currentEditId);
+          if (index !== -1) {
+            dataStore.exercises.universal[index] = { ...dataStore.exercises.universal[index], ...exerciseData };
+          }
+        } else {
+          const index = dataStore.exercises[position]?.findIndex(ex => ex.id === currentEditId);
+          if (index !== -1) {
+            dataStore.exercises[position][index] = { ...dataStore.exercises[position][index], ...exerciseData };
+          }
+        }
+      } else {
+        // Add new exercise
+        if (position === 'universal') {
+          dataStore.exercises.universal.push(exerciseData);
+        } else {
+          if (!dataStore.exercises[position]) {
+            dataStore.exercises[position] = [];
+          }
+          dataStore.exercises[position].push(exerciseData);
+        }
+      }
+      
+      document.getElementById('exerciseModal').style.display = 'none';
+      currentEditId = null;
+      loadTrainingPrograms();
+    }
+
+    function handleExerciseAssignment(event) {
+      event.preventDefault();
+      
+      const playerId = document.getElementById('assignPlayer').value;
+      const exerciseId = document.getElementById('assignExercise').value;
+      
+      if (!playerId || !exerciseId) return;
+      
+      if (!dataStore.assignedExercises[playerId]) {
+        dataStore.assignedExercises[playerId] = [];
+      }
+      
+      if (!dataStore.assignedExercises[playerId].includes(exerciseId)) {
+        dataStore.assignedExercises[playerId].push(exerciseId);
+      }
+      
+      document.getElementById('assignExerciseModal').style.display = 'none';
+      loadTrainingPrograms();
+      
+      if (currentUser.role === 'player' && playerId === currentUser.playerId) {
+        loadAthleteDashboard();
+      }
+    }
+
+    function handleExerciseCompletion(event) {
+      event.preventDefault();
+      
+      const logData = {
+        id: generateId(),
+        exerciseId: document.getElementById('logExerciseId').value,
+        playerId: document.getElementById('logPlayerId').value,
+        date: document.getElementById('logDate').value,
+        sets: parseInt(document.getElementById('logSets').value),
+        reps: document.getElementById('logReps').value,
+        performance: parseInt(document.getElementById('logPerformance').value),
+        notes: document.getElementById('logNotes').value
+      };
+      
+      dataStore.exerciseLogs.push(logData);
+      
+      document.getElementById('exerciseCompletionModal').style.display = 'none';
+      
+      if (currentUser.role === 'player') {
+        loadAthleteDashboard();
+      } else {
+        loadTrainingPrograms();
+      }
+    }
+
+    function handleMedicalRecordSubmit(event) {
+      event.preventDefault();
+      
+      const recordData = {
+        id: document.getElementById('medicalRecordId').value || generateId(),
+        playerId: document.getElementById('medicalPlayer').value,
+        date: document.getElementById('medicalDate').value,
+        issue: document.getElementById('medicalIssue').value,
+        severity: document.getElementById('medicalSeverity').value,
+        treatment: document.getElementById('medicalTreatment').value,
+        available: document.getElementById('medicalAvailability').value,
+        followUpDate: document.getElementById('medicalFollowUp').value || null,
+        notes: document.getElementById('medicalNotes').value
+      };
+      
+      if (currentEditId) {
+        // Update existing record
+        const index = dataStore.medicalRecords.findIndex(r => r.id === currentEditId);
+        if (index !== -1) {
+          dataStore.medicalRecords[index] = { ...dataStore.medicalRecords[index], ...recordData };
+        }
+      } else {
+        // Add new record
+        dataStore.medicalRecords.push(recordData);
+      }
+      
+      document.getElementById('medicalModal').style.display = 'none';
+      currentEditId = null;
+      loadMedicalAlerts();
+    }
+
+    function handleCrutchSubmit(event) {
+      event.preventDefault();
+      
+      const crutchData = {
+        id: document.getElementById('crutchRecordId').value || generateId(),
+        playerId: document.getElementById('crutchPlayer').value,
+        date: document.getElementById('crutchDate').value,
+        comfortLevel: parseInt(document.getElementById('crutchComfort').value),
+        notes: document.getElementById('crutchNotes').value
+      };
+      
+      if (currentEditId) {
+        // Update existing record
+        const index = dataStore.crutchData.findIndex(r => r.id === currentEditId);
+        if (index !== -1) {
+          dataStore.crutchData[index] = { ...dataStore.crutchData[index], ...crutchData };
+        }
+      } else {
+        // Add new record
+        dataStore.crutchData.push(crutchData);
+      }
+      
+      document.getElementById('crutchModal').style.display = 'none';
+      currentEditId = null;
+      loadCrutchContent();
+    }
+
+    function handleInventorySubmit(event) {
+      event.preventDefault();
+      
+      const inventoryData = {
+        id: document.getElementById('inventoryId').value || generateId(),
+        item: document.getElementById('inventoryItem').value,
+        category: document.getElementById('inventoryCategory').value,
+        quantity: parseInt(document.getElementById('inventoryQuantity').value),
+        size: document.getElementById('inventorySize').value || null,
+        assignedTo: document.getElementById('inventoryAssigned').value ? 
+          document.getElementById('inventoryAssigned').value.split(',').map(item => item.trim()) : [],
+        notes: document.getElementById('inventoryNotes').value
+      };
+      
+      if (currentEditId) {
+        // Update existing item
+        const index = dataStore.inventory.findIndex(i => i.id === currentEditId);
+        if (index !== -1) {
+          dataStore.inventory[index] = { ...dataStore.inventory[index], ...inventoryData };
+        }
+      } else {
+        // Add new item
+        dataStore.inventory.push(inventoryData);
+      }
+      
+      document.getElementById('inventoryModal').style.display = 'none';
+      currentEditId = null;
+      loadInventoryManagement();
+    }
+
+    function handleUserSubmit(event) {
+      event.preventDefault();
+      
+      const userData = {
+        username: document.getElementById('userUsername').value,
+        password: document.getElementById('userPassword').value,
+        name: document.getElementById('userName').value,
+        role: document.getElementById('userRole').value,
+        playerId: document.getElementById('userPlayer').value || null
+      };
+      
+      if (currentEditId) {
+        // Update existing user
+        const index = dataStore.users.findIndex(u => u.username === currentEditId);
+        if (index !== -1) {
+          dataStore.users[index] = { ...dataStore.users[index], ...userData };
+        }
+      } else {
+        // Add new user
+        dataStore.users.push(userData);
+      }
+      
+      document.getElementById('userModal').style.display = 'none';
+      currentEditId = null;
+      loadUserManagement();
+    }
+
+    // Edit/Delete Functions
+    function editPlayer(playerId) {
+      openPlayerModal(playerId);
+    }
+
+    function deletePlayer(playerId) {
+      if (confirm('Are you sure you want to delete this player?')) {
+        dataStore.players = dataStore.players.filter(p => p.id !== playerId);
+        loadPlayerTable();
+        populatePlayerFilters();
+        refreshDashboard();
+      }
+    }
+
+    function editExercise(exerciseId, position) {
+      openExerciseModal(exerciseId, position);
+    }
+
+    function deleteExercise(exerciseId, position) {
+      if (confirm('Are you sure you want to delete this exercise?')) {
+        if (position === 'universal') {
+          dataStore.exercises.universal = dataStore.exercises.universal.filter(ex => ex.id !== exerciseId);
+        } else {
+          dataStore.exercises[position] = dataStore.exercises[position].filter(ex => ex.id !== exerciseId);
+        }
+        
+        // Remove from assigned exercises
+        Object.keys(dataStore.assignedExercises).forEach(playerId => {
+          dataStore.assignedExercises[playerId] = dataStore.assignedExercises[playerId].filter(id => id !== exerciseId);
+        });
+        
+        loadTrainingPrograms();
+      }
+    }
+
+    function unassignExercise(exerciseId, playerId) {
+      if (confirm('Are you sure you want to unassign this exercise?')) {
+        dataStore.assignedExercises[playerId] = dataStore.assignedExercises[playerId].filter(id => id !== exerciseId);
+        loadTrainingPrograms();
+        
+        if (currentUser.role === 'player' && playerId === currentUser.playerId) {
+          loadAthleteDashboard();
+        }
+      }
+    }
+
+    function editMedicalRecord(recordId) {
+      openMedicalModal(recordId);
+    }
+
+    function deleteMedicalRecord(recordId) {
+      if (confirm('Are you sure you want to delete this medical record?')) {
+        dataStore.medicalRecords = dataStore.medicalRecords.filter(r => r.id !== recordId);
+        loadMedicalAlerts();
+      }
+    }
+
+    function editCrutchRecord(recordId) {
+      openCrutchModal(null, recordId);
+    }
+
+    function deleteCrutchRecord(recordId) {
+      if (confirm('Are you sure you want to delete this crutch assessment?')) {
+        dataStore.crutchData = dataStore.crutchData.filter(r => r.id !== recordId);
+        loadCrutchContent();
+      }
+    }
+
+    function editInventoryItem(itemId) {
+      openInventoryModal(itemId);
+    }
+
+    function deleteInventoryItem(itemId) {
+      if (confirm('Are you sure you want to delete this inventory item?')) {
+        dataStore.inventory = dataStore.inventory.filter(i => i.id !== itemId);
+        loadInventoryManagement();
+      }
+    }
+
+    function editUser(username) {
+      openUserModal(username);
+    }
+
+    function deleteUser(username) {
+      if (confirm('Are you sure you want to delete this user?')) {
+        dataStore.users = dataStore.users.filter(u => u.username !== username);
+        loadUserManagement();
+      }
+    }
+
+    // Helper Functions
+    function generateId() {
+      return Math.random().toString(36).substr(2, 9);
+    }
+
+    // Make functions available globally for onclick handlers
+    window.editPlayer = editPlayer;
+    window.deletePlayer = deletePlayer;
+    window.editExercise = editExercise;
+    window.deleteExercise = deleteExercise;
+    window.unassignExercise = unassignExercise;
+    window.openExerciseCompletionModal = openExerciseCompletionModal;
+    window.editMedicalRecord = editMedicalRecord;
+    window.deleteMedicalRecord = deleteMedicalRecord;
+    window.editCrutchRecord = editCrutchRecord;
+    window.deleteCrutchRecord = deleteCrutchRecord;
+    window.editInventoryItem = editInventoryItem;
+    window.deleteInventoryItem = deleteInventoryItem;
+    window.editUser = editUser;
+    window.deleteUser = deleteUser;
+    window.openCrutchModal = openCrutchModal;
+
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
