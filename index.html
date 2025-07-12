@@ -497,6 +497,86 @@
       margin-top: 10px;
     }
 
+    .crutch-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-left: 4px solid var(--warning);
+    }
+
+    .crutch-card h4 {
+      margin-top: 0;
+      color: var(--dark);
+    }
+
+    .chart-controls {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+
+    .chart-player-select {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      min-width: 200px;
+    }
+
+    .player-exercise-form {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .profile-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .profile-picture {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary);
+    }
+
+    .profile-info {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .settings-form {
+      max-width: 600px;
+    }
+
+    .help-content {
+      max-width: 800px;
+    }
+
+    .help-section {
+      margin-bottom: 30px;
+    }
+
+    .help-section h3 {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    .help-section ul {
+      padding-left: 20px;
+    }
+
+    .help-section li {
+      margin-bottom: 8px;
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 10px;
@@ -536,6 +616,11 @@
       .dropdown-content {
         right: 0;
       }
+
+      .profile-section {
+        flex-direction: column;
+        align-items: center;
+      }
     }
   </style>
 </head>
@@ -551,19 +636,15 @@
         <form id="loginForm">
           <div class="form-group">
             <label for="username">Username</label>
-            <input type="text" id="username" required>
+            <input type="text" id="username" placeholder="Username" required>
           </div>
           <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" id="password" required>
+            <input type="password" id="password" placeholder="Password" required>
           </div>
-          <div class="form-group">
-            <button type="submit" class="btn-primary" style="width: 100%;">
-              Login
-            </button>
-          </div>
+          <button type="submit">Login</button>
+          <div id="loginError" style="color: red; margin-top: 10px; display: none;"></div>
         </form>
-        <div id="loginError" style="color: red; margin-top: 10px; display: none;"></div>
       </div>
     </div>
 
@@ -598,6 +679,12 @@
         <div class="card">
           <div id="teamDashboard">
             <h2>Team Performance Dashboard</h2>
+            <div class="chart-controls">
+              <h3>Player Performance</h3>
+              <select id="playerChartSelect" class="chart-player-select">
+                <option value="all">All Players</option>
+              </select>
+            </div>
             <div class="chart-row">
               <div class="chart-col">
                 <div class="chart-container">
@@ -633,6 +720,24 @@
               <div class="player-info-card">
                 <h3>Training Plan</h3>
                 <div id="playerTrainingPlan"></div>
+                <div class="player-exercise-form">
+                  <h4>Add Personal Exercise</h4>
+                  <form id="personalExerciseForm">
+                    <div class="form-group">
+                      <label for="personalExerciseName">Exercise Name</label>
+                      <input type="text" id="personalExerciseName" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="personalExerciseSets">Sets</label>
+                      <input type="number" id="personalExerciseSets" min="1" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="personalExerciseReps">Reps/Duration</label>
+                      <input type="text" id="personalExerciseReps" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Add Exercise</button>
+                  </form>
+                </div>
               </div>
               <div class="player-info-card">
                 <h3>Medical Information</h3>
@@ -692,6 +797,7 @@
                 <th>Weight</th>
                 <th>Shirt Size</th>
                 <th>Shoe Size</th>
+                <th>Medical Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -823,6 +929,7 @@
           <div class="form-group">
             <label>GitHub Personal Access Token:</label>
             <input type="password" id="githubToken" placeholder="Enter your GitHub token">
+            <small>Create a token with "gist" scope at GitHub Settings > Developer Settings</small>
           </div>
           <div class="form-group">
             <label>Gist ID (leave empty to create new):</label>
@@ -836,9 +943,142 @@
           <div id="syncStatus" class="sync-status" style="display:none"></div>
         </div>
       </div>
+
+      <div class="tab-content" id="profile" style="display:none;">
+        <div class="card">
+          <h2>User Profile</h2>
+          <div class="profile-section">
+            <div>
+              <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-picture">
+              <button class="btn-primary" style="margin-top: 10px; width: 100%;">Change Photo</button>
+            </div>
+            <div class="profile-info">
+              <div id="profileInfoContent"></div>
+              <button class="btn-primary" id="editProfileBtn" style="margin-top: 20px;">Edit Profile</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="settings" style="display:none;">
+        <div class="card">
+          <h2>Settings</h2>
+          <div class="settings-form">
+            <form id="settingsForm">
+              <div class="form-group">
+                <label for="settingsLanguage">Language</label>
+                <select id="settingsLanguage" class="form-control">
+                  <option value="en">English</option>
+                  <option value="fr">French</option>
+                  <option value="nl">Dutch</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="settingsTheme">Theme</label>
+                <select id="settingsTheme" class="form-control">
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                  <option value="system">System Default</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="settingsNotifications">Email Notifications</label>
+                <select id="settingsNotifications" class="form-control">
+                  <option value="all">All Notifications</option>
+                  <option value="important">Only Important</option>
+                  <option value="none">None</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="settingsPassword">Change Password</label>
+                <input type="password" id="settingsPassword" placeholder="New Password" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="settingsPasswordConfirm">Confirm Password</label>
+                <input type="password" id="settingsPasswordConfirm" placeholder="Confirm New Password" class="form-control">
+              </div>
+              <button type="submit" class="btn-primary">Save Settings</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="help" style="display:none;">
+        <div class="card">
+          <h2>Help & Documentation</h2>
+          <div class="help-content">
+            <div class="help-section">
+              <h3>Getting Started</h3>
+              <p>Welcome to the Amputee Football Player Registry System (AFPRS). This system helps manage players, training programs, medical records, equipment, and more for amputee football teams.</p>
+              <p>To get started:</p>
+              <ul>
+                <li>Use the navigation tabs at the top to access different sections</li>
+                <li>Add players to your roster in the Players section</li>
+                <li>Create training programs in the Training section</li>
+                <li>Track medical records in the Medical section</li>
+              </ul>
+            </div>
+
+            <div class="help-section">
+              <h3>Player Management</h3>
+              <p>The Players section allows you to:</p>
+              <ul>
+                <li>Add new players with detailed information including amputation type</li>
+                <li>Edit existing player records</li>
+                <li>Filter players by status (active, injured)</li>
+                <li>Export and import player data</li>
+              </ul>
+            </div>
+
+            <div class="help-section">
+              <h3>Training Programs</h3>
+              <p>The Training section includes:</p>
+              <ul>
+                <li>Specialized exercises adapted for amputee football players</li>
+                <li>Ability to create custom exercises</li>
+                <li>Assign exercises to individual players</li>
+                <li>Track completion of training programs</li>
+              </ul>
+            </div>
+
+            <div class="help-section">
+              <h3>Medical Records</h3>
+              <p>The Medical section helps you:</p>
+              <ul>
+                <li>Record injuries and treatments</li>
+                <li>Track rehabilitation progress</li>
+                <li>Set follow-up reminders</li>
+                <li>Generate medical reports</li>
+              </ul>
+            </div>
+
+            <div class="help-section">
+              <h3>Equipment Management</h3>
+              <p>Manage team equipment through:</p>
+              <ul>
+                <li>Crutch Management for tracking player crutches</li>
+                <li>Inventory system for uniforms and equipment</li>
+                <li>Size distribution tracking</li>
+                <li>Maintenance records</li>
+              </ul>
+            </div>
+
+            <div class="help-section">
+              <h3>Contact Support</h3>
+              <p>If you need additional help:</p>
+              <ul>
+                <li>Email: support@afprs.com</li>
+                <li>Phone: +1 (555) 123-4567</li>
+                <li>Online documentation: docs.afprs.com</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- Modal for Player Management -->
   <div id="playerModal" class="modal">
     <div class="modal-content">
       <span class="close-modal">&times;</span>
@@ -846,7 +1086,7 @@
       <form id="playerForm">
         <input type="hidden" id="playerId">
         <div class="form-group">
-          <label for="playerName">Full Name</label>
+          <label for="playerName">Name</label>
           <input type="text" id="playerName" required>
         </div>
         <div class="form-group">
@@ -861,10 +1101,10 @@
         <div class="form-group">
           <label for="playerAmputation">Amputation</label>
           <select id="playerAmputation" required>
-            <option value="left_arm">Left Arm</option>
-            <option value="right_arm">Right Arm</option>
             <option value="left_leg">Left Leg</option>
             <option value="right_leg">Right Leg</option>
+            <option value="left_arm">Left Arm</option>
+            <option value="right_arm">Right Arm</option>
           </select>
         </div>
         <div class="form-group">
@@ -895,12 +1135,12 @@
     </div>
   </div>
 
+  <!-- Modal for Exercise Management -->
   <div id="exerciseModal" class="modal">
     <div class="modal-content">
       <span class="close-modal">&times;</span>
-      <h2 id="exerciseModalTitle">Add New Exercise</h2>
+      <h2>Add New Exercise</h2>
       <form id="exerciseForm">
-        <input type="hidden" id="exerciseId">
         <div class="form-group">
           <label for="exerciseName">Exercise Name</label>
           <input type="text" id="exerciseName" required>
@@ -908,35 +1148,37 @@
         <div class="form-group">
           <label for="exerciseFocus">Focus Area</label>
           <select id="exerciseFocus" required>
-            <option value="Strength">Strength</option>
-            <option value="Endurance">Endurance</option>
+            <option value="Leg Strength">Leg Strength</option>
+            <option value="Arm Strength">Arm Strength</option>
+            <option value="Core Stability">Core Stability</option>
             <option value="Balance">Balance</option>
-            <option value="Flexibility">Flexibility</option>
-            <option value="Coordination">Coordination</option>
-            <option value="Rehabilitation">Rehabilitation</option>
+            <option value="Endurance">Endurance</option>
+            <option value="Crutch Skills">Crutch Skills</option>
+            <option value="Amputee-Specific">Amputee-Specific</option>
           </select>
         </div>
         <div class="form-group">
           <label for="exerciseSets">Sets</label>
-          <input type="number" id="exerciseSets" min="1" max="10" required>
+          <input type="number" id="exerciseSets" min="1" required>
         </div>
         <div class="form-group">
           <label for="exerciseReps">Reps/Duration</label>
-          <input type="text" id="exerciseReps" placeholder="e.g. 10 or 30s" required>
+          <input type="text" id="exerciseReps" placeholder="e.g. 10 or 30 seconds" required>
         </div>
         <div class="form-group">
-          <label for="exerciseDifficulty">Difficulty Level</label>
-          <select id="exerciseDifficulty">
+          <label for="exerciseDifficulty">Difficulty</label>
+          <select id="exerciseDifficulty" required>
             <option value="Beginner">Beginner</option>
             <option value="Intermediate">Intermediate</option>
             <option value="Advanced">Advanced</option>
           </select>
         </div>
-        <button type="submit" class="btn-primary">Save Exercise</button>
+        <button type="submit" class="btn-primary">Add Exercise</button>
       </form>
     </div>
   </div>
 
+  <!-- Modal for Medical Records -->
   <div id="medicalModal" class="modal">
     <div class="modal-content">
       <span class="close-modal">&times;</span>
@@ -966,11 +1208,12 @@
           <textarea id="medicalNotes" rows="4" required></textarea>
         </div>
         <div class="form-group">
-          <label for="medicalFollowUp">Follow Up Required</label>
-          <input type="checkbox" id="medicalFollowUp">
+          <label>
+            <input type="checkbox" id="medicalFollowUp"> Requires Follow-up
+          </label>
         </div>
-        <div class="form-group" id="followUpDateGroup" style="display:none;">
-          <label for="medicalFollowUpDate">Follow Up Date</label>
+        <div class="form-group" id="followUpDateGroup" style="display: none;">
+          <label for="medicalFollowUpDate">Follow-up Date</label>
           <input type="date" id="medicalFollowUpDate">
         </div>
         <button type="submit" class="btn-primary">Save Record</button>
@@ -978,10 +1221,11 @@
     </div>
   </div>
 
+  <!-- Modal for Inventory Management -->
   <div id="inventoryModal" class="modal">
     <div class="modal-content">
       <span class="close-modal">&times;</span>
-      <h2>Add Inventory Item</h2>
+      <h2>Inventory Item</h2>
       <form id="inventoryForm">
         <input type="hidden" id="inventoryId">
         <div class="form-group">
@@ -991,9 +1235,9 @@
         <div class="form-group">
           <label for="inventoryCategory">Category</label>
           <select id="inventoryCategory" required>
+            <option value="uniform">Uniform</option>
             <option value="equipment">Equipment</option>
             <option value="medical">Medical Supplies</option>
-            <option value="clothing">Clothing</option>
             <option value="other">Other</option>
           </select>
         </div>
@@ -1018,17 +1262,225 @@
     </div>
   </div>
 
+  <!-- Modal for Crutch Management -->
+  <div id="crutchModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Crutch Details</h2>
+      <form id="crutchForm">
+        <input type="hidden" id="crutchId">
+        <div class="form-group">
+          <label for="crutchType">Type</label>
+          <select id="crutchType" required>
+            <option value="Underarm">Underarm</option>
+            <option value="Forearm">Forearm</option>
+            <option value="Platform">Platform</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="crutchHeight">Height (cm)</label>
+          <input type="number" id="crutchHeight" min="50" max="150" required>
+        </div>
+        <div class="form-group">
+          <label for="crutchMaterial">Material</label>
+          <select id="crutchMaterial" required>
+            <option value="Aluminum">Aluminum</option>
+            <option value="Carbon Fiber">Carbon Fiber</option>
+            <option value="Wood">Wood</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="crutchCondition">Condition</label>
+          <select id="crutchCondition" required>
+            <option value="New">New</option>
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Poor">Poor</option>
+            <option value="Needs Replacement">Needs Replacement</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary">Save Crutch</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal for Assigning Crutches -->
+  <div id="assignCrutchModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Assign Crutch to Player</h2>
+      <form id="assignCrutchForm">
+        <div class="form-group">
+          <label for="assignCrutchPlayer">Player</label>
+          <select id="assignCrutchPlayer" required>
+            <option value="">Select Player</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="assignCrutchItem">Crutch</label>
+          <select id="assignCrutchItem" required>
+            <option value="">Select Crutch</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="assignCrutchDate">Assignment Date</label>
+          <input type="date" id="assignCrutchDate" required>
+        </div>
+        <div class="form-group">
+          <label for="assignCrutchNotes">Notes</label>
+          <textarea id="assignCrutchNotes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Assign Crutch</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal for Profile Editing -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Edit Profile</h2>
+      <form id="profileForm">
+        <div class="form-group">
+          <label for="profileName">Full Name</label>
+          <input type="text" id="profileName" required>
+        </div>
+        <div class="form-group">
+          <label for="profileEmail">Email</label>
+          <input type="email" id="profileEmail" required>
+        </div>
+        <div class="form-group">
+          <label for="profilePhone">Phone</label>
+          <input type="tel" id="profilePhone">
+        </div>
+        <div class="form-group">
+          <label for="profileRole">Role</label>
+          <input type="text" id="profileRole" disabled>
+        </div>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Data Store
     const dataStore = {
       users: [
-        { username: 'admin', password: 'admin123', role: 'admin', name: 'Admin User' },
-        { username: 'coach', password: 'coach123', role: 'head_coach', name: 'Head Coach' },
-        { username: 'manager', password: 'manager123', role: 'team_manager', name: 'Team Manager' },
-        { username: 'player1', password: 'player123', role: 'player', name: 'John Doe', playerId: 'player1' },
-        { username: 'physio', password: 'physio123', role: 'physio', name: 'Team Physio' },
-        { username: 'medic', password: 'medic123', role: 'medical_staff', name: 'Medical Staff' }
+        { 
+          username: 'admin', 
+          password: 'admin123', 
+          role: 'admin', 
+          name: 'Admin User',
+          email: 'admin@afprs.com',
+          phone: '+1 (555) 123-4567',
+          language: 'en',
+          theme: 'light',
+          notifications: 'all'
+        },
+        { 
+          username: 'coach', 
+          password: 'coach123', 
+          role: 'head_coach', 
+          name: 'Head Coach',
+          email: 'coach@team.com',
+          phone: '+1 (555) 234-5678',
+          language: 'en',
+          theme: 'light',
+          notifications: 'important'
+        },
+        { 
+          username: 'manager', 
+          password: 'manager123', 
+          role: 'team_manager', 
+          name: 'Team Manager',
+          email: 'manager@team.com',
+          phone: '+1 (555) 345-6789',
+          language: 'en',
+          theme: 'system',
+          notifications: 'all'
+        },
+        { 
+          username: 'player1', 
+          password: 'player123', 
+          role: 'player', 
+          name: 'John Doe', 
+          playerId: 'player1',
+          email: 'john@team.com',
+          phone: '+1 (555) 456-7890',
+          language: 'en',
+          theme: 'dark',
+          notifications: 'none'
+        },
+        { 
+          username: 'player2', 
+          password: 'player123', 
+          role: 'player', 
+          name: 'Jane Smith', 
+          playerId: 'player2',
+          email: 'jane@team.com',
+          phone: '+1 (555) 567-8901',
+          language: 'fr',
+          theme: 'light',
+          notifications: 'important'
+        },
+        { 
+          username: 'player3', 
+          password: 'player123', 
+          role: 'player', 
+          name: 'Mike Johnson', 
+          playerId: 'player3',
+          email: 'mike@team.com',
+          phone: '+1 (555) 678-9012',
+          language: 'nl',
+          theme: 'system',
+          notifications: 'all'
+        },
+        { 
+          username: 'physio', 
+          password: 'physio123', 
+          role: 'physio', 
+          name: 'Team Physio',
+          email: 'physio@team.com',
+          phone: '+1 (555) 789-0123',
+          language: 'en',
+          theme: 'light',
+          notifications: 'all'
+        },
+        { 
+          username: 'medic', 
+          password: 'medic123', 
+          role: 'medical_staff', 
+          name: 'Medical Staff',
+          email: 'medic@team.com',
+          phone: '+1 (555) 890-1234',
+          language: 'en',
+          theme: 'light',
+          notifications: 'important'
+        },
+        { 
+          username: 'player4', 
+          password: 'player123', 
+          role: 'player', 
+          name: 'David Wilson', 
+          playerId: 'player4',
+          email: 'david@team.com',
+          phone: '+1 (555) 901-2345',
+          language: 'en',
+          theme: 'dark',
+          notifications: 'none'
+        },
+        { 
+          username: 'player5', 
+          password: 'player123', 
+          role: 'player', 
+          name: 'Sarah Brown', 
+          playerId: 'player5',
+          email: 'sarah@team.com',
+          phone: '+1 (555) 012-3456',
+          language: 'fr',
+          theme: 'light',
+          notifications: 'important'
+        }
       ],
       players: [
         { 
@@ -1043,12 +1495,15 @@
           fitnessLevel: 85,
           recoveryScore: 8,
           trainingPlan: [
-            { exerciseId: 'ex1', assignedDate: '2023-05-01', completed: false }
+            { exerciseId: 'ex1', assignedDate: '2023-05-01', completed: false },
+            { exerciseId: 'ex3', assignedDate: '2023-05-05', completed: true }
           ],
           rehabStatus: 'Active',
           injuryHistory: [
             { date: '2023-03-15', type: 'Knee sprain', severity: 'Moderate', recoveryTime: '4 weeks' }
-          ]
+          ],
+          crutches: ['crutch1'],
+          personalExercises: []
         },
         { 
           id: 'player2', 
@@ -1064,39 +1519,219 @@
           rehabStatus: 'Recovering',
           injuryHistory: [
             { date: '2023-04-10', type: 'Shoulder strain', severity: 'Mild', recoveryTime: '2 weeks' }
-          ]
+          ],
+          crutches: ['crutch2'],
+          personalExercises: []
+        },
+        { 
+          id: 'player3', 
+          name: 'Mike Johnson', 
+          position: 'Defender', 
+          amputation: 'right_leg', 
+          height: 185, 
+          weight: 80, 
+          shirtSize: 'XL', 
+          shoeSize: 45,
+          fitnessLevel: 92,
+          recoveryScore: 9,
+          rehabStatus: 'Active',
+          injuryHistory: [
+            { date: '2023-02-20', type: 'Ankle fracture', severity: 'Severe', recoveryTime: '8 weeks' }
+          ],
+          crutches: ['crutch3'],
+          personalExercises: []
+        },
+        { 
+          id: 'player4', 
+          name: 'David Wilson', 
+          position: 'Midfielder', 
+          amputation: 'left_leg', 
+          height: 178, 
+          weight: 72, 
+          shirtSize: 'M', 
+          shoeSize: 43,
+          fitnessLevel: 88,
+          recoveryScore: 7,
+          rehabStatus: 'Active',
+          injuryHistory: [
+            { date: '2023-01-10', type: 'Hamstring strain', severity: 'Mild', recoveryTime: '3 weeks' }
+          ],
+          crutches: ['crutch4'],
+          personalExercises: []
+        },
+        { 
+          id: 'player5', 
+          name: 'Sarah Brown', 
+          position: 'Goalkeeper', 
+          amputation: 'left_arm', 
+          height: 180, 
+          weight: 74, 
+          shirtSize: 'L', 
+          shoeSize: 44.5,
+          fitnessLevel: 82,
+          recoveryScore: 8,
+          rehabStatus: 'Active',
+          injuryHistory: [],
+          crutches: ['crutch5'],
+          personalExercises: []
+        },
+        { 
+          id: 'player6', 
+          name: 'Robert Taylor', 
+          position: 'Defender', 
+          amputation: 'right_leg', 
+          height: 188, 
+          weight: 85, 
+          shirtSize: 'XL', 
+          shoeSize: 46,
+          fitnessLevel: 90,
+          recoveryScore: 9,
+          rehabStatus: 'Active',
+          injuryHistory: [
+            { date: '2023-03-01', type: 'Groin strain', severity: 'Moderate', recoveryTime: '5 weeks' }
+          ],
+          crutches: ['crutch6'],
+          personalExercises: []
+        },
+        { 
+          id: 'player7', 
+          name: 'Emily Davis', 
+          position: 'Forward', 
+          amputation: 'left_leg', 
+          height: 170, 
+          weight: 65, 
+          shirtSize: 'S', 
+          shoeSize: 41,
+          fitnessLevel: 87,
+          recoveryScore: 8,
+          rehabStatus: 'Active',
+          injuryHistory: [],
+          crutches: ['crutch7'],
+          personalExercises: []
+        },
+        { 
+          id: 'player8', 
+          name: 'James Miller', 
+          position: 'Midfielder', 
+          amputation: 'right_leg', 
+          height: 183, 
+          weight: 77, 
+          shirtSize: 'L', 
+          shoeSize: 44,
+          fitnessLevel: 84,
+          recoveryScore: 7,
+          rehabStatus: 'Active',
+          injuryHistory: [
+            { date: '2023-04-05', type: 'Calf strain', severity: 'Mild', recoveryTime: '2 weeks' }
+          ],
+          crutches: ['crutch8'],
+          personalExercises: []
+        },
+        { 
+          id: 'player9', 
+          name: 'Lisa Wilson', 
+          position: 'Goalkeeper', 
+          amputation: 'right_arm', 
+          height: 179, 
+          weight: 73, 
+          shirtSize: 'M', 
+          shoeSize: 42,
+          fitnessLevel: 80,
+          recoveryScore: 7,
+          rehabStatus: 'Active',
+          injuryHistory: [],
+          crutches: ['crutch9'],
+          personalExercises: []
+        },
+        { 
+          id: 'player10', 
+          name: 'Thomas Moore', 
+          position: 'Defender', 
+          amputation: 'left_leg', 
+          height: 186, 
+          weight: 82, 
+          shirtSize: 'XL', 
+          shoeSize: 45.5,
+          fitnessLevel: 89,
+          recoveryScore: 9,
+          rehabStatus: 'Active',
+          injuryHistory: [
+            { date: '2023-02-15', type: 'Knee ligament', severity: 'Severe', recoveryTime: '10 weeks' }
+          ],
+          crutches: ['crutch10'],
+          personalExercises: []
         }
       ],
       exercises: {
         universal: [
-          { id: 'ex1', name: 'Squats', focus: 'Leg Strength', sets: 3, reps: '12', addedBy: 'coach', difficulty: 'Intermediate' },
-          { id: 'ex2', name: 'Balance exercises', focus: 'Core Stability', sets: 2, reps: '10', addedBy: 'physio', difficulty: 'Beginner' }
+          { id: 'ex1', name: 'Single-Leg Squats', focus: 'Leg Strength', sets: 3, reps: '10 each leg', addedBy: 'coach', difficulty: 'Intermediate' },
+          { id: 'ex2', name: 'Crutch Balance Drills', focus: 'Balance', sets: 2, reps: '30 seconds', addedBy: 'physio', difficulty: 'Beginner' },
+          { id: 'ex3', name: 'Upper Body Strength', focus: 'Arm Strength', sets: 3, reps: '8', addedBy: 'coach', difficulty: 'Intermediate' },
+          { id: 'ex4', name: 'Core Stability with Ball', focus: 'Core Stability', sets: 3, reps: '12', addedBy: 'physio', difficulty: 'Intermediate' },
+          { id: 'ex5', name: 'Crutch Endurance Drills', focus: 'Endurance', sets: 4, reps: '1 minute', addedBy: 'coach', difficulty: 'Advanced' },
+          { id: 'ex6', name: 'Amputee-Specific Agility', focus: 'Amputee-Specific', sets: 3, reps: '15', addedBy: 'physio', difficulty: 'Intermediate' },
+          { id: 'ex7', name: 'Crutch Control Exercises', focus: 'Crutch Skills', sets: 2, reps: '20', addedBy: 'coach', difficulty: 'Beginner' },
+          { id: 'ex8', name: 'Plyometric Drills', focus: 'Leg Strength', sets: 3, reps: '8', addedBy: 'physio', difficulty: 'Advanced' },
+          { id: 'ex9', name: 'Goalkeeper Reflex Training', focus: 'Amputee-Specific', sets: 4, reps: '10', addedBy: 'coach', difficulty: 'Intermediate' },
+          { id: 'ex10', name: 'Dynamic Balance Challenges', focus: 'Balance', sets: 3, reps: '30 seconds', addedBy: 'physio', difficulty: 'Advanced' }
         ]
       },
       medicalRecords: [
-        { id: 'med1', playerId: 'player1', date: '2023-04-15', type: 'checkup', notes: 'Routine checkup - all good', followUp: false },
-        { id: 'med2', playerId: 'player2', date: '2023-04-20', type: 'injury', notes: 'Shoulder strain diagnosed', followUp: true, followUpDate: '2023-05-05' }
+        { id: 'med1', playerId: 'player1', date: '2023-03-15', type: 'injury', notes: 'Knee sprain during training, moderate severity', followUp: true, followUpDate: '2023-04-15' },
+        { id: 'med2', playerId: 'player2', date: '2023-04-10', type: 'injury', notes: 'Shoulder strain, mild discomfort', followUp: false },
+        { id: 'med3', playerId: 'player3', date: '2023-02-20', type: 'injury', notes: 'Ankle fracture, severe, requires cast', followUp: true, followUpDate: '2023-04-20' },
+        { id: 'med4', playerId: 'player1', date: '2023-05-01', type: 'checkup', notes: 'Routine physical examination, all clear' },
+        { id: 'med5', playerId: 'player4', date: '2023-01-10', type: 'injury', notes: 'Hamstring strain during match', followUp: true, followUpDate: '2023-02-10' },
+        { id: 'med6', playerId: 'player6', date: '2023-03-01', type: 'injury', notes: 'Groin strain, moderate pain', followUp: true, followUpDate: '2023-04-01' },
+        { id: 'med7', playerId: 'player8', date: '2023-04-05', type: 'injury', notes: 'Calf strain, mild', followUp: false },
+        { id: 'med8', playerId: 'player10', date: '2023-02-15', type: 'injury', notes: 'Knee ligament damage, severe', followUp: true, followUpDate: '2023-05-15' },
+        { id: 'med9', playerId: 'player5', date: '2023-03-20', type: 'checkup', notes: 'Annual physical, excellent condition' },
+        { id: 'med10', playerId: 'player7', date: '2023-04-15', type: 'treatment', notes: 'Preventative massage therapy' }
       ],
       crutchData: [
-        { id: 'crutch1', playerId: 'player1', type: 'Underarm', height: 'Adjustable', condition: 'Good', lastCheck: '2023-04-01' }
-      ],
-      inventory: [
-        { id: 'inv1', item: 'Football', category: 'equipment', quantity: 10, size: '' },
-        { id: 'inv2', item: 'Shirt - M', category: 'clothing', quantity: 5, size: 'M' },
-        { id: 'inv3', item: 'Shirt - L', category: 'clothing', quantity: 3, size: 'L' },
-        { id: 'inv4', item: 'Shin Guards', category: 'equipment', quantity: 8, size: '' }
+        { id: 'crutch1', type: 'Underarm', height: '120cm', material: 'Aluminum', condition: 'Good', lastCheck: '2023-05-01', playerId: 'player1', notes: 'Assigned to John Doe' },
+        { id: 'crutch2', type: 'Forearm', height: '115cm', material: 'Carbon Fiber', condition: 'New', lastCheck: '2023-05-01', playerId: 'player2', notes: 'Assigned to Jane Smith' },
+        { id: 'crutch3', type: 'Platform', height: '125cm', material: 'Aluminum', condition: 'Fair', lastCheck: '2023-05-01', playerId: 'player3', notes: 'Assigned to Mike Johnson' },
+        { id: 'crutch4', type: 'Underarm', height: '130cm', material: 'Wood', condition: 'Good', lastCheck: '2023-04-15', playerId: 'player4', notes: 'Assigned to David Wilson' },
+        { id: 'crutch5', type: 'Forearm', height: '110cm', material: 'Carbon Fiber', condition: 'New', lastCheck: '2023-04-20', playerId: 'player5', notes: 'Assigned to Sarah Brown' },
+        { id: 'crutch6', type: 'Platform', height: '135cm', material: 'Aluminum', condition: 'Good', lastCheck: '2023-05-01', playerId: 'player6', notes: 'Assigned to Robert Taylor' },
+        { id: 'crutch7', type: 'Underarm', height: '125cm', material: 'Carbon Fiber', condition: 'New', lastCheck: '2023-05-01', playerId: 'player7', notes: 'Assigned to Emily Davis' },
+        { id: 'crutch8', type: 'Forearm', height: '120cm', material: 'Aluminum', condition: 'Fair', lastCheck: '2023-05-01', playerId: 'player8', notes: 'Assigned to James Miller' },
+        { id: 'crutch9', type: 'Platform', height: '115cm', material: 'Carbon Fiber', condition: 'Good', lastCheck: '2023-05-01', playerId: 'player9', notes: 'Assigned to Lisa Wilson' },
+        { id: 'crutch10', type: 'Underarm', height: '130cm', material: 'Aluminum', condition: 'Good', lastCheck: '2023-05-01', playerId: 'player10', notes: 'Assigned to Thomas Moore' },
+        { id: 'crutch11', type: 'Forearm', height: '120cm', material: 'Carbon Fiber', condition: 'New', lastCheck: '2023-04-25', notes: 'Spare crutch' },
+        { id: 'crutch12', type: 'Platform', height: '125cm', material: 'Aluminum', condition: 'Good', lastCheck: '2023-04-28', notes: 'Spare crutch' }
       ],
       rehabPrograms: [
-        { id: 'rehab1', playerId: 'player1', startDate: '2023-04-01', exercises: ['ex1', 'ex2'], progress: '75%' }
+        { id: 'rehab1', playerId: 'player3', startDate: '2023-02-25', exercises: ['ex1', 'ex2'], progress: '75%', notes: 'Ankle rehabilitation program' },
+        { id: 'rehab2', playerId: 'player2', startDate: '2023-04-15', exercises: ['ex3'], progress: '50%', notes: 'Shoulder strengthening' },
+        { id: 'rehab3', playerId: 'player10', startDate: '2023-02-20', exercises: ['ex1', 'ex4', 'ex6'], progress: '90%', notes: 'Knee ligament recovery' },
+        { id: 'rehab4', playerId: 'player6', startDate: '2023-03-05', exercises: ['ex5', 'ex7'], progress: '100%', notes: 'Groin strain recovery' }
       ],
       performanceData: [],
+      inventory: [
+        { id: 'inv1', item: 'Training Jersey', category: 'uniform', quantity: 15, size: 'M' },
+        { id: 'inv2', item: 'Match Jersey', category: 'uniform', quantity: 12, size: 'L' },
+        { id: 'inv3', item: 'Shorts', category: 'uniform', quantity: 20, size: 'XL' },
+        { id: 'inv4', item: 'Socks', category: 'uniform', quantity: 30, size: '' },
+        { id: 'inv5', item: 'First Aid Kit', category: 'medical', quantity: 3, size: '' },
+        { id: 'inv6', item: 'Training Cones', category: 'equipment', quantity: 50, size: '' },
+        { id: 'inv7', item: 'Goalkeeper Gloves', category: 'equipment', quantity: 5, size: '' },
+        { id: 'inv8', item: 'Amputee Footballs', category: 'equipment', quantity: 10, size: '' },
+        { id: 'inv9', item: 'Training Bibs', category: 'equipment', quantity: 20, size: '' },
+        { id: 'inv10', item: 'Knee Pads', category: 'medical', quantity: 15, size: '' },
+        { id: 'inv11', item: 'Elbow Pads', category: 'medical', quantity: 10, size: '' },
+        { id: 'inv12', item: 'Compression Sleeves', category: 'medical', quantity: 8, size: '' },
+        { id: 'inv13', item: 'Cold Therapy Packs', category: 'medical', quantity: 12, size: '' },
+        { id: 'inv14', item: 'Crutch Tips', category: 'equipment', quantity: 25, size: '' },
+        { id: 'inv15', item: 'Water Bottles', category: 'equipment', quantity: 20, size: '' }
+      ],
       githubConfig: {
         token: null,
         gistId: null
       }
     };
 
-    // DOM Elements
     const elements = {
       loginOverlay: document.getElementById('loginOverlay'),
       loginForm: document.getElementById('loginForm'),
@@ -1146,10 +1781,16 @@
       exerciseModal: document.getElementById('exerciseModal'),
       medicalModal: document.getElementById('medicalModal'),
       inventoryModal: document.getElementById('inventoryModal'),
+      crutchModal: document.getElementById('crutchModal'),
+      assignCrutchModal: document.getElementById('assignCrutchModal'),
+      profileModal: document.getElementById('profileModal'),
       playerForm: document.getElementById('playerForm'),
       exerciseForm: document.getElementById('exerciseForm'),
       medicalForm: document.getElementById('medicalForm'),
       inventoryForm: document.getElementById('inventoryForm'),
+      crutchForm: document.getElementById('crutchForm'),
+      assignCrutchForm: document.getElementById('assignCrutchForm'),
+      profileForm: document.getElementById('profileForm'),
       teamDashboard: document.getElementById('teamDashboard'),
       playerDashboard: document.getElementById('playerDashboard'),
       physioDashboard: document.getElementById('physioDashboard'),
@@ -1164,10 +1805,22 @@
       profileLink: document.getElementById('profileLink'),
       settingsLink: document.getElementById('settingsLink'),
       helpLink: document.getElementById('helpLink'),
-      userMenuBtn: document.getElementById('userMenuBtn')
+      userMenuBtn: document.getElementById('userMenuBtn'),
+      playerChartSelect: document.getElementById('playerChartSelect'),
+      personalExerciseForm: document.getElementById('personalExerciseForm'),
+      personalExerciseName: document.getElementById('personalExerciseName'),
+      personalExerciseSets: document.getElementById('personalExerciseSets'),
+      personalExerciseReps: document.getElementById('personalExerciseReps'),
+      medicalFollowUp: document.getElementById('medicalFollowUp'),
+      medicalFollowUpDate: document.getElementById('medicalFollowUpDate'),
+      profileInfoContent: document.getElementById('profileInfoContent'),
+      editProfileBtn: document.getElementById('editProfileBtn'),
+      settingsForm: document.getElementById('settingsForm'),
+      profileTab: document.getElementById('profile'),
+      settingsTab: document.getElementById('settings'),
+      helpTab: document.getElementById('help')
     };
 
-    // App State
     let currentUser = null;
     let currentEditId = null;
     let performanceChartInstance = null;
@@ -1175,190 +1828,27 @@
     let injuryChartInstance = null;
     let attendanceChartInstance = null;
 
-    // Initialize the application
     function init() {
       setupEventListeners();
-      showLoginScreen();
+      elements.loginOverlay.style.display = 'flex';
+      elements.appContent.style.display = 'none';
       
-      // Load saved GitHub config if exists
       if (localStorage.getItem('githubToken')) {
+        elements.githubToken.value = localStorage.getItem('githubToken');
         dataStore.githubConfig.token = localStorage.getItem('githubToken');
-        elements.githubToken.value = dataStore.githubConfig.token;
       }
       
       if (localStorage.getItem('gistId')) {
+        elements.gistId.value = localStorage.getItem('gistId');
         dataStore.githubConfig.gistId = localStorage.getItem('gistId');
-        elements.gistId.value = dataStore.githubConfig.gistId;
       }
     }
 
-    function showLoginScreen() {
-      elements.loginOverlay.style.display = 'flex';
-      elements.appContent.style.display = 'none';
-      elements.loginForm.reset();
-      elements.loginError.style.display = 'none';
-    }
-
-    function showAppContent() {
-      elements.loginOverlay.style.display = 'none';
-      elements.appContent.style.display = 'block';
-    }
-
-    // Event Listeners
-    function setupEventListeners() {
-      // Login Form
-      elements.loginForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-        handleLogin();
-      });
-      
-      // Logout Button
-      elements.logoutBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        handleLogout();
-      });
-      
-      // Tab Navigation
-      elements.tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          switchTab(this.dataset.tab);
-        });
-      });
-      
-      // Physio Tab Navigation
-      elements.physioTabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          switchPhysioTab(this.dataset.physioTab);
-        });
-      });
-      
-      // Player Management
-      elements.addPlayerBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        openPlayerModal();
-      });
-      
-      // Exercise Management
-      elements.addExerciseBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        openExerciseModal();
-      });
-      
-      // Medical Records
-      elements.addMedicalRecordBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        openMedicalModal();
-      });
-      
-      // Inventory Management
-      elements.addInventoryItem.addEventListener('click', function(event) {
-        event.preventDefault();
-        openInventoryModal();
-      });
-      
-      // Crutch Management
-      elements.addCrutchBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        alert('Add crutch functionality would go here');
-      });
-      
-      // Forms
-      elements.playerForm.addEventListener('submit', handlePlayerSubmit);
-      elements.exerciseForm.addEventListener('submit', handleExerciseSubmit);
-      elements.medicalForm.addEventListener('submit', handleMedicalSubmit);
-      elements.inventoryForm.addEventListener('submit', handleInventorySubmit);
-      
-      // GitHub Sync
-      elements.saveTokenBtn.addEventListener('click', saveToken);
-      elements.loadFromGistBtn.addEventListener('click', loadFromGist);
-      elements.saveToGistBtn.addEventListener('click', saveToGist);
-      
-      // Modal Close Buttons
-      document.querySelectorAll('.close-modal').forEach(button => {
-        button.addEventListener('click', function() {
-          this.closest('.modal').style.display = 'none';
-          currentEditId = null;
-        });
-      });
-      
-      // Close modal when clicking outside
-      window.addEventListener('click', function(event) {
-        if (event.target.classList.contains('modal')) {
-          event.target.style.display = 'none';
-          currentEditId = null;
-        }
-      });
-
-      // Follow-up date toggle
-      document.getElementById('medicalFollowUp').addEventListener('change', function() {
-        document.getElementById('followUpDateGroup').style.display = this.checked ? 'block' : 'none';
-      });
-
-      // User Menu Links
-      elements.profileLink.addEventListener('click', function(event) {
-        event.preventDefault();
-        alert('Profile functionality would go here');
-      });
-
-      elements.settingsLink.addEventListener('click', function(event) {
-        event.preventDefault();
-        alert('Settings functionality would go here');
-      });
-
-      elements.helpLink.addEventListener('click', function(event) {
-        event.preventDefault();
-        alert('Help functionality would go here');
-      });
-
-      // Player Filters
-      elements.filterAllPlayers.addEventListener('click', function(event) {
-        event.preventDefault();
-        loadPlayerTable();
-      });
-
-      elements.filterActivePlayers.addEventListener('click', function(event) {
-        event.preventDefault();
-        const activePlayers = dataStore.players.filter(p => 
-          !p.injuryHistory || p.injuryHistory.length === 0 || 
-          p.injuryHistory.every(i => new Date(i.date) < new Date(new Date().setDate(new Date().getDate() - 30))
-        );
-        renderPlayerTable(activePlayers);
-      });
-
-      elements.filterInjuredPlayers.addEventListener('click', function(event) {
-        event.preventDefault();
-        const injuredPlayers = dataStore.players.filter(p => 
-          p.injuryHistory && p.injuryHistory.some(i => new Date(i.date) >= new Date(new Date().setDate(new Date().getDate() - 30))
-        );
-        renderPlayerTable(injuredPlayers);
-      });
-
-      // Export/Import
-      elements.exportPlayersBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        exportPlayers();
-      });
-
-      elements.importPlayersBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        importPlayers();
-      });
-
-      elements.exportInventoryBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        exportInventory();
-      });
-
-      elements.importInventoryBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        importInventory();
-      });
-    }
-
-    // Login Handler
     function handleLogin() {
       const username = elements.username.value.trim();
       const password = elements.password.value.trim();
+      
+      elements.loginError.style.display = 'none';
       
       if (!username || !password) {
         showLoginError('Please enter both username and password');
@@ -1366,11 +1856,12 @@
       }
       
       const user = dataStore.users.find(u => u.username === username && u.password === password);
-      
+
       if (user) {
         currentUser = user;
+        elements.loginOverlay.style.display = 'none';
+        elements.appContent.style.display = 'block';
         elements.welcomeHeader.textContent = `Welcome, ${user.name || user.username}`;
-        showAppContent();
         setupRoleBasedUI();
         loadInitialData();
       } else {
@@ -1383,13 +1874,15 @@
       elements.loginError.style.display = 'block';
     }
 
-    // Logout Handler
     function handleLogout() {
       currentUser = null;
-      showLoginScreen();
+      elements.username.value = '';
+      elements.password.value = '';
+      elements.loginOverlay.style.display = 'flex';
+      elements.appContent.style.display = 'none';
+      elements.loginError.style.display = 'none';
     }
 
-    // Role-Based UI Setup
     function setupRoleBasedUI() {
       const permissions = {
         admin: {
@@ -1462,16 +1955,13 @@
 
       const userPermissions = permissions[currentUser.role] || {};
       
-      // Show/hide tabs based on permissions
       elements.tabButtons.forEach(tab => {
         const tabId = tab.dataset.tab;
         tab.style.display = userPermissions[tabId] ? 'block' : 'none';
       });
 
-      // Show/hide action buttons based on permissions
       elements.addPlayerBtn.style.display = userPermissions.canEditPlayers ? 'block' : 'none';
 
-      // Set up dashboard view based on role
       elements.teamDashboard.style.display = 'none';
       elements.playerDashboard.style.display = 'none';
       elements.physioDashboard.style.display = 'none';
@@ -1484,15 +1974,11 @@
         elements.physioDashboard.style.display = 'block';
       }
 
-      // Activate the first visible tab
       const firstVisibleTab = document.querySelector('.tab-btn[style="display: block;"]') || 
                              document.querySelector('.tab-btn.active');
-      if (firstVisibleTab) {
-        switchTab(firstVisibleTab.dataset.tab);
-      }
+      if (firstVisibleTab) switchTab(firstVisibleTab.dataset.tab);
     }
 
-    // Load Initial Data
     function loadInitialData() {
       loadPlayerTable();
       loadTrainingPrograms();
@@ -1501,20 +1987,101 @@
       loadInventoryManagement();
       loadPhysioContent();
       initCharts();
+      loadProfileInfo();
       
       if (currentUser.role === 'player') {
         loadPlayerDashboard();
       }
     }
 
-    // Player Dashboard
+    function loadProfileInfo() {
+      if (!currentUser) return;
+      
+      elements.profileInfoContent.innerHTML = `
+        <div class="player-info-row">
+          <div class="player-info-label">Name:</div>
+          <div class="player-info-value">${currentUser.name}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Username:</div>
+          <div class="player-info-value">${currentUser.username}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Role:</div>
+          <div class="player-info-value">${formatRole(currentUser.role)}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Email:</div>
+          <div class="player-info-value">${currentUser.email || 'Not specified'}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Phone:</div>
+          <div class="player-info-value">${currentUser.phone || 'Not specified'}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Language:</div>
+          <div class="player-info-value">${currentUser.language ? currentUser.language.toUpperCase() : 'Not specified'}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Theme:</div>
+          <div class="player-info-value">${formatTheme(currentUser.theme)}</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Notifications:</div>
+          <div class="player-info-value">${formatNotifications(currentUser.notifications)}</div>
+        </div>
+      `;
+      
+      // Set current settings in the settings form
+      if (elements.settingsForm) {
+        if (currentUser.language) {
+          elements.settingsLanguage.value = currentUser.language;
+        }
+        if (currentUser.theme) {
+          elements.settingsTheme.value = currentUser.theme;
+        }
+        if (currentUser.notifications) {
+          elements.settingsNotifications.value = currentUser.notifications;
+        }
+      }
+    }
+
+    function formatRole(role) {
+      const roleMap = {
+        'admin': 'Administrator',
+        'head_coach': 'Head Coach',
+        'team_manager': 'Team Manager',
+        'player': 'Player',
+        'physio': 'Physiotherapist',
+        'medical_staff': 'Medical Staff'
+      };
+      return roleMap[role] || role;
+    }
+
+    function formatTheme(theme) {
+      const themeMap = {
+        'light': 'Light',
+        'dark': 'Dark',
+        'system': 'System Default'
+      };
+      return themeMap[theme] || theme;
+    }
+
+    function formatNotifications(notifications) {
+      const notificationsMap = {
+        'all': 'All Notifications',
+        'important': 'Only Important',
+        'none': 'None'
+      };
+      return notificationsMap[notifications] || notifications;
+    }
+
     function loadPlayerDashboard() {
       if (!currentUser.playerId) return;
       
       const player = dataStore.players.find(p => p.id === currentUser.playerId);
       if (!player) return;
       
-      // Personal Info
       elements.playerPersonalInfo.innerHTML = `
         <div class="player-info-row">
           <div class="player-info-label">Name:</div>
@@ -1544,11 +2111,20 @@
           <div class="player-info-label">Shoe Size:</div>
           <div class="player-info-value">${player.shoeSize}</div>
         </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Fitness Level:</div>
+          <div class="player-info-value">${player.fitnessLevel}%</div>
+        </div>
+        <div class="player-info-row">
+          <div class="player-info-label">Recovery Score:</div>
+          <div class="player-info-value">${player.recoveryScore}/10</div>
+        </div>
       `;
       
-      // Training Plan
+      let trainingHTML = '';
+      
       if (player.trainingPlan && player.trainingPlan.length > 0) {
-        let trainingHTML = '';
+        trainingHTML += '<h4>Assigned Exercises</h4>';
         player.trainingPlan.forEach(item => {
           const exercise = dataStore.exercises.universal.find(ex => ex.id === item.exerciseId);
           if (exercise) {
@@ -1557,19 +2133,42 @@
                 <h4>${exercise.name}</h4>
                 <p><strong>Focus:</strong> ${exercise.focus}</p>
                 <p><strong>Sets/Reps:</strong> ${exercise.sets} x ${exercise.reps}</p>
-                <p><strong>Difficulty:</strong> ${exercise.difficulty || 'Not specified'}</p>
-                <p><strong>Assigned:</strong> ${formatDate(item.assignedDate)}</p>
+                <p><strong>Difficulty:</strong> ${exercise.difficulty}</p>
+                <p><strong>Assigned:</strong> ${item.assignedDate}</p>
                 <p><strong>Status:</strong> ${item.completed ? 'Completed' : 'Pending'}</p>
+                <button class="btn-small btn-primary" onclick="markExerciseComplete('${item.exerciseId}')" ${item.completed ? 'disabled' : ''}>
+                  ${item.completed ? 'Completed' : 'Mark Complete'}
+                </button>
               </div>
             `;
           }
         });
-        elements.playerTrainingPlan.innerHTML = trainingHTML;
-      } else {
-        elements.playerTrainingPlan.innerHTML = '<p>No training plan assigned yet.</p>';
       }
       
-      // Medical Info
+      if (player.personalExercises && player.personalExercises.length > 0) {
+        trainingHTML += '<h4>Personal Exercises</h4>';
+        player.personalExercises.forEach(exercise => {
+          trainingHTML += `
+            <div class="exercise">
+              <h4>${exercise.name}</h4>
+              <p><strong>Sets/Reps:</strong> ${exercise.sets} x ${exercise.reps}</p>
+              <p><strong>Added:</strong> ${formatDate(exercise.assignedDate)}</p>
+              <p><strong>Status:</strong> ${exercise.completed ? 'Completed' : 'Pending'}</p>
+              <button class="btn-small btn-primary" onclick="markPersonalExerciseComplete('${exercise.id}')" ${exercise.completed ? 'disabled' : ''}>
+                ${exercise.completed ? 'Completed' : 'Mark Complete'}
+              </button>
+              <button class="btn-small btn-danger" onclick="deletePersonalExercise('${exercise.id}')">Delete</button>
+            </div>
+          `;
+        });
+      }
+      
+      if (trainingHTML === '') {
+        trainingHTML = '<p>No exercises assigned yet.</p>';
+      }
+      
+      elements.playerTrainingPlan.innerHTML = trainingHTML;
+      
       const medicalRecords = dataStore.medicalRecords.filter(record => record.playerId === player.id);
       if (medicalRecords.length > 0) {
         let medicalHTML = '';
@@ -1588,139 +2187,27 @@
       }
     }
 
-    // Physio Dashboard
-    function loadPhysioContent() {
-      // Rehabilitation Programs
-      let rehabHTML = '';
-      dataStore.rehabPrograms.forEach(program => {
-        const player = dataStore.players.find(p => p.id === program.playerId);
-        rehabHTML += `
-          <div class="card">
-            <h4>${player?.name || 'Unknown Player'}</h4>
-            <p><strong>Status:</strong> ${program.progress}</p>
-            <p><strong>Exercises:</strong></p>
-            <ul>
-              ${program.exercises.map(exId => {
-                const exercise = dataStore.exercises.universal.find(ex => ex.id === exId);
-                return exercise ? `<li>${exercise.name} (${exercise.sets}x${exercise.reps}) - ${exercise.difficulty || 'No difficulty specified'}</li>` : '';
-              }).join('')}
-            </ul>
-          </div>
-        `;
-      });
-      elements.rehabContent.innerHTML = rehabHTML || '<p>No rehabilitation programs found.</p>';
-      
-      // Injury Tracking
-      let injuryHTML = '';
-      dataStore.players.forEach(player => {
-        if (player.injuryHistory && player.injuryHistory.length > 0) {
-          injuryHTML += `
-            <div class="card">
-              <h4>${player.name}</h4>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Severity</th>
-                    <th>Recovery Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${player.injuryHistory.map(injury => `
-                    <tr>
-                      <td>${formatDate(injury.date)}</td>
-                      <td>${injury.type}</td>
-                      <td>${injury.severity}</td>
-                      <td>${injury.recoveryTime}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          `;
-        }
-      });
-      elements.injuryContent.innerHTML = injuryHTML || '<p>No injury records found.</p>';
-      
-      // Recovery Progress
-      let recoveryHTML = '';
-      dataStore.players.forEach(player => {
-        recoveryHTML += `
-          <div class="card">
-            <h4>${player.name}</h4>
-            <p><strong>Rehab Status:</strong> ${player.rehabStatus}</p>
-            <p><strong>Fitness Level:</strong> ${player.fitnessLevel}%</p>
-            <p><strong>Recovery Score:</strong> ${player.recoveryScore}/10</p>
-          </div>
-        `;
-      });
-      elements.recoveryContent.innerHTML = recoveryHTML || '<p>No recovery data found.</p>';
-    }
-
-    // Tab Navigation
-    function switchTab(tabId) {
-      // Hide all tab contents
-      elements.tabContents.forEach(content => {
-        content.classList.remove('active');
-      });
-      
-      // Deactivate all tab buttons
-      elements.tabButtons.forEach(button => {
-        button.classList.remove('active');
-      });
-      
-      // Activate selected tab
-      document.getElementById(tabId).classList.add('active');
-      document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
-      
-      // Load specific content if needed
-      if (tabId === 'dashboard') {
-        if (currentUser.role === 'player') {
-          loadPlayerDashboard();
-        } else if (currentUser.role === 'physio') {
-          loadPhysioContent();
-        } else {
-          refreshDashboard();
-        }
-      } else if (tabId === 'players') {
-        loadPlayerTable();
-      } else if (tabId === 'training') {
-        loadTrainingPrograms();
-      } else if (tabId === 'medical') {
-        loadMedicalAlerts();
-      } else if (tabId === 'crutches') {
-        loadCrutchContent();
-      } else if (tabId === 'inventory') {
-        loadInventoryManagement();
-      }
-    }
-
-    // Physio Tab Navigation
-    function switchPhysioTab(tabId) {
-      elements.physioTabContents.forEach(content => {
-        content.classList.remove('active');
-      });
-      
-      elements.physioTabButtons.forEach(button => {
-        button.classList.remove('active');
-      });
-      
-      document.getElementById(tabId).classList.add('active');
-      document.querySelector(`.physio-tab-btn[data-physio-tab="${tabId}"]`).classList.add('active');
-    }
-
-    // Player Management
-    function loadPlayerTable() {
-      renderPlayerTable(dataStore.players);
-    }
-
     function renderPlayerTable(players) {
       elements.playerTable.innerHTML = '';
       
       players.forEach(player => {
-        const row = document.createElement('tr');
+        const isInjured = player.injuryHistory && player.injuryHistory.some(i => {
+          const injuryDate = new Date(i.date);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          return injuryDate >= thirtyDaysAgo;
+        });
         
+        const medicalStatus = isInjured ? 
+          `<span class="badge badge-danger">Injured</span>` : 
+          `<span class="badge badge-secondary">Available</span>`;
+        
+        const showMedicalStatus = currentUser.role === 'head_coach' || 
+                                currentUser.role === 'medical_staff' || 
+                                currentUser.role === 'physio' || 
+                                currentUser.role === 'admin';
+        
+        const row = document.createElement('tr');
         row.innerHTML = `
           <td>${player.name}</td>
           <td>${player.position}</td>
@@ -1729,6 +2216,7 @@
           <td>${player.weight} kg</td>
           <td>${player.shirtSize}</td>
           <td>${player.shoeSize}</td>
+          <td>${showMedicalStatus ? medicalStatus : 'N/A'}</td>
           <td>
             ${currentUser.role === 'admin' || currentUser.role === 'team_manager' ? `
               <button class="btn-small btn-primary" onclick="editPlayer('${player.id}')">Edit</button>
@@ -1736,6 +2224,10 @@
             ` : 'No actions available'}
           </td>
         `;
+        
+        if (isInjured) {
+          row.style.backgroundColor = '#fff3f3';
+        }
         
         elements.playerTable.appendChild(row);
       });
@@ -1757,7 +2249,413 @@
       return date.toLocaleDateString();
     }
 
-    // Training Programs
+    function initCharts() {
+      elements.playerChartSelect.innerHTML = '<option value="all">All Players</option>';
+      dataStore.players.forEach(player => {
+        const option = document.createElement('option');
+        option.value = player.id;
+        option.textContent = player.name;
+        elements.playerChartSelect.appendChild(option);
+      });
+      
+      const performanceCtx = elements.performanceChart.getContext('2d');
+      performanceChartInstance = new Chart(performanceCtx, {
+        type: 'bar',
+        data: {
+          labels: dataStore.players.map(p => p.name),
+          datasets: [{
+            label: 'Performance Index',
+            data: dataStore.players.map(p => p.fitnessLevel || 0),
+            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+            borderColor: 'rgba(52, 152, 219, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+      
+      const fitnessCtx = elements.fitnessChart.getContext('2d');
+      fitnessChartInstance = new Chart(fitnessCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+          datasets: [{
+            label: 'Team Fitness Level',
+            data: [75, 78, 82, 85, 88],
+            backgroundColor: 'rgba(46, 204, 113, 0.2)',
+            borderColor: 'rgba(46, 204, 113, 1)',
+            borderWidth: 2,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+      
+      const injuryCtx = elements.injuryChart.getContext('2d');
+      const injuryCounts = {
+        none: dataStore.players.filter(p => !p.injuryHistory || p.injuryHistory.length === 0).length,
+        minor: dataStore.players.filter(p => p.injuryHistory && p.injuryHistory.some(i => i.severity === 'Mild')).length,
+        moderate: dataStore.players.filter(p => p.injuryHistory && p.injuryHistory.some(i => i.severity === 'Moderate')).length,
+        severe: dataStore.players.filter(p => p.injuryHistory && p.injuryHistory.some(i => i.severity === 'Severe')).length
+      };
+      
+      injuryChartInstance = new Chart(injuryCtx, {
+        type: 'pie',
+        data: {
+          labels: ['No Injuries', 'Minor Injuries', 'Moderate Injuries', 'Severe Injuries'],
+          datasets: [{
+            data: [injuryCounts.none, injuryCounts.minor, injuryCounts.moderate, injuryCounts.severe],
+            backgroundColor: [
+              'rgba(46, 204, 113, 0.7)',
+              'rgba(241, 196, 15, 0.7)',
+              'rgba(243, 156, 18, 0.7)',
+              'rgba(231, 76, 60, 0.7)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      
+      const attendanceCtx = elements.attendanceChart.getContext('2d');
+      attendanceChartInstance = new Chart(attendanceCtx, {
+        type: 'radar',
+        data: {
+          labels: ['Training', 'Matches', 'Medical', 'Meetings', 'Events'],
+          datasets: [{
+            label: 'Team Attendance',
+            data: [85, 90, 75, 78, 73],
+            backgroundColor: 'rgba(155, 89, 182, 0.2)',
+            borderColor: 'rgba(155, 89, 182, 1)',
+            pointBackgroundColor: 'rgba(155, 89, 182, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(155, 89, 182, 1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scale: {
+            ticks: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+
+    function updateCharts() {
+      const selectedPlayerId = elements.playerChartSelect.value;
+      
+      if (selectedPlayerId === 'all') {
+        refreshDashboard();
+        return;
+      }
+      
+      const player = dataStore.players.find(p => p.id === selectedPlayerId);
+      if (!player) return;
+      
+      if (performanceChartInstance) {
+        performanceChartInstance.data.labels = [player.name];
+        performanceChartInstance.data.datasets[0].data = [player.fitnessLevel];
+        performanceChartInstance.update();
+      }
+      
+      if (fitnessChartInstance) {
+        fitnessChartInstance.data.labels = ['Current', 'Previous'];
+        fitnessChartInstance.data.datasets[0].data = [
+          player.fitnessLevel,
+          Math.max(0, player.fitnessLevel - 5)
+        ];
+        fitnessChartInstance.update();
+      }
+      
+      if (injuryChartInstance) {
+        const injuryCounts = {
+          none: player.injuryHistory && player.injuryHistory.length === 0 ? 1 : 0,
+          minor: player.injuryHistory ? player.injuryHistory.filter(i => i.severity === 'Mild').length : 0,
+          moderate: player.injuryHistory ? player.injuryHistory.filter(i => i.severity === 'Moderate').length : 0,
+          severe: player.injuryHistory ? player.injuryHistory.filter(i => i.severity === 'Severe').length : 0
+        };
+        
+        injuryChartInstance.data.datasets[0].data = [
+          injuryCounts.none,
+          injuryCounts.minor,
+          injuryCounts.moderate,
+          injuryCounts.severe
+        ];
+        injuryChartInstance.update();
+      }
+      
+      if (attendanceChartInstance) {
+        attendanceChartInstance.data.datasets[0].data = [
+          player.fitnessLevel - 5,
+          player.fitnessLevel,
+          player.fitnessLevel - 10,
+          player.fitnessLevel - 7,
+          player.fitnessLevel - 12
+        ];
+        attendanceChartInstance.update();
+      }
+    }
+
+    function refreshDashboard() {
+      if (performanceChartInstance) performanceChartInstance.destroy();
+      if (fitnessChartInstance) fitnessChartInstance.destroy();
+      if (injuryChartInstance) injuryChartInstance.destroy();
+      if (attendanceChartInstance) attendanceChartInstance.destroy();
+      
+      initCharts();
+    }
+
+    function setupEventListeners() {
+      elements.loginForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        handleLogin();
+      });
+      
+      elements.logoutBtn.addEventListener('click', handleLogout);
+      
+      elements.tabButtons.forEach(button => {
+        button.addEventListener('click', () => switchTab(button.dataset.tab));
+      });
+      
+      elements.physioTabButtons.forEach(button => {
+        button.addEventListener('click', () => switchPhysioTab(button.dataset.physioTab));
+      });
+      
+      elements.addPlayerBtn.addEventListener('click', () => openPlayerModal());
+      elements.addExerciseBtn.addEventListener('click', () => openExerciseModal());
+      elements.addMedicalRecordBtn.addEventListener('click', () => openMedicalModal());
+      elements.addInventoryItem.addEventListener('click', () => openInventoryModal());
+      elements.addCrutchBtn.addEventListener('click', () => openCrutchModal());
+      elements.assignCrutchBtn.addEventListener('click', () => openAssignCrutchModal());
+      elements.crutchMaintenanceBtn.addEventListener('click', () => alert('Crutch maintenance records would be displayed here'));
+      
+      elements.playerForm.addEventListener('submit', handlePlayerSubmit);
+      elements.exerciseForm.addEventListener('submit', handleExerciseSubmit);
+      elements.medicalForm.addEventListener('submit', handleMedicalSubmit);
+      elements.inventoryForm.addEventListener('submit', handleInventorySubmit);
+      elements.crutchForm.addEventListener('submit', handleCrutchSubmit);
+      elements.assignCrutchForm.addEventListener('submit', handleAssignCrutchSubmit);
+      elements.personalExerciseForm.addEventListener('submit', handlePersonalExerciseSubmit);
+      elements.settingsForm.addEventListener('submit', handleSettingsSubmit);
+      elements.profileForm.addEventListener('submit', handleProfileSubmit);
+      
+      elements.saveTokenBtn.addEventListener('click', saveToken);
+      elements.loadFromGistBtn.addEventListener('click', loadFromGist);
+      elements.saveToGistBtn.addEventListener('click', saveToGist);
+      
+      document.querySelectorAll('.close-modal').forEach(button => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+          });
+          currentEditId = null;
+        });
+      });
+      
+      window.addEventListener('click', (event) => {
+        if (event.target.classList.contains('modal')) {
+          event.target.style.display = 'none';
+          currentEditId = null;
+        }
+      });
+
+      elements.playerChartSelect.addEventListener('change', updateCharts);
+
+      elements.profileLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('profile');
+      });
+
+      elements.settingsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('settings');
+      });
+
+      elements.helpLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('help');
+      });
+
+      elements.editProfileBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openProfileModal();
+      });
+
+      elements.filterAllPlayers.addEventListener('click', (e) => {
+        e.preventDefault();
+        loadPlayerTable();
+      });
+
+      elements.filterActivePlayers.addEventListener('click', (e) => {
+        e.preventDefault();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const activePlayers = dataStore.players.filter(p => {
+          if (!p.injuryHistory || p.injuryHistory.length === 0) return true;
+          return p.injuryHistory.every(i => new Date(i.date) < thirtyDaysAgo);
+        });
+        
+        renderPlayerTable(activePlayers);
+      });
+
+      elements.filterInjuredPlayers.addEventListener('click', (e) => {
+        e.preventDefault();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const injuredPlayers = dataStore.players.filter(p => {
+          if (!p.injuryHistory) return false;
+          return p.injuryHistory.some(i => new Date(i.date) >= thirtyDaysAgo);
+        });
+        
+        renderPlayerTable(injuredPlayers);
+      });
+
+      elements.exportPlayersBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        exportPlayers();
+      });
+
+      elements.importPlayersBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        importPlayers();
+      });
+
+      elements.exportInventoryBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        exportInventory();
+      });
+
+      elements.importInventoryBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        importInventory();
+      });
+
+      elements.generateMedicalReportBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        generateMedicalReport();
+      });
+
+      elements.assignExerciseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        assignExerciseToPlayer();
+      });
+
+      elements.createProgramBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        createTrainingProgram();
+      });
+
+      elements.medicalFollowUp.addEventListener('change', (e) => {
+        elements.followUpDateGroup.style.display = e.target.checked ? 'block' : 'none';
+      });
+    }
+
+    function handlePersonalExerciseSubmit(event) {
+      event.preventDefault();
+      
+      if (!currentUser.playerId) return;
+      
+      const player = dataStore.players.find(p => p.id === currentUser.playerId);
+      if (!player) return;
+      
+      const exerciseData = {
+        id: generateId(),
+        name: elements.personalExerciseName.value,
+        sets: parseInt(elements.personalExerciseSets.value),
+        reps: elements.personalExerciseReps.value,
+        assignedDate: new Date().toISOString().split('T')[0],
+        completed: false,
+        isPersonal: true
+      };
+      
+      if (!player.personalExercises) {
+        player.personalExercises = [];
+      }
+      
+      player.personalExercises.push(exerciseData);
+      
+      elements.personalExerciseForm.reset();
+      loadPlayerDashboard();
+      showSyncStatus('Personal exercise added successfully!', 'success');
+    }
+
+    function switchTab(tabId) {
+      elements.tabContents.forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      elements.tabButtons.forEach(button => {
+        button.classList.remove('active');
+      });
+      
+      const tabContent = document.getElementById(tabId);
+      const tabButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+      
+      if (tabContent) tabContent.classList.add('active');
+      if (tabButton) tabButton.classList.add('active');
+      
+      if (tabId === 'dashboard') {
+        if (currentUser.role === 'player') {
+          loadPlayerDashboard();
+        } else if (currentUser.role === 'physio') {
+          loadPhysioContent();
+        } else {
+          refreshDashboard();
+        }
+      }
+      if (tabId === 'players') loadPlayerTable();
+      if (tabId === 'training') loadTrainingPrograms();
+      if (tabId === 'medical') loadMedicalAlerts();
+      if (tabId === 'crutches') loadCrutchContent();
+      if (tabId === 'inventory') loadInventoryManagement();
+      if (tabId === 'profile') loadProfileInfo();
+    }
+
+    function switchPhysioTab(tabId) {
+      elements.physioTabContents.forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      elements.physioTabButtons.forEach(button => {
+        button.classList.remove('active');
+      });
+      
+      document.getElementById(tabId).classList.add('active');
+      document.querySelector(`.physio-tab-btn[data-physio-tab="${tabId}"]`).classList.add('active');
+    }
+
+    function loadPlayerTable() {
+      renderPlayerTable(dataStore.players);
+    }
+
     function loadTrainingPrograms() {
       if (dataStore.exercises.universal.length === 0) {
         elements.trainingPrograms.innerHTML = '<p>No exercises found.</p>';
@@ -1773,6 +2671,9 @@
             <p><strong>Sets/Reps:</strong> ${exercise.sets} x ${exercise.reps}</p>
             <p><strong>Difficulty:</strong> ${exercise.difficulty || 'Not specified'}</p>
             <p><strong>Added by:</strong> ${exercise.addedBy}</p>
+            ${currentUser.role === 'head_coach' || currentUser.role === 'physio' ? `
+              <button class="btn-small btn-primary" onclick="assignExerciseToPlayer('${exercise.id}')">Assign to Player</button>
+            ` : ''}
           </div>
         `;
       });
@@ -1780,7 +2681,6 @@
       elements.trainingPrograms.innerHTML = html;
     }
 
-    // Medical Records
     function loadMedicalAlerts() {
       if (dataStore.medicalRecords.length === 0) {
         elements.medicalAlerts.innerHTML = '<p>No medical records found.</p>';
@@ -1803,33 +2703,56 @@
       elements.medicalAlerts.innerHTML = html;
     }
 
-    // Crutch Management
     function loadCrutchContent() {
       if (dataStore.crutchData.length === 0) {
         elements.crutchContent.innerHTML = '<p>No crutch assessments found.</p>';
         return;
       }
       
-      let html = '<table><thead><tr><th>Player</th><th>Type</th><th>Height</th><th>Condition</th><th>Last Check</th></tr></thead><tbody>';
+      let html = '<div class="card"><h3>Assigned Crutches</h3><table><thead><tr><th>Player</th><th>Type</th><th>Height</th><th>Material</th><th>Condition</th><th>Last Check</th><th>Notes</th></tr></thead><tbody>';
       
       dataStore.crutchData.forEach(crutch => {
-        const player = dataStore.players.find(p => p.id === crutch.playerId);
-        html += `
-          <tr>
-            <td>${player?.name || 'Unknown'}</td>
-            <td>${crutch.type}</td>
-            <td>${crutch.height}</td>
-            <td>${crutch.condition}</td>
-            <td>${formatDate(crutch.lastCheck)}</td>
-          </tr>
-        `;
+        if (crutch.playerId) {
+          const player = dataStore.players.find(p => p.id === crutch.playerId);
+          html += `
+            <tr>
+              <td>${player?.name || 'Unknown'}</td>
+              <td>${crutch.type}</td>
+              <td>${crutch.height}</td>
+              <td>${crutch.material}</td>
+              <td>${crutch.condition}</td>
+              <td>${formatDate(crutch.lastCheck)}</td>
+              <td>${crutch.notes || ''}</td>
+            </tr>
+          `;
+        }
       });
       
-      html += '</tbody></table>';
+      html += '</tbody></table></div><div class="card"><h3>Available Crutches</h3><table><thead><tr><th>Type</th><th>Height</th><th>Material</th><th>Condition</th><th>Last Check</th><th>Notes</th><th>Actions</th></tr></thead><tbody>';
+      
+      dataStore.crutchData.forEach(crutch => {
+        if (!crutch.playerId) {
+          html += `
+            <tr>
+              <td>${crutch.type}</td>
+              <td>${crutch.height}</td>
+              <td>${crutch.material}</td>
+              <td>${crutch.condition}</td>
+              <td>${formatDate(crutch.lastCheck)}</td>
+              <td>${crutch.notes || ''}</td>
+              <td>
+                <button class="btn-small btn-primary" onclick="assignCrutchToPlayer('${crutch.id}')">Assign</button>
+                <button class="btn-small btn-danger" onclick="deleteCrutch('${crutch.id}')">Delete</button>
+              </td>
+            </tr>
+          `;
+        }
+      });
+      
+      html += '</tbody></table></div>';
       elements.crutchContent.innerHTML = html;
     }
 
-    // Inventory Management
     function loadInventoryManagement() {
       elements.inventoryTable.innerHTML = '';
       
@@ -1897,125 +2820,83 @@
       });
     }
 
-    // Charts
-    function initCharts() {
-      // Destroy existing charts if they exist
-      if (performanceChartInstance) performanceChartInstance.destroy();
-      if (fitnessChartInstance) fitnessChartInstance.destroy();
-      if (injuryChartInstance) injuryChartInstance.destroy();
-      if (attendanceChartInstance) attendanceChartInstance.destroy();
+    function loadPhysioContent() {
+      let rehabHTML = '';
+      dataStore.rehabPrograms.forEach(program => {
+        const player = dataStore.players.find(p => p.id === program.playerId);
+        rehabHTML += `
+          <div class="card">
+            <h4>${player?.name || 'Unknown Player'}</h4>
+            <p><strong>Start Date:</strong> ${formatDate(program.startDate)}</p>
+            <p><strong>Status:</strong> ${program.progress}</p>
+            <p><strong>Notes:</strong> ${program.notes}</p>
+            <p><strong>Exercises:</strong></p>
+            <ul>
+              ${program.exercises.map(exId => {
+                const exercise = dataStore.exercises.universal.find(ex => ex.id === exId);
+                return exercise ? `<li>${exercise.name} (${exercise.sets}x${exercise.reps}) - ${exercise.difficulty || 'No difficulty specified'}</li>` : '';
+              }).join('')}
+            </ul>
+          </div>
+        `;
+      });
+      elements.rehabContent.innerHTML = rehabHTML || '<p>No rehabilitation programs found.</p>';
       
-      // Performance Chart
-      const performanceCtx = elements.performanceChart.getContext('2d');
-      performanceChartInstance = new Chart(performanceCtx, {
-        type: 'bar',
-        data: {
-          labels: dataStore.players.map(p => p.name),
-          datasets: [{
-            label: 'Performance Index',
-            data: dataStore.players.map(p => p.fitnessLevel || 0),
-            backgroundColor: 'rgba(52, 152, 219, 0.7)',
-            borderColor: 'rgba(52, 152, 219, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100
-            }
-          }
+      let injuryHTML = '';
+      dataStore.players.forEach(player => {
+        if (player.injuryHistory && player.injuryHistory.length > 0) {
+          injuryHTML += `
+            <div class="card">
+              <h4>${player.name}</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Severity</th>
+                    <th>Recovery Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${player.injuryHistory.map(injury => `
+                    <tr>
+                      <td>${formatDate(injury.date)}</td>
+                      <td>${injury.type}</td>
+                      <td>${injury.severity}</td>
+                      <td>${injury.recoveryTime}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
         }
       });
+      elements.injuryContent.innerHTML = injuryHTML || '<p>No injury records found.</p>';
       
-      // Fitness Chart
-      const fitnessCtx = elements.fitnessChart.getContext('2d');
-      fitnessChartInstance = new Chart(fitnessCtx, {
-        type: 'line',
-        data: {
-          labels: dataStore.players.map(p => p.name),
-          datasets: [{
-            label: 'Fitness Level',
-            data: dataStore.players.map(p => p.fitnessLevel || 0),
-            backgroundColor: 'rgba(46, 204, 113, 0.2)',
-            borderColor: 'rgba(46, 204, 113, 1)',
-            borderWidth: 2,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100
-            }
-          }
-        }
+      let recoveryHTML = '';
+      dataStore.players.forEach(player => {
+        recoveryHTML += `
+          <div class="card">
+            <h4>${player.name}</h4>
+            <p><strong>Rehab Status:</strong> ${player.rehabStatus}</p>
+            <p><strong>Fitness Level:</strong> ${player.fitnessLevel}%</p>
+            <p><strong>Recovery Score:</strong> ${player.recoveryScore}/10</p>
+            <div class="progress-bar" style="background-color: #eee; height: 20px; margin: 5px 0; border-radius: 10px;">
+              <div style="width: ${player.fitnessLevel}%; background-color: ${getProgressColor(player.fitnessLevel)}; height: 100%; border-radius: 10px;"></div>
+            </div>
+          </div>
+        `;
       });
-      
-      // Injury Chart
-      const injuryCtx = elements.injuryChart.getContext('2d');
-      injuryChartInstance = new Chart(injuryCtx, {
-        type: 'pie',
-        data: {
-          labels: ['No Injuries', 'Minor Injuries', 'Moderate Injuries', 'Severe Injuries'],
-          datasets: [{
-            data: [8, 3, 2, 1],
-            backgroundColor: [
-              'rgba(46, 204, 113, 0.7)',
-              'rgba(241, 196, 15, 0.7)',
-              'rgba(243, 156, 18, 0.7)',
-              'rgba(231, 76, 60, 0.7)'
-            ],
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
-        }
-      });
-      
-      // Attendance Chart
-      const attendanceCtx = elements.attendanceChart.getContext('2d');
-      attendanceChartInstance = new Chart(attendanceCtx, {
-        type: 'radar',
-        data: {
-          labels: ['Training', 'Matches', 'Medical', 'Meetings', 'Events'],
-          datasets: [{
-            label: 'Team Attendance',
-            data: [85, 90, 70, 80, 75],
-            backgroundColor: 'rgba(155, 89, 182, 0.2)',
-            borderColor: 'rgba(155, 89, 182, 1)',
-            pointBackgroundColor: 'rgba(155, 89, 182, 1)',
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: 'rgba(155, 89, 182, 1)'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scale: {
-            ticks: {
-              beginAtZero: true,
-              max: 100
-            }
-          }
-        }
-      });
+      elements.recoveryContent.innerHTML = recoveryHTML || '<p>No recovery data found.</p>';
     }
 
-    function refreshDashboard() {
-      initCharts();
+    function getProgressColor(percentage) {
+      if (percentage >= 80) return '#2ecc71';
+      if (percentage >= 60) return '#f39c12';
+      return '#e74c3c';
     }
 
-    // Modals
     function openPlayerModal(playerId = null) {
       currentEditId = playerId;
       const modal = document.getElementById('playerModal');
@@ -2083,7 +2964,70 @@
       modal.style.display = 'block';
     }
 
-    // Form Handlers
+    function openCrutchModal(crutchId = null) {
+      currentEditId = crutchId;
+      const modal = document.getElementById('crutchModal');
+      
+      if (crutchId) {
+        const crutch = dataStore.crutchData.find(c => c.id === crutchId);
+        if (crutch) {
+          document.getElementById('crutchId').value = crutch.id;
+          document.getElementById('crutchType').value = crutch.type;
+          document.getElementById('crutchHeight').value = crutch.height;
+          document.getElementById('crutchMaterial').value = crutch.material;
+          document.getElementById('crutchCondition').value = crutch.condition;
+        }
+      } else {
+        document.getElementById('crutchForm').reset();
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    function openAssignCrutchModal(crutchId = null) {
+      const modal = document.getElementById('assignCrutchModal');
+      const playerSelect = document.getElementById('assignCrutchPlayer');
+      const crutchSelect = document.getElementById('assignCrutchItem');
+      
+      playerSelect.innerHTML = '<option value="">Select Player</option>';
+      dataStore.players.forEach(player => {
+        const option = document.createElement('option');
+        option.value = player.id;
+        option.textContent = player.name;
+        playerSelect.appendChild(option);
+      });
+      
+      crutchSelect.innerHTML = '<option value="">Select Crutch</option>';
+      dataStore.crutchData.forEach(crutch => {
+        if (!crutch.playerId) {
+          const option = document.createElement('option');
+          option.value = crutch.id;
+          option.textContent = `${crutch.type} (${crutch.height}, ${crutch.material})`;
+          crutchSelect.appendChild(option);
+        }
+      });
+      
+      document.getElementById('assignCrutchDate').valueAsDate = new Date();
+      document.getElementById('assignCrutchForm').reset();
+      
+      if (crutchId) {
+        crutchSelect.value = crutchId;
+      }
+      
+      modal.style.display = 'block';
+    }
+
+    function openProfileModal() {
+      const modal = document.getElementById('profileModal');
+      
+      document.getElementById('profileName').value = currentUser.name;
+      document.getElementById('profileEmail').value = currentUser.email || '';
+      document.getElementById('profilePhone').value = currentUser.phone || '';
+      document.getElementById('profileRole').value = formatRole(currentUser.role);
+      
+      modal.style.display = 'block';
+    }
+
     function handlePlayerSubmit(event) {
       event.preventDefault();
       
@@ -2099,7 +3043,9 @@
         fitnessLevel: Math.floor(Math.random() * 20) + 80,
         recoveryScore: Math.floor(Math.random() * 5) + 5,
         rehabStatus: 'Active',
-        injuryHistory: []
+        injuryHistory: [],
+        crutches: [],
+        personalExercises: []
       };
       
       if (currentEditId) {
@@ -2109,6 +3055,8 @@
           playerData.injuryHistory = existingPlayer.injuryHistory || [];
           playerData.rehabStatus = existingPlayer.rehabStatus || 'Active';
           playerData.trainingPlan = existingPlayer.trainingPlan || [];
+          playerData.crutches = existingPlayer.crutches || [];
+          playerData.personalExercises = existingPlayer.personalExercises || [];
           
           dataStore.players[index] = { ...dataStore.players[index], ...playerData };
         }
@@ -2162,12 +3110,24 @@
         const player = dataStore.players.find(p => p.id === medicalData.playerId);
         if (player) {
           if (!player.injuryHistory) player.injuryHistory = [];
+          const injuryType = medicalData.notes.split(' ')[0] || 'Injury';
+          const severity = medicalData.notes.toLowerCase().includes('mild') ? 'Mild' : 
+                         medicalData.notes.toLowerCase().includes('severe') ? 'Severe' : 'Moderate';
+          const recoveryTime = severity === 'Mild' ? '1-2 weeks' : 
+                              severity === 'Moderate' ? '3-4 weeks' : '6-8 weeks';
+          
           player.injuryHistory.push({
             date: medicalData.date,
-            type: medicalData.notes.split(' ')[0],
-            severity: 'Moderate',
-            recoveryTime: '2 weeks'
+            type: injuryType,
+            severity: severity,
+            recoveryTime: recoveryTime
           });
+          
+          if (severity === 'Moderate' || severity === 'Severe') {
+            player.rehabStatus = 'Recovering';
+            player.fitnessLevel = Math.max(40, player.fitnessLevel - (severity === 'Moderate' ? 30 : 50));
+            player.recoveryScore = Math.max(1, player.recoveryScore - (severity === 'Moderate' ? 3 : 5));
+          }
         }
       }
       
@@ -2181,6 +3141,8 @@
       if (currentUser.role === 'physio') {
         loadPhysioContent();
       }
+      
+      refreshDashboard();
     }
 
     function handleInventorySubmit(event) {
@@ -2208,12 +3170,111 @@
       loadInventoryManagement();
     }
 
-    // Utility Functions
+    function handleCrutchSubmit(event) {
+      event.preventDefault();
+      
+      const crutchData = {
+        id: document.getElementById('crutchId').value || generateId(),
+        type: document.getElementById('crutchType').value,
+        height: document.getElementById('crutchHeight').value,
+        material: document.getElementById('crutchMaterial').value,
+        condition: document.getElementById('crutchCondition').value,
+        lastCheck: new Date().toISOString().split('T')[0],
+        notes: ''
+      };
+      
+      if (currentEditId) {
+        const index = dataStore.crutchData.findIndex(c => c.id === currentEditId);
+        if (index !== -1) {
+          crutchData.playerId = dataStore.crutchData[index].playerId;
+          crutchData.notes = dataStore.crutchData[index].notes;
+          dataStore.crutchData[index] = crutchData;
+        }
+      } else {
+        dataStore.crutchData.push(crutchData);
+      }
+      
+      document.getElementById('crutchModal').style.display = 'none';
+      currentEditId = null;
+      loadCrutchContent();
+    }
+
+    function handleAssignCrutchSubmit(event) {
+      event.preventDefault();
+      
+      const playerId = document.getElementById('assignCrutchPlayer').value;
+      const crutchId = document.getElementById('assignCrutchItem').value;
+      const date = document.getElementById('assignCrutchDate').value;
+      const notes = document.getElementById('assignCrutchNotes').value;
+      
+      const crutchIndex = dataStore.crutchData.findIndex(c => c.id === crutchId);
+      if (crutchIndex !== -1) {
+        dataStore.crutchData[crutchIndex].playerId = playerId;
+        dataStore.crutchData[crutchIndex].lastCheck = date;
+        dataStore.crutchData[crutchIndex].notes = notes;
+        
+        const playerIndex = dataStore.players.findIndex(p => p.id === playerId);
+        if (playerIndex !== -1) {
+          if (!dataStore.players[playerIndex].crutches) {
+            dataStore.players[playerIndex].crutches = [];
+          }
+          dataStore.players[playerIndex].crutches.push(crutchId);
+        }
+      }
+      
+      document.getElementById('assignCrutchModal').style.display = 'none';
+      loadCrutchContent();
+    }
+
+    function handleProfileSubmit(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('profileName').value;
+      const email = document.getElementById('profileEmail').value;
+      const phone = document.getElementById('profilePhone').value;
+      
+      currentUser.name = name;
+      currentUser.email = email;
+      currentUser.phone = phone;
+      
+      document.getElementById('profileModal').style.display = 'none';
+      loadProfileInfo();
+      showSyncStatus('Profile updated successfully!', 'success');
+    }
+
+    function handleSettingsSubmit(event) {
+      event.preventDefault();
+      
+      const language = document.getElementById('settingsLanguage').value;
+      const theme = document.getElementById('settingsTheme').value;
+      const notifications = document.getElementById('settingsNotifications').value;
+      const password = document.getElementById('settingsPassword').value;
+      const passwordConfirm = document.getElementById('settingsPasswordConfirm').value;
+      
+      if (password && password !== passwordConfirm) {
+        showSyncStatus('Passwords do not match', 'error');
+        return;
+      }
+      
+      currentUser.language = language;
+      currentUser.theme = theme;
+      currentUser.notifications = notifications;
+      
+      if (password) {
+        currentUser.password = password;
+      }
+      
+      document.getElementById('settingsPassword').value = '';
+      document.getElementById('settingsPasswordConfirm').value = '';
+      
+      loadProfileInfo();
+      showSyncStatus('Settings saved successfully!', 'success');
+    }
+
     function generateId() {
       return Math.random().toString(36).substr(2, 9);
     }
 
-    // Export/Import
     function exportPlayers() {
       const dataStr = JSON.stringify(dataStore.players, null, 2);
       const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -2300,7 +3361,240 @@
       fileInput.click();
     }
 
-    // GitHub Sync
+    function generateMedicalReport() {
+      let reportContent = 'AFPRS Medical Report\n\n';
+      reportContent += `Generated on: ${new Date().toLocaleDateString()}\n\n`;
+      
+      reportContent += 'Players with Recent Injuries:\n';
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      dataStore.players.forEach(player => {
+        if (player.injuryHistory && player.injuryHistory.some(i => new Date(i.date) >= thirtyDaysAgo)) {
+          reportContent += `- ${player.name} (${player.position}):\n`;
+          player.injuryHistory.filter(i => new Date(i.date) >= thirtyDaysAgo).forEach(injury => {
+            reportContent += `  • ${formatDate(injury.date)}: ${injury.type} (${injury.severity}), Recovery: ${injury.recoveryTime}\n`;
+          });
+        }
+      });
+      
+      reportContent += '\nUpcoming Follow-ups:\n';
+      const upcomingFollowups = dataStore.medicalRecords.filter(record => 
+        record.followUp && new Date(record.followUpDate) >= new Date()
+      ).sort((a, b) => new Date(a.followUpDate) - new Date(b.followUpDate));
+      
+      if (upcomingFollowups.length > 0) {
+        upcomingFollowups.forEach(record => {
+          const player = dataStore.players.find(p => p.id === record.playerId);
+          reportContent += `- ${player?.name || 'Unknown'}: ${formatDate(record.followUpDate)} - ${record.notes.substring(0, 50)}...\n`;
+        });
+      } else {
+        reportContent += 'No upcoming follow-ups\n';
+      }
+      
+      const dataUri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(reportContent);
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', 'medical-report.txt');
+      linkElement.click();
+    }
+
+    function assignExerciseToPlayer(exerciseId = null) {
+      const modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100%';
+      modal.style.height = '100%';
+      modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+      modal.style.display = 'flex';
+      modal.style.justifyContent = 'center';
+      modal.style.alignItems = 'center';
+      modal.style.zIndex = '1000';
+      
+      const modalContent = document.createElement('div');
+      modalContent.style.backgroundColor = 'white';
+      modalContent.style.padding = '20px';
+      modalContent.style.borderRadius = '8px';
+      modalContent.style.width = '80%';
+      modalContent.style.maxWidth = '500px';
+      
+      const exerciseToAssign = exerciseId ? 
+        dataStore.exercises.universal.find(ex => ex.id === exerciseId) : null;
+      
+      modalContent.innerHTML = `
+        <h2>${exerciseToAssign ? `Assign "${exerciseToAssign.name}"` : 'Assign Exercise to Player'}</h2>
+        <form id="assignExerciseForm">
+          ${!exerciseToAssign ? `
+            <div class="form-group">
+              <label for="assignExerciseSelect">Exercise</label>
+              <select id="assignExerciseSelect" class="form-control" required>
+                ${dataStore.exercises.universal.map(ex => 
+                  `<option value="${ex.id}">${ex.name} (${ex.focus})</option>`).join('')}
+              </select>
+            </div>
+          ` : `<input type="hidden" id="assignExerciseSelect" value="${exerciseToAssign.id}">`}
+          <div class="form-group">
+            <label for="assignExercisePlayer">Player</label>
+            <select id="assignExercisePlayer" class="form-control" required>
+              ${dataStore.players.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="assignExerciseDate">Assignment Date</label>
+            <input type="date" id="assignExerciseDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn-primary">Assign</button>
+            <button type="button" class="btn-danger" onclick="this.closest('div[style]').remove()">Cancel</button>
+          </div>
+        </form>
+      `;
+      
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      document.getElementById('assignExerciseDate').valueAsDate = new Date();
+      
+      document.getElementById('assignExerciseForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const exerciseId = document.getElementById('assignExerciseSelect').value;
+        const playerId = document.getElementById('assignExercisePlayer').value;
+        const date = document.getElementById('assignExerciseDate').value;
+        
+        const player = dataStore.players.find(p => p.id === playerId);
+        if (player) {
+          if (!player.trainingPlan) player.trainingPlan = [];
+          player.trainingPlan.push({
+            exerciseId: exerciseId,
+            assignedDate: date,
+            completed: false
+          });
+          
+          modal.remove();
+          showSyncStatus('Exercise assigned successfully!', 'success');
+          
+          if (currentUser.role === 'player' && playerId === currentUser.playerId) {
+            loadPlayerDashboard();
+          }
+        }
+      });
+    }
+
+    function createTrainingProgram() {
+      const modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100%';
+      modal.style.height = '100%';
+      modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+      modal.style.display = 'flex';
+      modal.style.justifyContent = 'center';
+      modal.style.alignItems = 'center';
+      modal.style.zIndex = '1000';
+      
+      const modalContent = document.createElement('div');
+      modalContent.style.backgroundColor = 'white';
+      modalContent.style.padding = '20px';
+      modalContent.style.borderRadius = '8px';
+      modalContent.style.width = '80%';
+      modalContent.style.maxWidth = '500px';
+      
+      modalContent.innerHTML = `
+        <h2>Create Training Program</h2>
+        <form id="createProgramForm">
+          <div class="form-group">
+            <label for="programPlayer">Player</label>
+            <select id="programPlayer" class="form-control" required>
+              ${dataStore.players.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="programStartDate">Start Date</label>
+            <input type="date" id="programStartDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Select Exercises:</label>
+            ${dataStore.exercises.universal.map(ex => `
+              <div>
+                <input type="checkbox" id="ex-${ex.id}" value="${ex.id}">
+                <label for="ex-${ex.id}">${ex.name} (${ex.focus})</label>
+              </div>
+            `).join('')}
+          </div>
+          <div class="form-group">
+            <label for="programNotes">Notes</label>
+            <textarea id="programNotes" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn-primary">Create Program</button>
+            <button type="button" class="btn-danger" onclick="this.closest('div[style]').remove()">Cancel</button>
+          </div>
+        </form>
+      `;
+      
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      document.getElementById('programStartDate').valueAsDate = new Date();
+      
+      document.getElementById('createProgramForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const playerId = document.getElementById('programPlayer').value;
+        const startDate = document.getElementById('programStartDate').value;
+        const notes = document.getElementById('programNotes').value;
+        
+        const selectedExercises = [];
+        dataStore.exercises.universal.forEach(ex => {
+          if (document.getElementById(`ex-${ex.id}`).checked) {
+            selectedExercises.push(ex.id);
+          }
+        });
+        
+        if (selectedExercises.length === 0) {
+          alert('Please select at least one exercise');
+          return;
+        }
+        
+        const newProgram = {
+          id: generateId(),
+          playerId: playerId,
+          startDate: startDate,
+          exercises: selectedExercises,
+          progress: '0%',
+          notes: notes
+        };
+        
+        dataStore.rehabPrograms.push(newProgram);
+        
+        const player = dataStore.players.find(p => p.id === playerId);
+        if (player) {
+          if (!player.trainingPlan) player.trainingPlan = [];
+          selectedExercises.forEach(exId => {
+            player.trainingPlan.push({
+              exerciseId: exId,
+              assignedDate: startDate,
+              completed: false
+            });
+          });
+        }
+        
+        modal.remove();
+        showSyncStatus('Training program created successfully!', 'success');
+        
+        if (currentUser.role === 'physio') {
+          loadPhysioContent();
+        }
+        
+        if (currentUser.role === 'player' && playerId === currentUser.playerId) {
+          loadPlayerDashboard();
+        }
+      });
+    }
+
     function saveToken() {
       const token = elements.githubToken.value.trim();
       const gistId = elements.gistId.value.trim();
@@ -2449,7 +3743,6 @@
       }, 5000);
     }
 
-    // Global Functions (needed for inline event handlers)
     window.editPlayer = function(playerId) {
       if (currentUser.role === 'admin' || currentUser.role === 'team_manager') {
         openPlayerModal(playerId);
@@ -2478,7 +3771,64 @@
       }
     };
 
-    // Initialize the application when the DOM is loaded
+    window.markExerciseComplete = function(exerciseId) {
+      if (!currentUser.playerId) return;
+      
+      const player = dataStore.players.find(p => p.id === currentUser.playerId);
+      if (player && player.trainingPlan) {
+        const exercise = player.trainingPlan.find(item => item.exerciseId === exerciseId && !item.completed);
+        if (exercise) {
+          exercise.completed = true;
+          loadPlayerDashboard();
+          showSyncStatus('Exercise marked as complete!', 'success');
+        }
+      }
+    };
+
+    window.markPersonalExerciseComplete = function(exerciseId) {
+      if (!currentUser.playerId) return;
+      
+      const player = dataStore.players.find(p => p.id === currentUser.playerId);
+      if (player && player.personalExercises) {
+        const exercise = player.personalExercises.find(ex => ex.id === exerciseId && !ex.completed);
+        if (exercise) {
+          exercise.completed = true;
+          loadPlayerDashboard();
+          showSyncStatus('Exercise marked as complete!', 'success');
+        }
+      }
+    };
+
+    window.deletePersonalExercise = function(exerciseId) {
+      if (!currentUser.playerId) return;
+      
+      const player = dataStore.players.find(p => p.id === currentUser.playerId);
+      if (player && player.personalExercises) {
+        player.personalExercises = player.personalExercises.filter(ex => ex.id !== exerciseId);
+        loadPlayerDashboard();
+        showSyncStatus('Exercise deleted!', 'success');
+      }
+    };
+
+    window.assignExerciseToPlayer = function(exerciseId) {
+      if (currentUser.role === 'head_coach' || currentUser.role === 'physio') {
+        assignExerciseToPlayer(exerciseId);
+      }
+    };
+
+    window.assignCrutchToPlayer = function(crutchId) {
+      if (currentUser.role === 'head_coach' || currentUser.role === 'physio' || currentUser.role === 'medical_staff') {
+        openAssignCrutchModal(crutchId);
+      }
+    };
+
+    window.deleteCrutch = function(crutchId) {
+      if (confirm('Are you sure you want to delete this crutch?')) {
+        dataStore.crutchData = dataStore.crutchData.filter(c => c.id !== crutchId);
+        loadCrutchContent();
+      }
+    };
+
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
